@@ -21,6 +21,12 @@ public final class TransitGraph {
     /** 환승표에 없는 환승에 쓰는 기본 시간(분). */
     public static final double DEFAULT_TRANSFER_MINUTES = 4.0;
 
+    /**
+     * 역마다 정차시간 가정값(분). CSV의 소요시간은 정차시간을 뺀 운행시간이라 구간마다 더해 준다.
+     * 구간(간선)마다 한 번 더하므로 도착역 정차도 포함한다. 환승 간선에는 더하지 않는다.
+     */
+    public static final double DEFAULT_DWELL_MINUTES_PER_STOP = 0.5;
+
     /** 분기점 역과, 그 지선이 본선과 직통 운행하는지 여부. */
     private static final class Branch {
         final String junction;
@@ -70,21 +76,34 @@ public final class TransitGraph {
 
     private TransitGraph() {}
 
+    /** CSV 운행시간 그대로(정차시간 0) 만든다. 앱에서는 정차시간을 넘기는 오버로드를 쓴다. */
     public static TransitGraph build(List<IntervalRow> intervals, List<TransferRow> transfers) {
+        return build(intervals, transfers, 0.0);
+    }
+
+    /**
+     * @param dwellMinutesPerStop 구간마다 더할 정차시간(분). 보통 {@link #DEFAULT_DWELL_MINUTES_PER_STOP}
+     * @throws IllegalArgumentException 정차시간이 음수이거나 NaN인 경우
+     */
+    public static TransitGraph build(List<IntervalRow> intervals, List<TransferRow> transfers,
+                                     double dwellMinutesPerStop) {
+        if (dwellMinutesPerStop < 0 || Double.isNaN(dwellMinutesPerStop)) {
+            throw new IllegalArgumentException("정차시간은 0 이상이어야 합니다: " + dwellMinutesPerStop);
+        }
         TransitGraph g = new TransitGraph();
-        g.addIntervalEdges(intervals);
+        g.addIntervalEdges(intervals, dwellMinutesPerStop);
         g.addTransferEdges(transfers);
         return g;
     }
 
-    private void addIntervalEdges(List<IntervalRow> intervals) {
+    private void addIntervalEdges(List<IntervalRow> intervals, double dwellMinutesPerStop) {
         Map<Integer, Integer> previousNodeByLine = new HashMap<Integer, Integer>();
         for (IntervalRow row : intervals) {
             int node = nodeFor(key(row.line, row.station), row.line, row.station);
             Integer previous = previousNodeByLine.get(row.line);
             boolean isLineStart = row.km == 0 || previous == null;
             if (!isLineStart) {
-                addEdge(originOf(row, previous), node, row.minutes, false);
+                addEdge(originOf(row, previous), node, row.minutes + dwellMinutesPerStop, false);
             }
             previousNodeByLine.put(row.line, node);
         }

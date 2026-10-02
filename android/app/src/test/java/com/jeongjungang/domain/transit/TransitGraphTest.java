@@ -127,6 +127,29 @@ public class TransitGraphTest {
     }
 
     @Test
+    public void dwellIsAddedToEveryRideEdgeButNotToTransfers() {
+        TransitGraph g = TransitGraph.build(twoLines(), noTransfers(), 0.5);
+        java.util.Map<String, Double> src = new java.util.LinkedHashMap<String, Double>();
+        src.put("A", 0.0);
+        java.util.Map<String, RouteFinder.Route> r = RouteFinder.find(g, src);
+        // A-B 2+0.5, B-X 2+0.5
+        assertEquals(5.0, r.get("X").minutes, DELTA);
+        // X에서 환승 4.0(정차시간 없음) + X-D 3+0.5
+        assertEquals(5.0 + 4.0 + 3.5, r.get("D").minutes, DELTA);
+        assertEquals(1, r.get("D").transfers);
+    }
+
+    @Test
+    public void defaultDwellConstantIsHalfAMinute() {
+        assertEquals(0.5, TransitGraph.DEFAULT_DWELL_MINUTES_PER_STOP, DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void negativeDwellThrows() {
+        TransitGraph.build(twoLines(), noTransfers(), -0.1);
+    }
+
+    @Test
     public void repeatedStationRowClosesLoopOntoSameNode() {
         List<IntervalRow> rows = Arrays.asList(
                 row(6, "응암", 0, 0), row(6, "역촌", 1.5, 1.1), row(6, "구산", 1.5, 0.9),

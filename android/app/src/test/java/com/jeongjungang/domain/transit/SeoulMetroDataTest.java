@@ -48,7 +48,7 @@ public class SeoulMetroDataTest {
             b.close();
             c.close();
         }
-        graph = TransitGraph.build(intervals, transfers);
+        graph = TransitGraph.build(intervals, transfers, TransitGraph.DEFAULT_DWELL_MINUTES_PER_STOP);
     }
 
     private static RouteFinder.Route routeFrom(String origin, String destination) {
@@ -98,21 +98,23 @@ public class SeoulMetroDataTest {
         assertEquals(graph.stationNames().size(), RouteFinder.find(graph, src).size());
     }
 
-    /** 2호선 시청 기준 역방향: 홍대입구 -> 신촌 2:00, 이대 1:00, 아현 1:00, 충정로 1:30, 시청 1:30,
-     *  이어서 을지로입구 1:30, 3가 1:00, 4가 1:00, 동대문역사문화공원 1:30 (CSV 합산). */
+    private static final double DWELL = TransitGraph.DEFAULT_DWELL_MINUTES_PER_STOP;
+
+    /** 2호선 홍대입구 -> 시청: 신촌 2:00, 이대 1:00, 아현 1:00, 충정로 1:30, 시청 1:30 (5구간, 7분),
+     *  시청 -> 동대문역사문화공원: 1:30, 1:00, 1:00, 1:30 (4구간, 5분). CSV 합 12분 + 9구간 x 정차시간. */
     @Test
     public void hongdaeToDongdaemunHistoryPark_isDirectLine2() {
         RouteFinder.Route r = routeFrom("홍대입구", "동대문역사문화공원");
         assertEquals(0, r.transfers);
-        assertEquals(7.0 + 5.0, r.minutes, 1e-6);
+        assertEquals(12.0 + 9 * DWELL, r.minutes, 1e-6);
     }
 
-    /** 4호선 노원 -> 동대문역사문화공원: CSV 11개 구간 합 18.5분 (정차시간 제외 표준 운행시간). */
+    /** 4호선 노원 -> 동대문역사문화공원: CSV 11개 구간 합 18.5분 + 11구간 x 정차시간. */
     @Test
     public void nowonToDongdaemunHistoryPark_isDirectLine4() {
         RouteFinder.Route r = routeFrom("노원", "동대문역사문화공원");
         assertEquals(0, r.transfers);
-        assertEquals(18.5, r.minutes, 1e-6);
+        assertEquals(18.5 + 11 * DWELL, r.minutes, 1e-6);
     }
 
     @Test
@@ -125,14 +127,15 @@ public class SeoulMetroDataTest {
     public void line2ShuttleBranchRequiresOneTransferAtSeongsu() {
         RouteFinder.Route r = routeFrom("건대입구", "용답");
         assertEquals(1, r.transfers);
-        assertEquals(1.5 + 19 / 60.0 + 3.0, r.minutes, 1e-6);
+        // 건대입구 -> 성수 1.5분, 지선 환승 19초, 성수 -> 용답 3분, 구간 2개의 정차시간
+        assertEquals(1.5 + 19 / 60.0 + 3.0 + 2 * DWELL, r.minutes, 1e-6);
     }
 
     @Test
     public void line5MacheonBranchIsThroughRunningFromGangdong() {
         RouteFinder.Route r = routeFrom("강동", "둔촌동");
         assertEquals(0, r.transfers);
-        assertEquals(110 / 60.0, r.minutes, 1e-6);
+        assertEquals(110 / 60.0 + DWELL, r.minutes, 1e-6);
     }
 
     @Test
