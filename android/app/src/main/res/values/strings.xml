@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">정중앙</string>
+    <string name="alarm_depart_now">지금 출발해야 약속에 늦지 않아요</string>
+    <string name="alarm_dismiss">알람 끄기</string>
 </resources>
