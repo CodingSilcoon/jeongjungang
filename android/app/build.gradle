@@ -51,6 +51,8 @@ dependencies {
     implementation libs.appcompat
     implementation libs.constraintlayout
     implementation libs.material
+    // 서버 호출 (HttpURLConnection은 PATCH를 못 보낸다)
+    implementation libs.okhttp
     testImplementation libs.junit
     // Android의 org.json은 단위 테스트에서 스텁이라, JVM 테스트용 실제 구현을 넣는다.
     testImplementation libs.json
