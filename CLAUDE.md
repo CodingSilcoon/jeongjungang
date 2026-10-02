@@ -44,6 +44,8 @@
 
 ## 미정
 - 후보 풀 크기, 접근 속도 가정값, 수익 모델, 레포 구조, 수업 제약 반영
+- 역 정차시간 보정 (CSV 소요시간은 정차시간 제외라 실제보다 짧음, `docs/DATA.md` 9번)
+- 접근시간 모델: 1.2km 초과분만 버스로 보는 현재 해석이 맞는지 (`AccessTimeEstimator`)
 
 ## 폴더 (임시 구조 — 레포 구조 확정 시 변경)
 - `android/app/src/main/java/com/jeongjungang/` — `domain/{model,geo}`(순수 Java 코어), `data/{remote,repository}`, `ui`, `util`
