@@ -12,6 +12,7 @@ import com.jeongjungang.domain.model.LatLng;
 import com.jeongjungang.domain.recommend.Criterion;
 import com.jeongjungang.domain.recommend.Participant;
 import com.jeongjungang.domain.recommend.Recommendation;
+import com.jeongjungang.domain.recommend.ServiceArea;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -77,12 +78,17 @@ public class RecommendViewModel extends AndroidViewModel {
                 RecommendState next;
                 try {
                     TransitData data = repository.get();
-                    List<Recommendation> results = data.recommender.recommend(input, criterion);
-                    Map<String, LatLng> coords = new LinkedHashMap<String, LatLng>();
-                    for (Recommendation r : results) {
-                        coords.put(r.station, data.index.coordinateOf(r.station));
+                    List<Participant> outside = ServiceArea.outside(data.index, input);
+                    if (!outside.isEmpty()) {
+                        next = RecommendState.outOfArea(input, criterion, outside, ServiceArea.messageFor(outside));
+                    } else {
+                        List<Recommendation> results = data.recommender.recommend(input, criterion);
+                        Map<String, LatLng> coords = new LinkedHashMap<String, LatLng>();
+                        for (Recommendation r : results) {
+                            coords.put(r.station, data.index.coordinateOf(r.station));
+                        }
+                        next = RecommendState.result(input, criterion, results, coords);
                     }
-                    next = RecommendState.result(input, criterion, results, coords);
                 } catch (Exception e) {
                     Log.e(TAG, "추천 계산 실패", e);
                     next = RecommendState.error(input, criterion, "추천을 계산하지 못했어요. 잠시 후 다시 시도해 주세요.");

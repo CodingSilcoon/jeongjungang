@@ -11,7 +11,6 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.Snapshot;
 import com.jeongjungang.domain.model.LatLng;
 import java.time.ZoneId;
 import java.util.Locale;
-import okhttp3.HttpUrl;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -93,7 +92,7 @@ public final class HttpMeetingApi implements MeetingApi {
 
     @Override
     public Snapshot get(String meetingId, String token, String etag) throws ApiException {
-        ApiHttp.Result r = http.get("/meetings/" + seg(meetingId), token, etag);
+        ApiHttp.Result r = http.get("/meetings/" + ApiHttp.pathSegment(meetingId), token, etag);
         if (r.notModified) {
             return null;
         }
@@ -110,7 +109,7 @@ public final class HttpMeetingApi implements MeetingApi {
             return;
         }
         try {
-            http.patch("/meetings/" + seg(meetingId), update.toJson(zone), token);
+            http.patch("/meetings/" + ApiHttp.pathSegment(meetingId), update.toJson(zone), token);
         } catch (JSONException e) {
             throw ApiHttp.badResponse(e);
         }
@@ -118,7 +117,7 @@ public final class HttpMeetingApi implements MeetingApi {
 
     @Override
     public void cancel(String meetingId, String token) throws ApiException {
-        http.delete("/meetings/" + seg(meetingId), token);
+        http.delete("/meetings/" + ApiHttp.pathSegment(meetingId), token);
     }
 
     @Override
@@ -129,7 +128,7 @@ public final class HttpMeetingApi implements MeetingApi {
         }
         requireValid(update.validate());
         try {
-            http.patch("/participants/" + seg(participantId), update.toJson(), token);
+            http.patch("/participants/" + ApiHttp.pathSegment(participantId), update.toJson(), token);
         } catch (JSONException e) {
             throw ApiHttp.badResponse(e);
         }
@@ -137,7 +136,7 @@ public final class HttpMeetingApi implements MeetingApi {
 
     @Override
     public void removeParticipant(String participantId, String token) throws ApiException {
-        http.delete("/participants/" + seg(participantId), token);
+        http.delete("/participants/" + ApiHttp.pathSegment(participantId), token);
     }
 
     @Override
@@ -167,10 +166,5 @@ public final class HttpMeetingApi implements MeetingApi {
         if (problem != null) {
             throw new ApiException("VALIDATION_FAILED", 0, problem, 0, null);
         }
-    }
-
-    /** 경로 한 칸으로 안전하게 인코딩한다(id는 서버가 준 값이지만 / 등이 섞여도 경로가 깨지지 않게). */
-    private static String seg(String s) {
-        return HttpUrl.get("http://x/").newBuilder().addPathSegment(s).build().encodedPath().substring(1);
     }
 }

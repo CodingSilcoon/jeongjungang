@@ -2,6 +2,7 @@ package com.jeongjungang.data.remote;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -84,6 +85,10 @@ public final class ApiHttp {
         return call("PATCH", path, body == null ? new JSONObject() : body, token, null);
     }
 
+    public Result put(String path, JSONObject body, String token) throws ApiException {
+        return call("PUT", path, body == null ? new JSONObject() : body, token, null);
+    }
+
     public Result delete(String path, String token) throws ApiException {
         return call("DELETE", path, null, token, null);
     }
@@ -149,6 +154,11 @@ public final class ApiHttp {
         }
         return new ApiException(code != null ? code : "HTTP_" + status, status,
                 serverMessage != null ? serverMessage : MSG_SERVER, retryAfter, null);
+    }
+
+    /** 경로 한 칸으로 인코딩한다. 서버가 준 id라도 / 등이 섞여 경로가 깨지지 않게 한다. */
+    public static String pathSegment(String s) {
+        return HttpUrl.get("http://x/").newBuilder().addPathSegment(s).build().encodedPath().substring(1);
     }
 
     /** 응답 형식이 명세와 다를 때. 파싱하는 쪽에서도 쓴다. */

@@ -9,4 +9,5 @@
     <!-- 알람 예약·끈 기록: 이 기기 전용. 다른 기기에서 울리면 안 된다 -->
     <exclude domain="sharedpref" path="alarms.xml" />
     <exclude domain="sharedpref" path="alarm_dismiss_queue.xml" />
+    <exclude domain="sharedpref" path="alarm_links.xml" />
 </full-backup-content>

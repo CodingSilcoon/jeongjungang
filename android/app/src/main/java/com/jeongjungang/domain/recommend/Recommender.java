@@ -25,6 +25,11 @@ public final class Recommender {
     /** 사람마다 출발점으로 쓸 가까운 역 수. */
     public static final int DEFAULT_ACCESS_STATIONS = 3;
     public static final int RESULT_COUNT = 3;
+    /**
+     * 기준 시간이 이 안(분)으로 차이 나는 후보끼리는 같은 묶음으로 보고 환승이 적은 쪽을 앞세운다.
+     * 1~2분 빠른데 환승이 더 많은 곳보다 덜 갈아타는 곳이 납득하기 쉬워서다 (2026-10-02 결정).
+     */
+    public static final int TIE_BAND_MINUTES = 2;
 
     private final TransitGraph graph;
     private final StationIndex index;
@@ -61,8 +66,17 @@ public final class Recommender {
                 candidates.add(candidate);
             }
         }
-        Collections.sort(candidates, comparatorFor(criterion));
-        return new ArrayList<Recommendation>(candidates.subList(0, Math.min(RESULT_COUNT, candidates.size())));
+        List<Recommendation> ranked = rank(candidates, criterion);
+        return new ArrayList<Recommendation>(ranked.subList(0, Math.min(RESULT_COUNT, ranked.size())));
+    }
+
+    /**
+     * 한 사람이 특정 역까지 가는 시간(접근 시간 포함)과 환승. 책임 알람의 이동시간 보고에 쓴다.
+     * @return 갈 수 없거나 없는 역이면 null
+     */
+    public PersonTrip tripTo(Participant participant, String station) {
+        RouteFinder.Route route = routesForEveryone(Collections.singletonList(participant)).get(0).get(station);
+        return route == null ? null : new PersonTrip(participant.name, route.minutes, route.transfers);
     }
 
     private static LatLng medianOf(List<Participant> participants) {
@@ -100,7 +114,44 @@ public final class Recommender {
     }
 
     /**
-     * 비교 순서: 기준 지표(화면에 보이는 분 단위) → 환승이 적은 쪽 → 보조 지표(분 단위) → 역 이름.
+     * 최종 순서. {@link #comparatorFor}로 정렬한 뒤, 맨 앞 후보(묶음의 기준)보다 기준 시간이
+     * {@link #TIE_BAND_MINUTES}분 이내로 더 걸리는 후보까지 한 묶음으로 보고 그 안을 환승 적은 순으로 다시 세운다.
+     * 묶음 밖의 첫 후보가 다음 묶음의 기준이 된다. 기준은 묶음의 가장 빠른 후보라 이웃끼리 줄줄이 이어지지 않는다.
+     * 예: 27분(환승 1) · 27분(환승 3) · 28분(환승 2) → 한 묶음 → 환승 1 · 2 · 3 순.
+     */
+    static List<Recommendation> rank(List<Recommendation> candidates, Criterion criterion) {
+        List<Recommendation> rest = new ArrayList<Recommendation>(candidates);
+        Collections.sort(rest, comparatorFor(criterion));
+        List<Recommendation> out = new ArrayList<Recommendation>(rest.size());
+        int start = 0;
+        while (start < rest.size()) {
+            long leader = primaryMinutes(rest.get(start), criterion);
+            int end = start;
+            while (end < rest.size() && primaryMinutes(rest.get(end), criterion) - leader <= TIE_BAND_MINUTES) {
+                end++;
+            }
+            List<Recommendation> group = new ArrayList<Recommendation>(rest.subList(start, end));
+            final Comparator<Recommendation> base = comparatorFor(criterion);
+            Collections.sort(group, new Comparator<Recommendation>() {
+                @Override
+                public int compare(Recommendation a, Recommendation b) {
+                    int byTransfers = Integer.compare(a.maxTransfers, b.maxTransfers);
+                    return byTransfers != 0 ? byTransfers : base.compare(a, b);
+                }
+            });
+            out.addAll(group);
+            start = end;
+        }
+        return out;
+    }
+
+    /** 화면에 보이는 분 단위 기준 시간. */
+    static long primaryMinutes(Recommendation r, Criterion criterion) {
+        return Math.round(criterion == Criterion.TOTAL_TIME ? r.totalMinutes : r.maxMinutes);
+    }
+
+    /**
+     * 묶기 전 기본 정렬: 기준 지표(화면에 보이는 분 단위) → 환승이 적은 쪽 → 보조 지표(분 단위) → 역 이름.
      * 분 단위로 같은 후보끼리는 환승이 적은 쪽을 앞세워, 0.1분 차이로 환승이 많은 후보가 1위가 되는 일을 막는다.
      */
     static Comparator<Recommendation> comparatorFor(final Criterion criterion) {

@@ -53,6 +53,8 @@ dependencies {
     implementation libs.material
     // 서버 호출 (HttpURLConnection은 PATCH를 못 보낸다)
     implementation libs.okhttp
+    // 알람 끔 기록 재전송 (앱 종료·재부팅 뒤에도 네트워크가 돌아오면 실행)
+    implementation libs.work.runtime
     testImplementation libs.junit
     // Android의 org.json은 단위 테스트에서 스텁이라, JVM 테스트용 실제 구현을 넣는다.
     testImplementation libs.json

@@ -12,10 +12,11 @@ public final class AlarmTimeCalculator {
     /** docs/API.md 값 제한: prepMinutes 0~240. */
     public static final int MAX_PREP_MINUTES = 240;
     /**
-     * 여유시간 기본값. docs/API.md 9절 `marginMinutes` 기본값 0과 맞춘다.
-     * 이동시간이 근사값이라 늦게 울릴 수 있어서, 시연 후 다시 정한다(CLAUDE.md "미정").
+     * 여유시간 기본값 5분 (2026-10-02 결정, docs/API.md `marginMinutes` 기본값과 같다).
+     * 이동시간이 근사값(역까지 접근은 가정값, 배차 대기 미포함)이라 실제보다 짧게 나올 수 있어서 둔다.
+     * 약속마다 바꿀 수 있다.
      */
-    public static final int DEFAULT_MARGIN_MINUTES = 0;
+    public static final int DEFAULT_MARGIN_MINUTES = 5;
     /** 이 시각(시) 이상 ~ {@link #LATE_NIGHT_END_HOUR} 미만은 심야로 보고 경고한다. */
     public static final int LATE_NIGHT_START_HOUR = 0;
     public static final int LATE_NIGHT_END_HOUR = 5;

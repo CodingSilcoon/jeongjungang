@@ -32,37 +32,54 @@ public final class RecommendState {
     public final Map<String, LatLng> stationCoordinates;
     /** ERROR일 때 사용자에게 보여 줄 문장. */
     public final String errorMessage;
+    /**
+     * 지원 지역 밖이라 추천하지 못한 참가자(입력 순서). 이 목록이 비어 있지 않으면 status는 ERROR이고,
+     * 화면은 해당 참가자 출발지를 표시해 다시 고르게 하면 된다. 그 밖에는 빈 목록.
+     */
+    public final List<Participant> outOfArea;
 
     private RecommendState(Status status, List<Participant> participants, Criterion criterion,
                            List<Recommendation> recommendations, Map<String, LatLng> stationCoordinates,
-                           String errorMessage) {
+                           String errorMessage, List<Participant> outOfArea) {
         this.status = status;
         this.participants = participants;
         this.criterion = criterion;
         this.recommendations = recommendations;
         this.stationCoordinates = stationCoordinates;
         this.errorMessage = errorMessage;
+        this.outOfArea = outOfArea;
     }
 
     static RecommendState idle() {
         return new RecommendState(Status.IDLE, Collections.<Participant>emptyList(), null,
-                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), null);
+                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), null,
+                Collections.<Participant>emptyList());
     }
 
     static RecommendState loading(List<Participant> participants, Criterion criterion) {
         return new RecommendState(Status.LOADING, participants, criterion,
-                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), null);
+                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), null,
+                Collections.<Participant>emptyList());
     }
 
     static RecommendState result(List<Participant> participants, Criterion criterion,
                                  List<Recommendation> recommendations, Map<String, LatLng> stationCoordinates) {
         Status status = recommendations.isEmpty() ? Status.EMPTY : Status.SUCCESS;
         return new RecommendState(status, participants, criterion,
-                Collections.unmodifiableList(recommendations), Collections.unmodifiableMap(stationCoordinates), null);
+                Collections.unmodifiableList(recommendations), Collections.unmodifiableMap(stationCoordinates), null,
+                Collections.<Participant>emptyList());
     }
 
     static RecommendState error(List<Participant> participants, Criterion criterion, String message) {
         return new RecommendState(Status.ERROR, participants, criterion,
-                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), message);
+                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), message,
+                Collections.<Participant>emptyList());
+    }
+
+    static RecommendState outOfArea(List<Participant> participants, Criterion criterion,
+                                    List<Participant> outside, String message) {
+        return new RecommendState(Status.ERROR, participants, criterion,
+                Collections.<Recommendation>emptyList(), Collections.<String, LatLng>emptyMap(), message,
+                Collections.unmodifiableList(new java.util.ArrayList<Participant>(outside)));
     }
 }
