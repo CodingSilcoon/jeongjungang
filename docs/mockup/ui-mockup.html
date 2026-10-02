@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko" data-theme="light">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html{color-scheme:light}body{margin:0;font-size:14px}</style>
+<title>정중앙 UI 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* 레이아웃: 회색 작업대 위에 폰 3대를 흐름 순서(입력 → 후보 3곳 → 상세·공유)로 나열 */
+:root {
+  --bench: #e4e8ee;
+  --bench-fg: #3b4453;
+  --screen: #fbfcfd;
+  --surface: #ffffff;
+  --sunken: #eef1f5;
+  --ink: #16202e;
+  --ink-2: #5b6677;
+  --line: #dde2ea;
+  --accent: #1e46d6;
+  --accent-ink: #ffffff;
+  --center: #e8412f;
+  --good: #1a8f5a;
+  --warn: #9a6412;
+  --warn-bg: #fbf1de;
+  --access: #b9c1cd;
+  --map-bg: #e9eef3;
+  --map-road: #ffffff;
+  --map-river: #c9dcf0;
+  --bezel: #10151d;
+  --font: "Noto Sans KR", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bench: #0d1117; --bench-fg: #a5afbf; --screen: #151b25; --surface: #1c2431; --sunken: #111823;
+    --ink: #eef2f8; --ink-2: #93a0b4; --line: #2a3445; --accent: #6f8dff; --accent-ink: #0b1220;
+    --center: #ff6a55; --good: #4cc38a; --warn: #e0a84a; --warn-bg: #2a2314; --access: #3a4557;
+    --map-bg: #1a222e; --map-road: #2a3444; --map-river: #1e3550; --bezel: #05070a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bench: #0d1117; --bench-fg: #a5afbf; --screen: #151b25; --surface: #1c2431; --sunken: #111823;
+  --ink: #eef2f8; --ink-2: #93a0b4; --line: #2a3445; --accent: #6f8dff; --accent-ink: #0b1220;
+  --center: #ff6a55; --good: #4cc38a; --warn: #e0a84a; --warn-bg: #2a2314; --access: #3a4557;
+  --map-bg: #1a222e; --map-road: #2a3444; --map-river: #1e3550; --bezel: #05070a; color-scheme: dark;
+}
+body { background: var(--bench); color: var(--bench-fg); font-family: var(--font); padding-inline: 16px; padding-block: 28px 40px; }
+.head { max-width: 1160px; margin: 0 auto 24px; }
+.head h1 { margin: 0 0 4px; font-size: 22px; font-weight: 900; color: var(--ink); letter-spacing: -0.02em; }
+.head p { margin: 0; font-size: 13px; line-height: 1.6; }
+.stage { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px 24px; justify-items: center; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 10px; align-items: center; min-width: 0; }
+figcaption { font-size: 12px; letter-spacing: 0.04em; font-weight: 700; text-transform: uppercase; }
+.phone { width: 320px; max-width: 100%; height: 680px; background: var(--bezel); border-radius: 38px; padding: 9px; box-shadow: 0 18px 40px rgba(10,20,40,.22); }
+.screen { height: 100%; background: var(--screen); border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; color: var(--ink); position: relative; }
+.status { display: flex; justify-content: space-between; padding: 10px 20px 4px; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+.appbar { padding: 8px 18px 10px; display: flex; align-items: center; justify-content: space-between; }
+.appbar h2 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+.appbar h2 b { color: var(--center); }
+.chip-n { font: 700 11px var(--mono); background: var(--sunken); color: var(--ink-2); border-radius: 99px; padding: 4px 9px; }
+.body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 9px; padding: 0 14px; overflow: hidden; }
+.search { display: flex; gap: 8px; align-items: center; background: var(--sunken); border-radius: 12px; padding: 11px 12px; color: var(--ink-2); font-size: 13px; }
+.row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 9px 12px; }
+.av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 12px; color: #fff; flex: none; }
+.who { flex: 1; min-width: 0; }
+.who b { display: block; font-size: 14px; }
+.who span { font-size: 12px; color: var(--ink-2); display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.ln { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 9px; color: #fff; font: 700 10px var(--mono); padding: 0 5px; }
+.l1 { background: #0052a4; } .l2 { background: #00a84d; } .l3 { background: #ef7c1c; } .l4 { background: #00a5de; }
+.l5 { background: #996cac; } .l6 { background: #cd7c2f; } .l7 { background: #747f00; } .l8 { background: #e6186c; }
+.x { color: var(--ink-2); font-size: 18px; line-height: 1; }
+.add { border: 1.5px dashed var(--line); border-radius: 14px; padding: 10px; text-align: center; font-size: 13px; font-weight: 500; color: var(--accent); }
+.field-l { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: var(--ink-2); padding: 2px 2px 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--sunken); border-radius: 12px; padding: 4px; }
+.seg div { text-align: center; padding: 9px 4px; border-radius: 9px; font-size: 12px; font-weight: 500; color: var(--ink-2); line-height: 1.35; }
+.seg div.on { background: var(--surface); color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(10,20,40,.14); }
+.seg small { display: block; font-weight: 400; font-size: 10.5px; color: var(--ink-2); }
+.note { font-size: 11px; color: var(--ink-2); line-height: 1.5; padding: 0 2px; }
+.cta { margin: 10px 14px 16px; background: var(--accent); color: var(--accent-ink); border-radius: 16px; padding: 15px; text-align: center; font-weight: 700; font-size: 15px; }
+.map { position: relative; background: var(--map-bg); flex: none; }
+.map svg { display: block; width: 100%; height: 100%; }
+.sheet { flex: 1; min-height: 0; background: var(--screen); border-radius: 22px 22px 0 0; margin-top: -18px; position: relative; padding: 8px 14px 0; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -6px 18px rgba(10,20,40,.08); overflow: hidden; }
+.grab { width: 36px; height: 4px; background: var(--line); border-radius: 2px; margin: 0 auto 2px; }
+.sheet h3 { margin: 0; font-size: 14px; display: flex; justify-content: space-between; align-items: baseline; }
+.sheet h3 small { font-weight: 400; color: var(--ink-2); font-size: 11px; }
+.cand { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 9px 12px; display: grid; grid-template-columns: auto 1fr auto; gap: 3px 10px; align-items: center; }
+.cand.top { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.rank { grid-row: span 3; align-self: start; width: 26px; height: 26px; border-radius: 8px; background: var(--sunken); display: grid; place-items: center; font: 700 12px var(--mono); }
+.top .rank { background: var(--accent); color: var(--accent-ink); }
+.cand b { font-size: 15px; display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.min { grid-row: span 2; text-align: right; font: 700 19px var(--mono); line-height: 1; }
+.min small { display: block; font: 400 10px var(--font); color: var(--ink-2); margin-top: 3px; }
+.stats-l { grid-column: 2 / 4; font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.why { grid-column: 2 / 4; font-size: 12px; font-weight: 500; color: var(--ink); }
+.top .why { color: var(--accent); }
+.hero { padding: 2px 18px 10px; }
+.hero small { font-size: 11.5px; color: var(--ink-2); }
+.hero h2 { margin: 2px 0 8px; font-size: 24px; font-weight: 900; letter-spacing: -0.03em; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.stats { display: flex; gap: 8px; }
+.stat { flex: 1; background: var(--sunken); border-radius: 12px; padding: 8px 10px; }
+.stat span { font-size: 10.5px; color: var(--ink-2); display: block; }
+.stat b { font: 700 16px var(--mono); }
+.approx { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 8px 10px; font-size: 11px; line-height: 1.5; }
+.route { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 9px 12px; display: flex; flex-direction: column; gap: 6px; }
+.route .top-l { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.route .top-l b { display: flex; align-items: center; gap: 7px; }
+.route .top-l em { font: 700 15px var(--mono); font-style: normal; }
+.bar { height: 8px; border-radius: 4px; background: var(--sunken); overflow: hidden; display: flex; gap: 2px; }
+.bar i { display: block; height: 100%; }
+.bar i.acc { background: var(--access); }
+.bar i.tr { background: repeating-linear-gradient(90deg, var(--ink-2) 0 3px, transparent 3px 6px); }
+.route p { margin: 0; font-size: 11px; color: var(--ink-2); line-height: 1.45; font-variant-numeric: tabular-nums; }
+.acts { margin: 8px 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.acts div { text-align: center; padding: 11px 6px; border-radius: 13px; font-weight: 700; font-size: 12.5px; border: 1px solid var(--line); background: var(--surface); }
+.acts div.pri { grid-column: 1 / -1; background: var(--accent); color: var(--accent-ink); border-color: transparent; font-size: 14px; padding: 13px; }
+.svg-t { font: 700 10px var(--font); fill: var(--ink); paint-order: stroke; stroke: var(--map-bg); stroke-width: 3px; }
+.legend { font-size: 11px; color: var(--ink-2); display: flex; gap: 12px; padding: 0 2px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 6px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+@media (prefers-reduced-motion: no-preference) { .cta, .acts div { transition: transform .12s; } .cta:active, .acts div:active { transform: scale(.98); } }
+</style>
+
+<header class="head">
+  <h1>정중앙 앱 UI 시안</h1>
+  <p>입력 → 후보 3곳 → 시간·환승 비교와 공유까지 기본 화면 3장입니다. 범위는 서울 1~8호선이고, 사람·역·소요시간은 모두 예시 데이터입니다.</p>
+</header>
+
+<main class="stage">
+
+<!-- 1. 입력 -->
+<figure>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>LTE ▂▄▆</span></div>
+    <div class="appbar"><h2>정<b>중</b>앙</h2><span class="chip-n">3명</span></div>
+    <div class="body">
+      <div class="search">🔍&nbsp;주소 검색 · 지도에서 핀 찍기</div>
+      <div class="row"><div class="av" style="background:#e8412f">민</div><div class="who"><b>민수 (나)</b><span>마포구 와우산로 94 <i class="ln l2">2</i></span></div><span class="x">×</span></div>
+      <div class="row"><div class="av" style="background:#1e46d6">지</div><div class="who"><b>지현</b><span>노원구 동일로 1414 <i class="ln l4">4</i><i class="ln l7">7</i></span></div><span class="x">×</span></div>
+      <div class="row"><div class="av" style="background:#1a8f5a">도</div><div class="who"><b>도윤</b><span>강동구 천호대로 1025 <i class="ln l5">5</i><i class="ln l8">8</i></span></div><span class="x">×</span></div>
+      <div class="add">＋ 참가자 추가</div>
+      <div class="field-l">추천 기준</div>
+      <div class="seg">
+        <div class="on">전체 이동시간 최소<small>모두의 합이 가장 짧게</small></div>
+        <div>최대 이동시간 최소<small>한 명만 멀지 않게</small></div>
+      </div>
+      <p class="note">서울교통공사 1~8호선 역 기준으로 계산한 근사값입니다. 버스와 다른 노선은 포함하지 않습니다.</p>
+    </div>
+    <div class="cta">만나기 좋은 곳 찾기</div>
+  </div></div>
+  <figcaption>1 · 출발지 입력</figcaption>
+</figure>
+
+<!-- 2. 후보 3곳 -->
+<figure>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>LTE ▂▄▆</span></div>
+    <div class="map" style="height:226px">
+      <svg viewBox="0 0 300 226" role="img" aria-label="참가자 출발지와 후보역 3곳을 보여 주는 지도 예시">
+        <rect width="300" height="226" fill="var(--map-bg)"/>
+        <path d="M0 150 C70 132 110 168 170 148 S262 122 300 140 L300 168 C262 150 214 178 170 176 S60 160 0 178 Z" fill="var(--map-river)"/>
+        <g stroke="var(--map-road)" stroke-width="5" fill="none" stroke-linecap="round">
+          <path d="M0 62 L300 84"/><path d="M62 0 L108 226"/><path d="M200 0 L176 226"/><path d="M0 196 L300 204"/>
+        </g>
+        <circle cx="166" cy="92" r="58" fill="var(--center)" opacity=".1" stroke="var(--center)" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <text class="svg-t" x="166" y="38" text-anchor="middle" style="font-size:9px;fill:var(--center)">후보 풀 (중앙값 주변 역)</text>
+        <g stroke="var(--ink-2)" stroke-width="1.3" stroke-dasharray="3 3" fill="none" opacity=".6">
+          <path d="M50 96 L148 90"/><path d="M238 34 L148 90"/><path d="M258 146 L148 90"/>
+        </g>
+        <g>
+          <circle cx="50" cy="96" r="8" fill="#e8412f"/><circle cx="238" cy="34" r="8" fill="#1e46d6"/><circle cx="258" cy="146" r="8" fill="#1a8f5a"/>
+        </g>
+        <g font-family="Noto Sans KR" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">
+          <text x="50" y="99">민</text><text x="238" y="37">지</text><text x="258" y="149">도</text>
+        </g>
+        <g>
+          <circle cx="148" cy="90" r="6" fill="var(--accent)" stroke="#fff" stroke-width="2"/>
+          <rect x="62" y="102" width="112" height="19" rx="9.5" fill="var(--accent)"/>
+          <text x="118" y="115.5" font-family="Noto Sans KR" font-size="10" font-weight="700" fill="var(--accent-ink)" text-anchor="middle">① 동대문역사문화공원</text>
+          <circle cx="178" cy="100" r="5" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="2"/><text class="svg-t" x="186" y="112">② 왕십리</text>
+          <circle cx="212" cy="116" r="5" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="2"/><text class="svg-t" x="188" y="132">③ 건대입구</text>
+        </g>
+      </svg>
+    </div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <h3>후보 3곳 <small>전체 이동시간 최소 기준 · 근사값</small></h3>
+      <div class="cand top"><div class="rank">1</div><b>동대문역사문화공원 <i class="ln l2">2</i><i class="ln l4">4</i><i class="ln l5">5</i></b><div class="min">89<small>합계 분</small></div>
+        <div class="stats-l">25 · 35 · 29분 / 환승 없음</div><div class="why">전원 40분 이내, 환승 없음</div></div>
+      <div class="cand"><div class="rank">2</div><b>왕십리 <i class="ln l2">2</i><i class="ln l5">5</i></b><div class="min">91<small>합계 분</small></div>
+        <div class="stats-l">29 · 42 · 20분 / 환승 최대 1회</div><div class="why">지현님만 42분으로 길어요</div></div>
+      <div class="cand"><div class="rank">3</div><b>건대입구 <i class="ln l2">2</i><i class="ln l7">7</i></b><div class="min">92<small>합계 분</small></div>
+        <div class="stats-l">37 · 30 · 25분 / 환승 최대 1회</div><div class="why">고르게 걸리는 편, 최대 37분</div></div>
+    </div>
+  </div></div>
+  <figcaption>2 · 후보 3곳</figcaption>
+</figure>
+
+<!-- 3. 상세·공유 -->
+<figure>
+  <div class="phone"><div class="screen">
+    <div class="status"><span>9:41</span><span>LTE ▂▄▆</span></div>
+    <div class="hero">
+      <small>‹ 후보 3곳 · 1위</small>
+      <h2>동대문역사문화공원 <i class="ln l2">2</i><i class="ln l4">4</i><i class="ln l5">5</i></h2>
+      <div class="stats">
+        <div class="stat"><span>합계</span><b>89분</b></div>
+        <div class="stat"><span>가장 오래</span><b>35분</b></div>
+        <div class="stat"><span>환승</span><b>0회</b></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="legend"><span><i style="background:var(--access)"></i>도보·버스</span><span><i style="background:#00a5de"></i>지하철</span><span><i style="background:var(--ink-2)"></i>환승</span></div>
+      <div class="route"><div class="top-l"><b><span class="av" style="background:#e8412f;width:22px;height:22px;font-size:10px">민</span>민수 <i class="ln l2">2</i></b><em>25분</em></div>
+        <div class="bar"><i class="acc" style="width:12%"></i><i style="width:88%;background:#00a84d"></i></div><p>홍대입구역까지 도보 3분 → 2호선 22분 · 환승 없음</p></div>
+      <div class="route"><div class="top-l"><b><span class="av" style="background:#1e46d6;width:22px;height:22px;font-size:10px">지</span>지현 <i class="ln l4">4</i></b><em>35분</em></div>
+        <div class="bar"><i class="acc" style="width:23%"></i><i style="width:77%;background:#00a5de"></i></div><p>노원역까지 도보와 버스 8분 → 4호선 27분 · 환승 없음</p></div>
+      <div class="route"><div class="top-l"><b><span class="av" style="background:#1a8f5a;width:22px;height:22px;font-size:10px">도</span>도윤 <i class="ln l5">5</i></b><em>29분</em></div>
+        <div class="bar"><i class="acc" style="width:17%"></i><i style="width:83%;background:#996cac"></i></div><p>천호역까지 도보 5분 → 5호선 24분 · 환승 없음</p></div>
+      <div class="approx">서울교통공사 역간 시간과 접근시간 가정값으로 계산한 근사값입니다. 실제 경로는 지도 앱에서 확인하세요.</div>
+    </div>
+    <div class="acts">
+      <div class="pri">친구에게 공유</div>
+      <div>카카오맵으로 보기</div><div>네이버지도로 보기</div>
+    </div>
+  </div></div>
+  <figcaption>3 · 시간·환승 비교와 공유</figcaption>
+</figure>
+
+</main>
+
+</html>
