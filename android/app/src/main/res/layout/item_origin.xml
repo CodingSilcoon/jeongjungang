@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp"
+    android:orientation="vertical"
+    android:background="@drawable/start_action_secondary"
+    android:padding="16dp">
+
+    <!-- 배지와 참가자 이름. 내 위치에는 삭제 버튼을 표시하지 않는다. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/number"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/start_ink"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/start_ink" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:paddingHorizontal="8dp"
+            android:background="?attr/selectableItemBackground"
+            android:text="@string/origin_delete"
+            android:textSize="12sp"
+            android:textColor="@color/start_muted"
+            android:visibility="gone"
+            app:backgroundTint="@null" />
+    </LinearLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/chooseButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:layout_marginTop="8dp"
+        android:paddingVertical="8dp"
+        android:paddingEnd="4dp"
+        android:gravity="start|center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:drawableEnd="@drawable/start_chevron"
+        android:drawablePadding="8dp"
+        android:text="@string/origin_choose"
+        android:textAllCaps="false"
+        android:textSize="15sp"
+        android:textColor="@color/start_muted"
+        app:backgroundTint="@null" />
+
+</LinearLayout>

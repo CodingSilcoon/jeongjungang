@@ -1,0 +1,67 @@
+<!-- 만날 곳 찾기를 누른 뒤에만 표시하는 기준 선택 -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/criteriaPanel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="22dp"
+        android:paddingBottom="24dp"
+        android:orientation="vertical">
+
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:layout_width="match_parent"
+            android:layout_height="32dp" />
+
+        <TextView
+            style="@style/OriginTitle"
+            android:text="@string/origin_criteria_title" />
+
+        <TextView
+            style="@style/OriginLead"
+            android:text="@string/origin_criteria_intro" />
+
+        <RadioGroup
+            android:id="@+id/criteriaGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checkedButton="@id/totalCriterion">
+
+            <RadioButton
+                android:id="@+id/totalCriterion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="76dp"
+                android:padding="12dp"
+                android:buttonTint="@color/start_ink"
+                android:background="@drawable/origin_criterion_background"
+                android:textColor="@color/start_ink"
+                android:textSize="14sp"
+                android:text="@string/origin_criteria_total" />
+
+            <RadioButton
+                android:id="@+id/fairCriterion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="76dp"
+                android:layout_marginTop="8dp"
+                android:padding="12dp"
+                android:buttonTint="@color/start_ink"
+                android:background="@drawable/origin_criterion_background"
+                android:textColor="@color/start_ink"
+                android:textSize="14sp"
+                android:text="@string/origin_criteria_fair" />
+        </RadioGroup>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/confirmButton"
+            style="@style/OriginButton"
+            android:layout_marginTop="32dp"
+            android:text="@string/origin_confirm"
+            app:backgroundTint="@null" />
+    </LinearLayout>
+</ScrollView>
