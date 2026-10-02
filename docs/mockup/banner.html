@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@700&display=swap">
+<style>
+  :root { --navy:#0e1522; --navy-2:#16203a; --ink:#f3f6fb; --muted:#9fb0c9; --center:#ff6a55; --blue:#6f8dff; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; width:1280px; height:420px; overflow:hidden; font-family:"Noto Sans KR",sans-serif; }
+  body { background: radial-gradient(900px 420px at 82% 50%, #1e2d57 0%, transparent 70%), var(--navy); color:var(--ink); position:relative; }
+  .copy { position:absolute; left:84px; top:0; bottom:0; display:flex; flex-direction:column; justify-content:center; gap:18px; }
+  h1 { margin:0; font-size:118px; line-height:1; font-weight:900; letter-spacing:-0.05em; }
+  h1 b { color:var(--center); }
+  .tag { font-size:30px; font-weight:500; line-height:1.45; color:var(--ink); letter-spacing:-0.02em; }
+  .tag em { font-style:normal; color:var(--blue); font-weight:700; }
+  .lines { display:flex; gap:8px; margin-top:6px; }
+  .lines i { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:#fff; font:700 16px "JetBrains Mono",monospace; font-style:normal; }
+  .sub { font-size:17px; color:var(--muted); margin-left:8px; align-self:center; letter-spacing:-0.01em; }
+  svg { position:absolute; right:40px; top:20px; }
+</style>
+<div class="copy">
+  <h1>정<b>중</b>앙</h1>
+  <div class="tag">서로 다른 곳에서 출발하는 친구들을 위한<br><em>모두가 납득할 만한 만남 장소</em> 찾기</div>
+  <div class="lines">
+    <i style="background:#0052a4">1</i><i style="background:#00a84d">2</i><i style="background:#ef7c1c">3</i><i style="background:#00a5de">4</i>
+    <i style="background:#996cac">5</i><i style="background:#cd7c2f">6</i><i style="background:#747f00">7</i><i style="background:#e6186c">8</i>
+    <span class="sub">서울 지하철 1~8호선 기준</span>
+  </div>
+</div>
+<svg width="520" height="380" viewBox="0 0 520 380" role="img" aria-label="세 사람의 출발지가 한 곳으로 모이는 그림">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ff6a55" stop-opacity=".45"/><stop offset="100%" stop-color="#ff6a55" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="300" cy="190" r="120" fill="url(#glow)"/>
+  <circle cx="300" cy="190" r="74" fill="none" stroke="#ff6a55" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="5 6"/>
+  <g stroke="#9fb0c9" stroke-opacity=".7" stroke-width="2" stroke-dasharray="6 7" fill="none" stroke-linecap="round">
+    <path d="M92 70 L282 182"/><path d="M118 310 L282 198"/><path d="M468 120 L318 184"/>
+  </g>
+  <g font-family="Noto Sans KR" font-weight="900" font-size="22" fill="#fff" text-anchor="middle">
+    <circle cx="80" cy="62" r="30" fill="#e8412f"/><text x="80" y="70">민</text>
+    <circle cx="106" cy="318" r="30" fill="#1a8f5a"/><text x="106" y="326">도</text>
+    <circle cx="480" cy="114" r="30" fill="#2f55e6"/><text x="480" y="122">지</text>
+  </g>
+  <circle cx="300" cy="190" r="22" fill="#ff6a55"/>
+  <circle cx="300" cy="190" r="9" fill="#fff"/>
+  <rect x="222" y="226" width="156" height="38" rx="19" fill="#f3f6fb"/>
+  <text x="300" y="251" font-family="Noto Sans KR" font-weight="700" font-size="17" fill="#0e1522" text-anchor="middle">만나기 좋은 곳</text>
+</svg>
+</html>
