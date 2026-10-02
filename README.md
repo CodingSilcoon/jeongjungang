@@ -166,7 +166,8 @@ sequenceDiagram
 
 - JDK 17
 - 백엔드: `cd backend && ./gradlew build` (Windows는 `gradlew.bat build`)
-- 안드로이드: Gradle 프로젝트 파일(`build.gradle`, `AndroidManifest.xml` 등)이 아직 없습니다. Android Studio에서 프로젝트를 만든 뒤 `android/app/src`의 소스를 옮길 예정입니다. 코어 코드는 Android 의존성이 없어서 JUnit4만으로 테스트할 수 있습니다.
+- 안드로이드: Android Studio에서 `android/` 폴더를 엽니다. 프로젝트 경로에 한글이 있으면 빌드가 실패하니 영문 경로에 두세요.
+- 안드로이드 단위 테스트: `cd android && gradlew.bat test` (macOS/Linux는 `./gradlew test`). Gradle 데몬이 JDK 25를 요구해서 `JAVA_HOME`을 Android Studio 내장 JDK(`.../Android Studio/jbr`)로 지정해야 합니다. 코어 코드는 Android 의존성이 없어서 JUnit4만으로도 실행할 수 있습니다.
 - README 이미지 원본은 [`docs/mockup/ui-mockup.html`](docs/mockup/ui-mockup.html)(화면 시안)과 [`docs/mockup/banner.html`](docs/mockup/banner.html)(배너)이며, Chrome headless로 캡처했습니다.
 
 API 키(카카오, ODsay, FCM 서버 자격증명 등)는 저장소에 두지 않습니다. 환경변수나 `local.properties`로만 주입하고, 외부 API 키가 필요한 호출은 서버를 거칩니다.
