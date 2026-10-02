@@ -160,9 +160,15 @@ public class RecommenderTest {
     }
 
     private static String firstAfterSorting(Criterion criterion, Recommendation... candidates) {
-        List<Recommendation> list = new ArrayList<Recommendation>(Arrays.asList(candidates));
-        Collections.sort(list, Recommender.comparatorFor(criterion));
-        return list.get(0).station;
+        return order(criterion, candidates).get(0);
+    }
+
+    private static List<String> order(Criterion criterion, Recommendation... candidates) {
+        List<String> names = new ArrayList<String>();
+        for (Recommendation r : Recommender.rank(Arrays.asList(candidates), criterion)) {
+            names.add(r.station);
+        }
+        return names;
     }
 
     @Test
@@ -175,10 +181,33 @@ public class RecommenderTest {
     }
 
     @Test
-    public void differentWholeMinutes_fasterComesFirstEvenWithMoreTransfers() {
-        Recommendation faster = fakeCandidate("빠름", 4.4, 3);
-        Recommendation direct = fakeCandidate("직통", 5.0, 0);
+    public void withinTwoMinutes_fewerTransfersComeFirst() {
+        // 4분(환승 3)과 6분(직통)은 2분 차이라 한 묶음 → 직통이 앞선다
+        Recommendation faster = fakeCandidate("빠름", 4.0, 3);
+        Recommendation direct = fakeCandidate("직통", 6.0, 0);
+        assertEquals("직통", firstAfterSorting(Criterion.TOTAL_TIME, faster, direct));
+        assertEquals("직통", firstAfterSorting(Criterion.MAX_TIME, faster, direct));
+    }
+
+    @Test
+    public void moreThanTwoMinutesFaster_winsEvenWithMoreTransfers() {
+        Recommendation faster = fakeCandidate("빠름", 2.4, 3);   // 화면 2분
+        Recommendation direct = fakeCandidate("직통", 5.0, 0);   // 화면 5분, 3분 차이
         assertEquals("빠름", firstAfterSorting(Criterion.TOTAL_TIME, direct, faster));
+    }
+
+    @Test
+    public void tieBandIsAnchoredToTheFastestNotChained() {
+        // 27(환승 3) · 29(환승 2)는 한 묶음, 30(직통)은 27보다 3분 느려서 다음 묶음.
+        // 이웃끼리 이으면(29→30) 직통이 1위가 됐겠지만, 묶음 기준은 가장 빠른 후보다.
+        List<String> got = order(Criterion.MAX_TIME,
+                fakeCandidate("직통", 30, 0), fakeCandidate("환승셋", 27, 3), fakeCandidate("환승둘", 29, 2));
+        assertEquals(Arrays.asList("환승둘", "환승셋", "직통"), got);
+    }
+
+    @Test
+    public void tieBandConstantIsTwoMinutes() {
+        assertEquals(2, Recommender.TIE_BAND_MINUTES);
     }
 
     @Test

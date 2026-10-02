@@ -46,7 +46,7 @@ public class AlarmTimeCalculatorTest {
 
     @Test
     public void defaultMarginMatchesApiDoc() {
-        assertEquals(0, AlarmTimeCalculator.DEFAULT_MARGIN_MINUTES);
+        assertEquals(5, AlarmTimeCalculator.DEFAULT_MARGIN_MINUTES);
     }
 
     @Test(expected = IllegalArgumentException.class)

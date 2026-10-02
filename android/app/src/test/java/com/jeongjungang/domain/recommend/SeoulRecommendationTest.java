@@ -87,19 +87,37 @@ public class SeoulRecommendationTest {
             assertEquals(transfers, c.maxTransfers);
             assertTrue(c.reason.length() > 0);
             assertTrue(!c.lines.isEmpty());
-            if (i > 0) {
-                assertTrue(Math.round(r.get(i - 1).totalMinutes) <= Math.round(c.totalMinutes));
+        }
+        assertNoLaterCandidateIsMuchFaster(r, Criterion.TOTAL_TIME);
+    }
+
+    /** 2분 이내 동률 때문에 뒤 후보가 앞보다 빠를 수는 있지만, 2분을 넘게 빠를 수는 없다. */
+    private static void assertNoLaterCandidateIsMuchFaster(List<Recommendation> r, Criterion criterion) {
+        for (int i = 0; i < r.size(); i++) {
+            for (int j = i + 1; j < r.size(); j++) {
+                assertTrue(r.get(i).station + " 뒤의 " + r.get(j).station,
+                        Recommender.primaryMinutes(r.get(j), criterion)
+                                >= Recommender.primaryMinutes(r.get(i), criterion) - Recommender.TIE_BAND_MINUTES);
             }
         }
     }
 
     @Test
-    public void maxTime_isSortedByLongestTripInWholeMinutes() {
+    public void maxTime_isSortedByLongestTripWithTwoMinuteTieBand() {
         List<Recommendation> r = recommender.recommend(hongdaeNowonCheonho(), Criterion.MAX_TIME);
         assertEquals(3, r.size());
-        for (int i = 1; i < r.size(); i++) {
-            assertTrue(Math.round(r.get(i - 1).maxMinutes) <= Math.round(r.get(i).maxMinutes));
-        }
+        assertNoLaterCandidateIsMuchFaster(r, Criterion.MAX_TIME);
+    }
+
+    @Test
+    public void withinTwoMinutes_fewerTransfersComeFirstInRealData() {
+        // 27~29분 묶음: 답십리 27(환승 1), 신설동 27(환승 3), 보문 28(환승 2), 마장 29(환승 1), 안암 29(환승 2), 제기동 29(환승 4)
+        // → 환승 적은 순으로 답십리 · 마장 · 보문. 바꾸기 전에는 신설동(환승 3)이 2위였다.
+        List<Recommendation> r = recommender.recommend(hongdaeNowonCheonho(), Criterion.MAX_TIME);
+        assertEquals(Arrays.asList("답십리", "마장", "보문"),
+                Arrays.asList(r.get(0).station, r.get(1).station, r.get(2).station));
+        assertEquals(Arrays.asList(1, 1, 2),
+                Arrays.asList(r.get(0).maxTransfers, r.get(1).maxTransfers, r.get(2).maxTransfers));
     }
 
     @Test
@@ -114,7 +132,8 @@ public class SeoulRecommendationTest {
     public void bestMaxTimeNeverExceedsTheMaxOfTheBestTotalTimeWinnerBeyondRounding() {
         double maxOfTotalWinner = recommender.recommend(hongdaeNowonCheonho(), Criterion.TOTAL_TIME).get(0).maxMinutes;
         double maxOfMaxWinner = recommender.recommend(hongdaeNowonCheonho(), Criterion.MAX_TIME).get(0).maxMinutes;
-        assertTrue(Math.round(maxOfMaxWinner) <= Math.round(maxOfTotalWinner));
+        // 2분 이내 동률로 환승이 적은 쪽이 1위가 될 수 있어서 그만큼은 허용한다
+        assertTrue(Math.round(maxOfMaxWinner) <= Math.round(maxOfTotalWinner) + Recommender.TIE_BAND_MINUTES);
     }
 
     @Test

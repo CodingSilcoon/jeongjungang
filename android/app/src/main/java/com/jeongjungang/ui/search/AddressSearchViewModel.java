@@ -14,7 +14,11 @@ import com.jeongjungang.data.remote.GeoPlace;
 import com.jeongjungang.data.remote.GeocodeApi;
 import com.jeongjungang.data.remote.ReverseAddress;
 import com.jeongjungang.data.repository.GeocodeRepository;
+import com.jeongjungang.data.repository.TransitData;
+import com.jeongjungang.data.repository.TransitRepository;
+import com.jeongjungang.domain.recommend.ServiceArea;
 import com.jeongjungang.domain.model.LatLng;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +42,7 @@ public class AddressSearchViewModel extends AndroidViewModel {
     private static final String TAG = "AddressSearchViewModel";
 
     private final GeocodeApi api;
+    private final TransitRepository transit;
     private final boolean usesServer;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -54,6 +59,7 @@ public class AddressSearchViewModel extends AndroidViewModel {
     public AddressSearchViewModel(@NonNull Application application) {
         super(application);
         api = GeocodeRepository.create(application);
+        transit = TransitRepository.getInstance(application);
         usesServer = GeocodeRepository.usesServer();
     }
 
@@ -130,13 +136,13 @@ public class AddressSearchViewModel extends AndroidViewModel {
                 PinState next;
                 try {
                     ReverseAddress result = api.reverse(location);
-                    next = PinState.resolved(location, result.displayText());
+                    next = PinState.resolved(location, result.displayText(), isOutOfArea(location));
                 } catch (ApiException e) {
                     Log.w(TAG, "핀 주소 조회 실패: " + e.code, e);
-                    next = PinState.failed(location, e.getMessage());
+                    next = PinState.failed(location, e.getMessage(), isOutOfArea(location));
                 } catch (RuntimeException e) {
                     Log.e(TAG, "핀 주소 조회 오류", e);
-                    next = PinState.failed(location, null);
+                    next = PinState.failed(location, null, isOutOfArea(location));
                 }
                 if (id == pinGeneration.get()) {
                     pinState.postValue(next);
@@ -164,7 +170,13 @@ public class AddressSearchViewModel extends AndroidViewModel {
                 SearchState next;
                 try {
                     List<GeoPlace> items = api.search(query, size);
-                    next = SearchState.result(query, items);
+                    List<GeoPlace> outside = new ArrayList<GeoPlace>();
+                    for (GeoPlace p : items) {
+                        if (isOutOfArea(p.location)) {
+                            outside.add(p);
+                        }
+                    }
+                    next = SearchState.result(query, items, outside);
                 } catch (final ApiException e) {
                     Log.w(TAG, "주소 검색 실패: " + e.code, e);
                     if (ApiException.RATE_LIMITED.equals(e.code)) {
@@ -187,6 +199,17 @@ public class AddressSearchViewModel extends AndroidViewModel {
                 }
             }
         });
+    }
+
+    /** 백그라운드에서 부른다. 지하철 데이터를 못 읽으면 막지 않는다(우리 쪽 오류로 사용자를 막지 않기 위해). */
+    private boolean isOutOfArea(LatLng location) {
+        try {
+            TransitData data = transit.get();
+            return !ServiceArea.isSupported(data.index, location);
+        } catch (Exception e) {
+            Log.w(TAG, "지원 지역 확인 실패", e);
+            return false;
+        }
     }
 
     private void cancelPending() {

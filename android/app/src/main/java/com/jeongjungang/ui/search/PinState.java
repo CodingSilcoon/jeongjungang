@@ -25,25 +25,31 @@ public final class PinState {
     public final String label;
     /** FALLBACK이 조회 실패 때문이면 그 이유. 주소가 없을 뿐이면 null. */
     public final String errorMessage;
+    /**
+     * 지원 지역 밖이면 true. 출발지로 등록하지 말고 {@link com.jeongjungang.domain.recommend.ServiceArea#MESSAGE}를 보여 준다.
+     * LOADING 동안은 false.
+     */
+    public final boolean outOfArea;
 
-    private PinState(Status status, LatLng location, String label, String errorMessage) {
+    private PinState(Status status, LatLng location, String label, String errorMessage, boolean outOfArea) {
         this.status = status;
         this.location = location;
         this.label = label;
         this.errorMessage = errorMessage;
+        this.outOfArea = outOfArea;
     }
 
     static PinState loading(LatLng location) {
-        return new PinState(Status.LOADING, location, DEFAULT_LABEL, null);
+        return new PinState(Status.LOADING, location, DEFAULT_LABEL, null, false);
     }
 
-    static PinState resolved(LatLng location, String address) {
+    static PinState resolved(LatLng location, String address, boolean outOfArea) {
         return address == null
-                ? new PinState(Status.FALLBACK, location, DEFAULT_LABEL, null)
-                : new PinState(Status.SUCCESS, location, address, null);
+                ? new PinState(Status.FALLBACK, location, DEFAULT_LABEL, null, outOfArea)
+                : new PinState(Status.SUCCESS, location, address, null, outOfArea);
     }
 
-    static PinState failed(LatLng location, String message) {
-        return new PinState(Status.FALLBACK, location, DEFAULT_LABEL, message);
+    static PinState failed(LatLng location, String message, boolean outOfArea) {
+        return new PinState(Status.FALLBACK, location, DEFAULT_LABEL, message, outOfArea);
     }
 }

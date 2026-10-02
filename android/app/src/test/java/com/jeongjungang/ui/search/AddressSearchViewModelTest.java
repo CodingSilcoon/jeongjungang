@@ -34,8 +34,8 @@ public class AddressSearchViewModelTest {
         assertEquals("지번", new ReverseAddress("지번", null).displayText());
         assertEquals("지번", new ReverseAddress("지번", "").displayText());
         assertNull(new ReverseAddress(null, null).displayText());
-        assertEquals(PinState.DEFAULT_LABEL, PinState.resolved(null, null).label);
-        assertEquals(PinState.Status.FALLBACK, PinState.resolved(null, null).status);
-        assertEquals("도로명", PinState.resolved(null, "도로명").label);
+        assertEquals(PinState.DEFAULT_LABEL, PinState.resolved(null, null, false).label);
+        assertEquals(PinState.Status.FALLBACK, PinState.resolved(null, null, false).status);
+        assertEquals("도로명", PinState.resolved(null, "도로명", false).label);
     }
 }

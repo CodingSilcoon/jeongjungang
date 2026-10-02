@@ -228,7 +228,7 @@ Authorization: Bearer {participantToken}
   "data": {
     "version": 12,
     "meeting": { "id": "…", "title": "금요일 저녁", "purpose": "MEAL", "meetAt": "…", "status": "OPEN",
-                 "place": null, "accountability": { "enabled": false, "gracePeriodSec": 60, "marginMinutes": 0 } },
+                 "place": null, "accountability": { "enabled": false, "gracePeriodSec": 60, "marginMinutes": 5 } },
     "participants": [
       { "id": "a2b9…", "nickname": "민수", "role": "HOST", "origin": { "label": "홍대입구역", "lat": 37.5572, "lng": 126.9245 },
         "prepMinutes": null, "optedIn": false },
@@ -322,7 +322,7 @@ Authorization: Bearer {participantToken}
 fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 ```
 
-`travelMinutes`는 앱이 계산해서 보고하고, `prepMinutes`는 본인이 설정한다. `marginMinutes`(여유시간)의 기본값은 **0**이고 정책은 아직 정하지 않았다.
+`travelMinutes`는 앱이 계산해서 보고하고, `prepMinutes`는 본인이 설정한다. `marginMinutes`(여유시간)의 기본값은 **5분**이다(2026-10-02 결정). 이동시간이 근사값(역까지 접근은 가정값, 배차 대기 미포함)이라 실제보다 짧게 나올 수 있어서 둔다. 약속마다 바꿀 수 있다.
 
 ### `PUT /participants/{participantId}/travel` — 본인
 
@@ -339,13 +339,13 @@ fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 책임 알람을 켠다. **전원이 `optedIn: true`일 때만** 켜진다.
 
 ```json
-{ "gracePeriodSec": 60, "marginMinutes": 0 }
+{ "gracePeriodSec": 60, "marginMinutes": 5 }
 ```
 
 - `gracePeriodSec`: 30~300, 기본 60
 - 전원 동의가 아니면 `409 NOT_ALL_OPTED_IN`, 장소·시간이 확정되지 않았으면 `409 ALARM_NOT_READY`
 - 켜진 뒤 `travelMinutes`·`prepMinutes`가 모두 들어온 참가자부터 알람이 만들어지고(`SCHEDULED`), 각 기기에 `ALARM_SYNC` 푸시가 간다
-- 응답 `200`: `{ "enabled": true, "gracePeriodSec": 60, "marginMinutes": 0 }`
+- 응답 `200`: `{ "enabled": true, "gracePeriodSec": 60, "marginMinutes": 5 }`
 
 ### `DELETE /meetings/{meetingId}/accountability` — 방장
 
@@ -429,7 +429,6 @@ SCHEDULED ──(기기 울림 보고)──> RINGING ──(끔 보고)──> 
 |:---|:---|:---|
 | 약속 저장소 | PostgreSQL에 저장하고 만료 삭제 작업을 돌린다. Redis는 요청 제한, 캐시, 에스컬레이션 ZSET에만 쓴다 | 서버 구현 시작 전 |
 | 전화 걸기 | 전화번호를 받지 않는다. 받는다면 참가자가 자발적으로 입력한 `phone`만 에스컬레이션 푸시에 실어 보낸다 | 3단계 시작 전 |
-| `marginMinutes` 기본값 | 0 (이동시간이 정차시간을 뺀 근사값이라 늦게 울릴 수 있음) | 3단계 시연 후 |
 | 약속 시각이 새벽인 경우 | 서버는 `meetAt`을 막지 않고, 앱이 경고한다 | 3단계 |
 | 카카오 로컬 API 쿼터 | 콘솔에서 확인 필요 | 카카오 앱 생성 후 |
 

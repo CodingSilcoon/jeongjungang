@@ -14,6 +14,7 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.Purpose;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Role;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Snapshot;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Status;
+import com.jeongjungang.domain.alarm.AlarmTimeCalculator;
 import com.jeongjungang.domain.model.LatLng;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -46,7 +47,8 @@ final class MeetingJson {
                 place(o.optJSONObject("place")),
                 time(o, "expiresAt"),
                 acc == null ? null : new Accountability(acc.optBoolean("enabled", false),
-                        acc.optInt("gracePeriodSec", 60), acc.optInt("marginMinutes", 0)));
+                        acc.optInt("gracePeriodSec", 60),
+                        acc.optInt("marginMinutes", AlarmTimeCalculator.DEFAULT_MARGIN_MINUTES)));
     }
 
     static Snapshot snapshot(JSONObject data, String etag) throws JSONException {
