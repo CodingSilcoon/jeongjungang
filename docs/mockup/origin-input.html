@@ -1,0 +1,169 @@
+<style>
+#jj-origin{padding:24px 8px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;color:#24271f}
+#jj-origin *{box-sizing:border-box}
+#jj-origin .phone{position:relative;max-width:390px;height:912px;display:flex;flex-direction:column;margin:auto;padding:44px 22px 34px;background:#fffdf2;border:5px solid #303639;border-radius:36px;box-shadow:0 12px 26px #00000010;color-scheme:light}
+#jj-origin .camera{position:absolute;top:13px;left:calc(50% - 4px);width:8px;height:8px;background:#303639;border-radius:50%}
+#jj-origin .gesture{position:absolute;bottom:15px;left:calc(50% - 45px);height:4px;width:90px;background:#303639;border-radius:4px}
+#jj-origin button,#jj-origin input{font-family:inherit}
+#jj-origin button{color:inherit}
+#jj-origin .top{display:flex;align-items:center;justify-content:space-between;margin-left:-10px}
+#jj-origin .back{background:none;border:0;min-width:44px;min-height:44px;font-size:27px;padding:0}
+#jj-origin .wordmark{font-size:18px;font-weight:900;letter-spacing:-1px}
+#jj-origin .wordmark em{font-style:normal;color:#827000}
+#jj-origin h2{font-size:30px;line-height:1.4;letter-spacing:-1.4px;margin:25px 0 8px;font-weight:900}
+#jj-origin .lead{font-size:14px;color:#5e604d;line-height:1.7;margin:0 0 28px;word-break:keep-all}
+#jj-origin .people{display:grid;gap:14px}
+#jj-origin .person{border:2px solid #24271f;border-radius:12px;background:#fff;padding:14px 15px;box-shadow:3px 3px 0 #24271f}
+#jj-origin .person-top{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:750;margin-bottom:10px;min-height:26px}
+#jj-origin .number{display:grid;place-items:center;width:26px;height:26px;border:1.5px solid #24271f;border-radius:7px;background:#f9da49;font-size:12px}
+#jj-origin .person:nth-child(3n+2) .number{background:#deedaa}
+#jj-origin .person:nth-child(3n) .number{background:#f2b7a6}
+#jj-origin .remove{margin:-9px -9px -9px auto;border:0;background:none;min-height:44px;min-width:44px;font-size:12px;color:#5e604d}
+#jj-origin .origin{display:flex;align-items:center;justify-content:space-between;gap:8px;border:0;background:none;padding:0;min-height:44px;width:100%;text-align:left;font-size:17px;letter-spacing:-.5px;font-weight:750}
+#jj-origin .origin.empty{color:#6b6d5e;font-size:15px;font-weight:400}
+#jj-origin .origin b{font-size:23px;font-weight:400}
+#jj-origin .add{min-height:48px;margin:17px 0 28px;width:100%;background:transparent;border:1.5px dashed #898975;border-radius:12px;font-size:14px;font-weight:700}
+#jj-origin fieldset{border:0;padding:0;margin:0}
+#jj-origin legend{font-size:15px;font-weight:800;margin-bottom:12px;padding:0}
+#jj-origin .criterion{display:flex;align-items:flex-start;gap:10px;padding:13px 12px;border:1.5px solid transparent;border-radius:11px;font-size:14px}
+#jj-origin .criterion:has(input:checked){background:#f8edb2;border-color:#24271f}
+#jj-origin .criterion input{accent-color:#24271f;margin:3px 0 0;width:17px;height:17px;flex-shrink:0}
+#jj-origin .criterion strong{font-size:14px;font-weight:750;display:block}
+#jj-origin .criterion small{display:block;color:#5e604d;font-size:12px;margin-top:5px;line-height:1.5}
+#jj-origin .footer{margin-top:26px}
+#jj-origin .top{flex-shrink:0}
+#jj-origin .entry{display:flex;flex-direction:column;flex:1;min-height:0}
+#jj-origin .entry>h2,#jj-origin .entry>.lead{flex-shrink:0}
+#jj-origin .participant-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;padding:0 5px 5px 0;margin-right:-5px;scroll-padding:8px}
+#jj-origin .entry>.footer{flex-shrink:0;margin-top:18px;margin-bottom:12px}
+#jj-origin .search,#jj-origin .criteria-screen{flex:1;min-height:0;overflow-y:auto;padding-right:5px;margin-right:-5px}
+#jj-origin .criteria-screen .footer{margin-top:32px}
+#jj-origin .hint{font-size:12px;color:#5e604d;text-align:center;line-height:1.5;min-height:18px;margin:0 0 10px}
+#jj-origin .submit{width:100%;min-height:58px;border:2px solid #24271f;border-radius:12px;background:#f9da49;box-shadow:3px 3px 0 #24271f;font-size:16px;font-weight:800}
+#jj-origin .submit:disabled{background:#f0ead0;color:#6b6b59;border-color:#979782;box-shadow:3px 3px 0 #979782}
+#jj-origin button:not(:disabled):active{filter:brightness(.94)}
+#jj-origin [hidden]{display:none!important}
+#jj-origin .search-label{font-size:13px;color:#5e604d;display:block;margin:25px 0 9px}
+#jj-origin .searchbox{width:100%;padding:15px 13px;border:2px solid #24271f;border-radius:12px;font-size:16px;background:#fff;box-shadow:3px 3px 0 #24271f;color:#24271f}
+#jj-origin .results{margin-top:23px;display:grid;gap:10px}
+#jj-origin .result{padding:17px 14px;text-align:left;border:1px solid #c7c7b5;border-radius:12px;background:#fff;min-height:66px}
+#jj-origin .result strong{display:block;font-size:16px}
+#jj-origin .result small{display:block;font-size:12px;color:#5e604d;margin-top:5px}
+#jj-origin .sample{font-size:12px;color:#5e604d;margin-top:18px;line-height:1.7}
+@media(max-width:350px){#jj-origin .phone{padding-left:17px;padding-right:17px}#jj-origin h2{font-size:27px}}
+
+#jj-origin .sheet-scrim{position:absolute;inset:0;border:0;border-radius:30px;background:#17191066;z-index:5}
+#jj-origin .criteria-screen{position:absolute;bottom:0;left:0;right:0;z-index:6;max-height:85%;margin:0;padding:12px 22px 34px;background:#fffdf2;border:2px solid #24271f;border-radius:24px 24px 30px 30px;box-shadow:0 -8px 30px #00000018}
+#jj-origin .sheet-top{display:flex;justify-content:space-between;align-items:center;min-height:44px;touch-action:none}
+#jj-origin .sheet-handle{width:44px;height:5px;border-radius:4px;background:#878977;margin-left:calc(50% - 22px)}
+#jj-origin .sheet-close{min-height:44px;min-width:44px;border:0;background:none;font-size:12px}
+#jj-origin .criteria-screen h2{margin-top:4px;font-size:27px}
+#jj-origin .criteria-screen .lead{margin-bottom:20px}
+@media(prefers-reduced-motion:no-preference){#jj-origin .criteria-screen:not([hidden]){animation:jj-sheet-in .22s ease-out}@keyframes jj-sheet-in{from{transform:translateY(35px)}to{transform:translateY(0)}}}
+</style>
+<div id="jj-origin" class="viz-dotted-background">
+ <div class="phone">
+  <div class="camera" aria-hidden="true"></div>
+  <div class="top"><button class="back cursor-interaction" type="button" aria-label="뒤로">‹</button><div class="wordmark" aria-label="정중앙">정<em>중</em>앙</div></div>
+  <section class="entry">
+   <h2>어디서 출발해?</h2>
+   <p class="lead">너와 친구의 출발지를 알려줘.<br>함께 만나기 좋은 곳을 찾아줄게.</p>
+   <div class="participant-scroll" role="region" aria-label="출발지 참가자 목록">
+    <div class="people"></div>
+    <button class="add cursor-interaction" type="button">+ 친구 추가</button>
+   </div>
+   <div class="footer"><p class="hint" aria-live="polite">출발지 2곳을 선택해줘</p><button class="submit cursor-interaction" type="button" disabled>만날 곳 찾기</button></div>
+  </section>
+  <button class="sheet-scrim" type="button" aria-label="추천 기준 닫기" hidden></button>
+  <section class="criteria-screen" role="dialog" aria-modal="true" aria-label="추천 기준 선택" hidden>
+   <div class="sheet-top"><span class="sheet-handle" aria-hidden="true"></span><button class="sheet-close cursor-interaction" type="button">닫기</button></div>
+   <h2>어떻게 만날까?</h2>
+   <p class="lead">입력한 출발지를 기준으로<br>어떤 곳을 먼저 추천할지 골라줘.</p>
+   <fieldset><legend>추천 기준</legend>
+    <label class="criterion"><input type="radio" name="jj-criterion" value="total" checked><span><strong>다 같이 덜 이동하기</strong><small>모두의 이동시간 합이 짧은 곳</small></span></label>
+    <label class="criterion"><input type="radio" name="jj-criterion" value="fair"><span><strong>한 명만 너무 멀지 않게</strong><small>가장 오래 걸리는 친구의 시간을 줄이는 곳</small></span></label>
+   </fieldset>
+   <div class="footer"><p class="criteria-hint hint" aria-live="polite">선택한 기준으로 만날 곳을 찾아줄게</p><button type="button" class="confirm submit cursor-interaction">이 기준으로 찾기</button></div>
+  </section>
+  <section class="search" hidden>
+   <h2>출발지 찾기</h2><p class="lead search-for">나는 어디서 출발해?</p>
+   <label class="search-label" for="jj-place-query">역 이름 또는 주소</label>
+   <input id="jj-place-query" class="searchbox" type="search" placeholder="예: 홍대입구역" autocomplete="off">
+   <div class="results"></div>
+   <p class="sample">디자인 미리보기용 예시 검색 결과야.<br>지금은 서울 지하철 1~8호선 역을 골라볼 수 있어.</p>
+  </section>
+  <div class="gesture" aria-hidden="true"></div>
+ </div>
+</div>
+<script>
+(()=>{
+ const root=document.getElementById('jj-origin'),entry=root.querySelector('.entry'),search=root.querySelector('.search'),people=root.querySelector('.people'),query=root.querySelector('.searchbox'),results=root.querySelector('.results'),hint=root.querySelector('.hint'),submit=root.querySelector('.submit'),add=root.querySelector('.add');
+ const criteria=root.querySelector('.criteria-screen');
+ const scrim=root.querySelector('.sheet-scrim'),top=root.querySelector('.top');
+ function openCriteria(){
+  criteria.hidden=false;
+  scrim.hidden=false;
+  entry.inert=true;
+  top.inert=true;
+  criteria.querySelector('input:checked').focus();
+ }
+ function closeCriteria(){
+  criteria.hidden=true;
+  scrim.hidden=true;
+  entry.inert=false;
+  top.inert=false;
+  submit.focus();
+ }
+ scrim.onclick=closeCriteria;
+ root.querySelector('.sheet-close').onclick=closeCriteria;
+ // 시안에서도 손잡이를 아래로 쓸어 닫을 수 있다.
+ const handle=root.querySelector('.sheet-top');
+ let dragStart=null;
+ handle.addEventListener('pointerdown',event=>{
+  if(event.target.closest('button'))return;
+  dragStart=event.clientY;
+  handle.setPointerCapture(event.pointerId);
+ });
+ handle.addEventListener('pointerup',event=>{
+  if(dragStart!==null&&event.clientY-dragStart>60)closeCriteria();
+  dragStart=null;
+ });
+ handle.addEventListener('pointercancel',()=>{dragStart=null});
+ criteria.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){event.preventDefault();closeCriteria()}
+  if(event.key==='Tab'){
+   const controls=[...criteria.querySelectorAll('button,input')];
+   const first=controls[0],last=controls[controls.length-1];
+   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
+   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
+  }
+ });
+ const participantName=i=>i===0?'내 위치':'친구 '+i;
+ let participants=[null,null],active=0,returnButton=null;
+ const stations=[['홍대입구역','2호선 · 마포구'],['강남역','2호선 · 강남구'],['서울역','1·4호선 · 용산구'],['왕십리역','2·5호선 · 성동구'],['잠실역','2·8호선 · 송파구'],['노원역','4·7호선 · 노원구']];
+ function draw(){
+  people.replaceChildren();
+  participants.forEach((place,i)=>{
+   const card=document.createElement('div');card.className='person';
+   card.innerHTML='<div class="person-top"><span class="number">'+(i===0?'나':i)+'</span><span>'+participantName(i)+'</span></div><button type="button" class="origin cursor-interaction '+(place?'':'empty')+'"><span></span><b aria-hidden="true">›</b></button>';
+   const button=card.querySelector('.origin');button.querySelector('span').textContent=place||'출발지 검색하기';button.setAttribute('aria-label',participantName(i)+' 출발지: '+(place||'선택 안 함'));
+   button.onclick=()=>{active=i;returnButton=button;entry.hidden=true;search.hidden=false;query.value='';root.querySelector('.search-for').textContent=i===0?'나는 어디서 출발해?':'친구 '+i+'은 어디서 출발해?';drawResults();query.focus()};
+   if(i>0&&participants.length>2){const del=document.createElement('button');del.type='button';del.className='remove cursor-interaction';del.textContent='삭제';del.setAttribute('aria-label',participantName(i)+' 삭제');del.onclick=()=>{participants.splice(i,1);draw();add.focus()};card.querySelector('.person-top').append(del)}
+   people.append(card);
+  });
+  const remaining=participants.filter(x=>!x).length;submit.disabled=remaining>0;hint.textContent=remaining?'출발지 '+remaining+'곳을 선택해줘':participants.length+'명의 출발지가 준비됐어';add.disabled=participants.length>=10;add.textContent=add.disabled?'최대 10명까지 함께할 수 있어':'+ 친구 추가';
+ }
+ function closeSearch(){search.hidden=true;entry.hidden=false}
+ function drawResults(){
+  results.replaceChildren();const value=query.value.trim();const matches=stations.filter(s=>s.join(' ').includes(value));
+  matches.forEach(s=>{const b=document.createElement('button');b.type='button';b.className='result cursor-interaction';const strong=document.createElement('strong'),small=document.createElement('small');strong.textContent=s[0];small.textContent=s[1];b.append(strong,small);b.onclick=()=>{participants[active]=s[0];closeSearch();draw();people.children[active].querySelector('.origin').focus()};results.append(b)});
+  if(!matches.length){const p=document.createElement('p');p.className='sample';p.textContent='예시에 없는 검색어야. 홍대입구, 강남, 서울, 왕십리, 잠실, 노원을 검색해봐.';results.append(p)}
+ }
+ query.addEventListener('input',drawResults);
+ add.onclick=()=>{if(participants.length<10){participants.push(null);draw();people.lastElementChild.querySelector('.origin').focus({preventScroll:true});const list=root.querySelector('.participant-scroll');list.scrollTop=list.scrollHeight}};
+ root.querySelector('.back').onclick=()=>{if(!search.hidden){closeSearch();returnButton?.focus()}else if(!criteria.hidden){closeCriteria()}else{hint.textContent='시작 화면으로 돌아가는 버튼이야 · 미리보기'}};
+ submit.onclick=openCriteria;
+ root.querySelector('.confirm').onclick=()=>{root.querySelector('.criteria-hint').textContent='다음은 추천 장소 화면이야 · 아직 디자인 중'};
+ draw();
+})();
+</script>

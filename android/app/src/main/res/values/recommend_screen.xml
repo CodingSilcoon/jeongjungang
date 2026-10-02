@@ -1,0 +1,10 @@
+<resources>
+    <string name="recommend_map_pending">지도 연결 준비 중\n\n아래 후보를 비교하고 상세에서 지도 앱으로 길찾기를 확인해 주세요.</string>
+    <string name="recommend_notice">서울 지하철 1~8호선 기준 · 소요시간은 근사값</string>
+    <string name="recommend_detail">선택한 후보 상세 보기</string>
+    <string name="recommend_share">이 장소 공유하기</string>
+    <string name="recommend_total">다 같이 덜 이동하기</string>
+    <string name="recommend_fair">한 명만 너무 멀지 않게</string>
+    <string name="recommend_loading">모두의 이동시간과 환승을 비교하고 있어요…</string>
+    <string name="recommend_empty">함께 갈 수 있는 후보가 없어요. 출발지를 수정해 주세요.</string>
+</resources>

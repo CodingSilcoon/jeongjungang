@@ -37,6 +37,17 @@
         </activity>
 
         <activity
+            android:name=".ui.OriginActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.RecommendationActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.alarm.AlarmActivity"
             android:excludeFromRecents="true"
             android:exported="false"
