@@ -6,7 +6,7 @@
 ## 스택
 - Android: **Java only (Kotlin 금지, 수업 요구)**, XML + ViewBinding, MVVM + ViewModel + LiveData, ExecutorService/Handler
 - 지도/주소: 카카오맵 SDK, 카카오 로컬(주소→좌표). MVP부터 사용
-- 백엔드: 1단계 없음. 2단계(초대 링크)부터 Spring Boot + Redis, Docker
+- 백엔드: 1단계 없음. 2단계(초대 링크)부터 Spring Boot + Redis, Docker. 3단계(책임 알람)부터 RDB(MySQL 또는 Postgres, 미정) + FCM 추가
 - 검증(선택): ODsay. Basic 무료 **30회/일**만 확인된 수치. 개발·테스트 중엔 목 데이터 사용
 - 쿼터·요금 수치는 확정되기 전까지 가정하지 말 것
 
@@ -36,19 +36,74 @@
 - API 키는 클라이언트에 두지 않음 (ODsay 등 유료·키 보호 대상은 백엔드 경유)
 - 조회 실패, 가까운 역 없음은 fallback 처리
 - 딥링크 스킴 파라미터는 공식 문서 확인 후 구현
+- 책임 알람의 서버 시각이 기준이다. 기기 보고가 없다고 알람을 건너뛰지 않고, 에스컬레이션은 알람당 1회만 보낸다
+- 책임 알람은 전원 opt-in일 때만 켠다. 출발지·알람 데이터는 개인정보이므로 서버에는 필요한 만큼만 저장하고 약속이 끝나면 TTL로 정리한다
+- 알람 이동시간은 근사값(정차시간 제외 등)이라 실제보다 짧을 수 있다. 알람시각을 잡을 때 여유시간을 둘지 `미정` 항목으로 정한 뒤 적용한다
+- FCM 서버 자격증명과 외부 API 키는 서버에만 둔다 (클라이언트에는 `google-services.json`의 공개 설정만)
 
 ## 범위
 - 1단계(MVP): 위치 입력(한 명이 전체 입력) → 후보 3곳 → 시간·환승 비교 → 선정 이유 → 공유. 백엔드 없음
 - 2단계: 약속 목적 필터(식사·카페·술자리, 카카오 로컬 카테고리 검색), 초대 링크(Redis 방+TTL, 앱 링크, 폴링)
+- 3단계: 책임 알람 (아래 "확장" 섹션). 약속 그룹·참가자별 출발지가 필요해서 2단계 이후에 붙인다. 앱의 로컬 알람 예약·풀스크린 울림처럼 서버 없이 만들 수 있는 부분은 먼저 시작해도 된다
 - 후순위: 결제, 장거리, 타 운영기관 노선
+
+## 확장: 책임 알람 (Accountability Alarm)
+약속 장소가 정해지면 참가자별 이동시간을 역산해 출발 알람을 자동으로 걸고, 누가 정해진 시간 안에 알람을 안 끄면 같은 약속 멤버 전원 폰이 울린다.
+- 플랫폼은 **Android only** (iOS는 원격 강제 알람을 보장할 수 없어 제외). 클라이언트 Java, 서버 Spring Boot + Redis + RDB, 푸시 FCM
+- 알람시각 = 약속시간 − 이동시간 − 준비시간(개인 설정). 이동시간은 정중앙 추천에서 이미 계산한 값을 재사용 (자체 그래프 근사값, ODsay는 선택)
+
+핵심 플로우
+1. 약속 생성 → 장소·약속 시간 확정 → 서버가 참가자별 알람시각 확정
+2. 서버가 FCM으로 각 기기에 동기화 → 기기는 로컬로 예약
+3. 알람이 울리면 유예시간(예: 60초) 안에 끄고, 서버에 DISMISSED 보고
+4. 서버는 기기 보고와 무관하게 `fireAt + 유예시간`에 직접 확인 (폰이 꺼져 있거나 오프라인이어도 에스컬레이션되어야 하기 때문)
+5. DISMISSED가 없으면 나머지 멤버에게 FCM high priority 전송 → 풀스크린 알람("○○ 아직 안 일어남") + 내 알람 끄기 / 전화 걸기 버튼
+
+도메인 모델
+- Meeting: id, placeId, meetAt, gracePeriodSec, accountabilityEnabled
+- Participant: id, meetingId, userId, origin, travelMinutes, prepMinutes, optedIn
+- Alarm: id, participantId, fireAt, status(SCHEDULED / RINGING / DISMISSED / ESCALATED / CANCELLED)
+- Device: userId, fcmToken, updatedAt
+
+API 초안
+- `POST /meetings/{id}/accountability` 책임 알람 켜기 (전원 opt-in 필요)
+- `PATCH /participants/{id}/prep` 준비시간 설정
+- `GET /meetings/{id}/alarms` 내 알람 조회 (동기화 실패 대비)
+- `POST /alarms/{id}/ringing` 울림 시작 보고 (선택, 상태 표시용)
+- `POST /alarms/{id}/dismiss` 끔 보고 (멱등)
+- `POST /devices` FCM 토큰 등록
+
+서버 에스컬레이션 스케줄러
+- Redis ZSET `escalation:due`: score = fireAt + grace(epoch ms), member = alarmId
+- 1초 주기 `@Scheduled`로 기한 지난 항목을 Lua 스크립트로 조회+삭제 원자 처리 (인스턴스가 여러 개여도 중복 발송 방지)
+- dismiss가 들어오면 ZSET에서 ZREM + DB 상태 갱신. 에스컬레이션 직전에 DB 상태를 다시 확인해서 dismiss 경쟁 조건 방어
+- 약속 시간·장소 변경 시 `fireAt` 재계산 → ZSET 갱신 + 기기 재동기화 푸시
+
+Android 클라이언트
+- 예약: `AlarmManager.setAlarmClock()` (Doze 무시, 가장 정확)
+- 울림: Foreground Service + 풀스크린 인텐트 알림 + 알람 Activity
+- 에스컬레이션 수신: FCM data message, priority high → 바로 풀스크린 알람 (안 띄우면 FCM 우선순위가 깎인다)
+- 권한: `USE_EXACT_ALARM` 또는 `SCHEDULE_EXACT_ALARM`, `USE_FULL_SCREEN_INTENT`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`
+- 재부팅 시 BOOT_COMPLETED에서 로컬 알람 재예약. 온보딩에서 배터리 최적화 제외 유도(삼성·샤오미 필수)
+- dismiss 보고 실패 시 로컬 큐에 쌓았다가 네트워크가 돌아오면 재전송
+
+엣지 케이스
+- dismiss했는데 네트워크가 끊겨 보고 못 함 → 억울한 에스컬레이션. 재전송 + "이미 일어남" 수동 버튼으로 완화
+- 에스컬레이션은 알람당 1회만, 다른 멤버가 각자 끄면 끝
+- 참가자 탈퇴·약속 취소 → 모든 기기에 CANCELLED 푸시
+- 동의 없는 사람 폰이 울리면 안 되므로 **전원 opt-in일 때만 활성화**
+- 심야 등 이상한 시간의 약속은 경고
+
+알람 MVP 순서: ① 서버 도메인/API + Redis 에스컬레이션 스케줄러 → ② 앱 로컬 알람 예약 + 풀스크린 울림 + dismiss 보고 → ③ FCM 연동(동기화 + 에스컬레이션 수신) → ④ 정중앙 이동시간 연동으로 알람시각 자동 계산 → ⑤ 친구들 실기기(삼성 포함) 테스트
 
 ## 미정
 - 후보 풀 크기, 접근 속도 가정값, 수익 모델, 레포 구조, 수업 제약 반영
 - 역 정차시간 보정 (CSV 소요시간은 정차시간 제외라 실제보다 짧음, `docs/DATA.md` 9번)
 - 접근시간 모델: 1.2km 초과분만 버스로 보는 현재 해석이 맞는지 (`AccessTimeEstimator`)
+- 책임 알람: RDB 선택(MySQL / Postgres), 유예시간 기본값(예: 60초), 알람시각 여유시간, 약속 변경 시 재동기화 정책
 
 ## 폴더 (임시 구조 — 레포 구조 확정 시 변경)
 - `android/app/src/main/java/com/jeongjungang/` — `domain/{model,geo}`(순수 Java 코어), `data/{remote,repository}`, `ui`, `util`
 - `android/app/src/main/assets/` — 위 CSV 데이터 번들 위치 (아직 없음)
-- `backend/` — 2단계용 Spring Boot 3.5 / Java 17 뼈대(`common` `config` `cache` `proxy`). 1단계에서는 사용하지 않음. 이전 설계(ODsay 프록시 + 역 쌍 Redis 캐시) 기준이라 2단계 착수 시 재검토
+- `backend/` — 2·3단계용 Spring Boot 3.5 / Java 17 뼈대(`common` `config` `cache` `proxy`). 1단계에서는 사용하지 않음. 이전 설계(ODsay 프록시 + 역 쌍 Redis 캐시) 기준이라 2단계 착수 시 재검토. 알람 도메인·에스컬레이션 스케줄러(Redis ZSET)는 새 패키지로 추가한다
 - `docs/` — 문서
