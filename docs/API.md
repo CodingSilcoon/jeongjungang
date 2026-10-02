@@ -53,7 +53,9 @@ Authorization: Bearer {participantToken}
 | 400 | `VALIDATION_FAILED` | 입력 형식이 틀림 (필드별 사유는 `error.fields`) |
 | 401 | `UNAUTHORIZED` | 토큰이 없거나 올바르지 않음 |
 | 403 | `FORBIDDEN` | 방장만 할 수 있는 일, 남의 자원 접근 |
+| 404 | `NOT_FOUND` | 없는 주소로 요청함 |
 | 404 | `MEETING_NOT_FOUND` `PARTICIPANT_NOT_FOUND` `ALARM_NOT_FOUND` | 대상이 없음 |
+| 405 | `METHOD_NOT_ALLOWED` | 그 주소가 지원하지 않는 요청 방식(예: GET 자리에 POST) |
 | 409 | `MEETING_CLOSED` | 이미 확정·취소된 약속에 참가하려 함 |
 | 409 | `MEETING_FULL` | 참가자 상한(10명) 초과 |
 | 409 | `NOT_ALL_OPTED_IN` | 책임 알람을 켜려는데 전원이 동의하지 않음 |

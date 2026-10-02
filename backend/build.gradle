@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.jeongjungang'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0'
 
 java {
 	toolchain {
@@ -15,6 +15,11 @@ java {
 
 repositories {
 	mavenCentral()
+}
+
+// /api/v1/health 응답의 version에 쓰는 build-info.properties를 만든다
+springBoot {
+	buildInfo()
 }
 
 dependencies {
