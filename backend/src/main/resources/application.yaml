@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: jeongjungang-backend
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+# 외부 API 키는 환경변수로만 주입 (코드/레포에 두지 않음)
+external:
+  odsay:
+    base-url: https://api.odsay.com/v1/api
+    api-key: ${ODSAY_API_KEY:}
+  kakao:
+    base-url: https://dapi.kakao.com
+    rest-api-key: ${KAKAO_REST_API_KEY:}
+
+cache:
+  travel-time-ttl-hours: 24

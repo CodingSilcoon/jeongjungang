@@ -1,0 +1,18 @@
+# build / IDE
+build/
+.gradle/
+.idea/
+*.iml
+out/
+
+# secrets & local config
+.env
+.env.*
+local.properties
+*.pem
+*.jks
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
