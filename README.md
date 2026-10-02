@@ -114,9 +114,9 @@ sequenceDiagram
 
 | 단계 | 내용 | 상태 |
 |:---|:---|:---:|
-| 1 | 추천 코어: 기하 중앙값, 서울 지하철 1~8호선 그래프(역 240개), 최단시간·환승 탐색, 가까운 역 검색, 접근시간 추정 (테스트 73개) | ✅ 완료 |
-| 1 | 후보 3곳 선정과 점수화, 선정 이유 문구 | 🔨 다음 |
-| 1 | 안드로이드 화면(입력, 후보, 상세), 지도, 공유 | ⏳ 예정 |
+| 1 | 추천 코어: 기하 중앙값, 서울 지하철 1~8호선 그래프(역 240개), 최단시간·환승 탐색, 가까운 역 검색, 접근시간 추정 | ✅ 완료 |
+| 1 | 후보 3곳 선정(두 가지 추천 기준, 환승 우선 정렬)과 선정 이유 문구 (코어 전체 테스트 106개) | ✅ 완료 |
+| 1 | 안드로이드 화면(입력, 후보, 상세), 지도, 공유 | 🔨 다음 |
 | 2 | 초대 링크, 약속 목적 필터 (서버 도입) | ⏳ 예정 |
 | 3 | 책임 알람 (서버 스케줄러, 로컬 알람, FCM, 실기기 테스트) | ⏳ 예정 |
 | 이후 | 결제, 장거리, 다른 운영기관 노선 | 후순위 |
@@ -154,6 +154,7 @@ sequenceDiagram
 | `android/app/src/main/java/com/jeongjungang/domain/model` | `LatLng` |
 | `android/app/src/main/java/com/jeongjungang/domain/geo` | `GeoMedian`(기하 중앙값), `GeoDistance` |
 | `android/app/src/main/java/com/jeongjungang/domain/transit` | CSV 파서, 지하철 그래프, 최단시간 탐색, 접근시간 추정, 가까운 역 검색 |
+| `android/app/src/main/java/com/jeongjungang/domain/recommend` | 후보 3곳 선정(`Recommender`), 추천 기준, 선정 이유 문구 |
 | `android/app/src/main/assets/data` | 번들 CSV (역간 소요시간, 역사 좌표, 환승) |
 | `android/app/src/test/java` | 단위 테스트와 실제 CSV 통합 테스트 |
 | `backend` | Spring Boot 뼈대 (2단계 이후 사용) |

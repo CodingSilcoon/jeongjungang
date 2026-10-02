@@ -207,6 +207,15 @@ public final class TransitGraph {
         return nodes == null ? Collections.<Integer>emptyList() : Collections.unmodifiableList(nodes);
     }
 
+    /** 이 역을 지나는 호선(오름차순, 중복 없음). 없는 역이면 빈 목록. */
+    public List<Integer> linesOf(String station) {
+        Set<Integer> lines = new java.util.TreeSet<Integer>();
+        for (int node : nodesOfStation(station)) {
+            lines.add(lineOfNode.get(node));
+        }
+        return new ArrayList<Integer>(lines);
+    }
+
     /** 같은 호선에서 바로 이웃한 역 (환승 제외). 없는 역이면 빈 집합. */
     public Set<String> neighborStations(int line, String station) {
         Integer node = nodeIndex.get(key(line, station));

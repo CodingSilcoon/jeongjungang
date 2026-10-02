@@ -127,6 +127,23 @@ public class TransitGraphTest {
     }
 
     @Test
+    public void linesOf_listsDistinctSortedLinesServingTheStation() {
+        TransitGraph g = TransitGraph.build(twoLines(), noTransfers());
+        assertEquals(Arrays.asList(1, 2), g.linesOf("X"));
+        assertEquals(Arrays.asList(1), g.linesOf("B"));
+        assertTrue(g.linesOf("없는역").isEmpty());
+    }
+
+    @Test
+    public void linesOf_doesNotDuplicateLineForShuttleBranchJunction() {
+        List<IntervalRow> rows = Arrays.asList(
+                row(2, "시청", 0, 0), row(2, "성수", 5, 3),
+                row(2, "용답", 3, 2.3), row(2, "신답", 1.5, 1.0));
+        TransitGraph g = TransitGraph.build(rows, noTransfers());
+        assertEquals(Arrays.asList(2), g.linesOf("성수"));
+    }
+
+    @Test
     public void dwellIsAddedToEveryRideEdgeButNotToTransfers() {
         TransitGraph g = TransitGraph.build(twoLines(), noTransfers(), 0.5);
         java.util.Map<String, Double> src = new java.util.LinkedHashMap<String, Double>();
