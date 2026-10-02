@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>정중앙 레몬 플레이</title></head><body>
+<style>
+
+#jj-six{padding:24px 8px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;color:#18243b;background:transparent}#jj-six *{box-sizing:border-box}#jj-six .phone{position:relative;display:flex;flex-direction:column;width:100%;max-width:390px;min-height:820px;aspect-ratio:390/844;margin:auto;background:#fff;border:5px solid #202733;border-radius:36px;overflow:hidden;color-scheme:light}#jj-six .camera{position:absolute;top:13px;left:50%;width:9px;height:9px;transform:translateX(-50%);background:#202733;border-radius:50%}#jj-six .gesture{position:absolute;bottom:11px;left:50%;width:90px;height:4px;transform:translateX(-50%);border-radius:4px;background:#202733}#jj-six .logo{margin:48px 25px 0;font-size:27px;line-height:1.3;font-weight:900;letter-spacing:-1.5px}#jj-six .logo span{color:#e8412f}#jj-six .intro{padding:42px 25px 0}#jj-six h2{margin:0;font-size:32px;line-height:1.4;letter-spacing:-1.5px;font-weight:800}#jj-six .intro p{margin:13px 0 0;color:#65718a;font-size:14px;line-height:1.7;word-break:keep-all}#jj-six .illustration{position:relative;height:205px;min-height:180px;margin:26px 22px 12px;flex:1;max-height:230px}#jj-six .illustration svg{display:block;width:100%;height:100%}#jj-six .choices{margin:auto 22px 70px;display:flex;flex-direction:column;gap:10px}#jj-six .choice{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:72px;padding:15px 19px;background:#f5f7fb;border:1px solid #e8ecf3;border-radius:18px;color:#18243b;text-align:left;font-family:inherit}#jj-six .choice strong{display:block;font-size:16px;font-weight:750;line-height:1.5;letter-spacing:-.3px}#jj-six .choice small{display:block;font-size:12px;line-height:1.5;margin-top:3px;color:#69768e}#jj-six .choice .arrow{font-size:25px;color:#8390a5;font-weight:400}#jj-six .choice.main{background:#1e46d6;border-color:#1e46d6;min-height:84px;box-shadow:0 5px 12px #1e46d619;color:#fff}#jj-six .choice.main small{color:#e0e7ff}#jj-six .choice.main .arrow{color:#fff}#jj-six .choice:hover{background:#eaf0ff;border-color:#b3c4fa}#jj-six .choice.main:hover{background:#1738b5}#jj-six .choice:active{filter:brightness(.96)}#jj-six .choice:focus-visible{outline:3px solid #e8412f;outline-offset:3px}#jj-six .choice[aria-pressed=true]{outline:2px solid #e8412f;outline-offset:2px}@media(max-width:350px){#jj-six .intro{padding-top:34px}#jj-six h2{font-size:29px}#jj-six .choices{margin-left:18px;margin-right:18px}#jj-six .choice{padding-left:16px;padding-right:16px}}
+
+
+#jj-six{padding:20px 0;font-family:'Noto Sans KR','Malgun Gothic',sans-serif}
+#jj-six .directions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 24px;max-width:840px;margin:auto}
+#jj-six .direction{min-width:0}
+#jj-six .caption{margin:0 auto 18px;max-width:390px;color:light-dark(#24272C,#F1F2F4)}
+#jj-six .caption h3{font-size:20px;line-height:1.4;margin:0 0 6px;letter-spacing:-.7px}
+#jj-six .caption p{font-size:13px;margin:0;line-height:1.6}
+#jj-six .swatches{display:flex;gap:5px;margin-top:12px}
+#jj-six .swatches span{width:34px;height:8px;border-radius:4px;border:1px solid #80808040}
+#jj-six .phone{min-height:820px;aspect-ratio:390/844;background:var(--bg);color:var(--ink);border-color:#303639;box-shadow:0 12px 26px #00000010}
+#jj-six .logo span{color:var(--accent)}
+#jj-six .intro p{color:var(--muted)}
+#jj-six .choice{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);transition:filter .12s}
+#jj-six .choice small,#jj-six .choice .arrow{color:var(--muted)}
+#jj-six .choice.main{background:var(--accent);border-color:var(--accent);color:var(--on);box-shadow:var(--shadow)}
+#jj-six .choice.main small,#jj-six .choice.main .arrow{color:var(--on)}
+#jj-six .choice:hover{background:var(--surface);border-color:var(--line);filter:brightness(.96)}
+#jj-six .choice.main:hover{background:var(--accent);border-color:var(--accent)}
+#jj-six .choice[aria-pressed=true]{outline:2px solid var(--ink);outline-offset:3px}
+#jj-six .phone h2{font-size:32px;line-height:1.4}
+#jj-six .blue{--bg:#fff;--ink:#18243B;--muted:#5D6C86;--accent:#2463EB;--on:#fff;--surface:#F1F5FE;--line:#E2EAF9;--radius:18px;--shadow:0 5px 12px #2463EB24}
+#jj-six .coral{--bg:#FFF8F5;--ink:#412D31;--muted:#785C60;--accent:#C84250;--on:#fff;--surface:#fff;--line:#EBDAD5;--radius:27px;--shadow:0 6px 0 #F1D1CB}
+#jj-six .coral h2{font-weight:700;letter-spacing:-1px}
+#jj-six .coral .choice strong{font-weight:650}
+#jj-six .forest{--bg:#F5F2E8;--ink:#263F35;--muted:#657064;--accent:#285446;--on:#fff;--surface:#EFEEE3;--line:#D5D7C6;--radius:10px;--shadow:none}
+#jj-six .forest h2{font-family:'Noto Serif KR','Batang',serif;font-weight:800;letter-spacing:-1.7px}
+#jj-six .forest .phone{background-image:radial-gradient(#405A3512 .6px,transparent .6px);background-size:5px 5px}
+#jj-six .yellow{--bg:#FFFDF2;--ink:#24271F;--muted:#5E604D;--accent:#F9DA49;--on:#24271F;--surface:#fff;--line:#24271F;--radius:12px;--shadow:4px 4px 0 #24271F}
+#jj-six .yellow .logo span{color:#827000}
+#jj-six .yellow h2{font-weight:950;letter-spacing:-2px}
+#jj-six .yellow .choice{border:2px solid #24271F;box-shadow:3px 3px 0 #24271F}
+#jj-six .yellow .choice.main{border-color:#24271F}
+#jj-six .mono{--bg:#fff;--ink:#17191C;--muted:#64676C;--accent:#17191C;--on:#fff;--surface:#fff;--line:#C9CDD2;--radius:6px;--shadow:none}
+#jj-six .mono h2{font-weight:900;letter-spacing:-2px}
+#jj-six .mono .choice strong{font-weight:700}
+#jj-six .night{--bg:#151C1B;--ink:#EDF5EA;--muted:#ADBDB4;--accent:#C3F269;--on:#20311B;--surface:#202B27;--line:#3B4C43;--radius:22px;--shadow:0 0 22px #C3F26910}
+#jj-six .night .phone{color-scheme:dark}
+#jj-six .night .camera,#jj-six .night .gesture{background:#A3B5AD}
+#jj-six .night h2{font-weight:800}
+#jj-six .status{font-size:12px;line-height:1.5;min-height:18px;margin:12px 22px 0;color:light-dark(#5D6470,#C2C8D0);text-align:center}
+@media(max-width:660px){#jj-six .directions{grid-template-columns:minmax(0,1fr);gap:32px}#jj-six .direction{max-width:390px;width:100%;margin:auto}}
+@media(prefers-reduced-motion:reduce){#jj-six .choice{transition:none}}
+
+#jj-six .directions{grid-template-columns:minmax(0,1fr);max-width:390px}
+</style>
+<div id="jj-six" class="viz-dotted-background"><div class="directions">
+
+
+
+<section class="direction yellow" aria-label="레몬 플레이"><header class="caption"><h3>레몬 플레이</h3><p>가벼운 약속 · 선명한 개성</p><div class="swatches" aria-label="주요 색상 #F9DA49, #FFFDF2, #24271F"><span style="background:#F9DA49"></span><span style="background:#FFFDF2"></span><span style="background:#24271F"></span></div></header><div class="phone" role="group" aria-label="정중앙 시작 화면"><div class="camera" aria-hidden="true"></div><div class="logo" aria-label="정중앙">정<span>중</span>앙</div><div class="intro"><h2>야, 나와</h2><p>어디로?</p></div><div class="illustration"><svg viewBox="0 0 330 210" role="img" aria-label="서로 다른 세 출발점이 하나의 만남 장소로 모이는 추상적인 그림"><circle cx="174" cy="112" r="70" fill="#F8EDAD"/><circle cx="174" cy="112" r="49" fill="#F9DA49"/><path d="M49 58 C104 58 85 112 158 112" fill="none" stroke="#24271F" stroke-width="2.5" stroke-dasharray="4 6"/><path d="M280 52 C218 52 247 112 190 112" fill="none" stroke="#24271F" stroke-width="2.5" stroke-dasharray="4 6"/><path d="M94 175 C153 175 121 130 169 126" fill="none" stroke="#24271F" stroke-width="2.5" stroke-dasharray="4 6"/><rect x="33" y="42" width="32" height="32" rx="7" fill="#F9DA49" stroke="#24271F" stroke-width="2"/><circle cx="49" cy="58" r="5" fill="#24271F"/><rect x="266" y="38" width="28" height="28" rx="7" fill="#DEEDAA" stroke="#24271F" stroke-width="2"/><circle cx="280" cy="52" r="5" fill="#24271F"/><rect x="80" y="161" width="28" height="28" rx="7" fill="#F2B7A6" stroke="#24271F" stroke-width="2"/><circle cx="94" cy="175" r="5" fill="#24271F"/><circle cx="174" cy="112" r="24" fill="#fff"/><circle cx="174" cy="112" r="15" fill="#24271F"/><circle cx="174" cy="112" r="5" fill="#fff"/><rect x="121" y="150" width="110" height="29" rx="14.5" fill="#fff"/><text x="176" y="169" text-anchor="middle" fill="#24271F" font-family="'Malgun Gothic',sans-serif" font-size="12">여기로!</text></svg></div><div class="choices" role="group" aria-label="시작 메뉴"><button class="choice main cursor-interaction" type="button" aria-pressed="false"><span><strong>바로 만날 곳 찾기</strong><small>출발지를 넣고 만날 역을 찾아요</small></span><span class="arrow" aria-hidden="true">›</span></button><button class="choice cursor-interaction" type="button" aria-pressed="false"><span><strong>약속 만들기</strong><small>새 약속을 만들고 친구를 초대해요</small></span><span class="arrow" aria-hidden="true">›</span></button><button class="choice cursor-interaction" type="button" aria-pressed="false"><span><strong>초대 참여</strong><small>받은 초대 링크나 코드로 참여해요</small></span><span class="arrow" aria-hidden="true">›</span></button></div><div class="gesture" aria-hidden="true"></div></div><p class="status" aria-live="polite"></p></section>
+
+
+</div></div>
+<script>
+(()=>{const root=document.getElementById('jj-six');root.querySelectorAll('.direction').forEach(section=>{section.querySelectorAll('.choice').forEach(button=>button.addEventListener('click',()=>{section.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));section.querySelector('.status').textContent=button.querySelector('strong').textContent+' · 디자인 미리보기';}));if(globalThis.Tweak){const phone=section.querySelector('.phone');const state={accent:getComputedStyle(section).getPropertyValue('--accent').trim()};const tweak=new Tweak({container:phone,onChange:()=>phone.style.setProperty('--accent',state.accent)});tweak.addColorPicker(state,'accent',{label:'포인트 색상'});}});})();
+</script>
+
+
+</body></html>

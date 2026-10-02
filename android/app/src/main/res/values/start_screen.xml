@@ -1,0 +1,55 @@
+<resources>
+    <color name="start_background">#FFFDF2</color>
+    <color name="start_ink">#24271F</color>
+    <color name="start_muted">#5E604D</color>
+    <color name="start_accent">#F9DA49</color>
+    <color name="start_logo_accent">#827000</color>
+    <color name="start_surface">#FFFFFF</color>
+    <color name="start_border">#24271F</color>
+    <string name="start_logo">정<font color="#827000">중</font>앙</string>
+    <string name="start_title">야, 나와</string>
+    <string name="start_subtitle">어디로?</string>
+    <string name="start_here">여기로!</string>
+    <string name="start_find">바로 만날 곳 찾기</string>
+    <string name="start_find_detail">출발지를 넣고 만날 역을 찾아요</string>
+    <string name="start_create">약속 만들기</string>
+    <string name="start_create_detail">새 약속을 만들고 친구를 초대해요</string>
+    <string name="start_join">초대 참여</string>
+    <string name="start_join_detail">받은 초대 링크나 코드로 참여해요</string>
+    <string name="start_preparing">%1$s 화면은 준비 중이에요</string>
+    <dimen name="start_horizontal_padding">22dp</dimen>
+    <dimen name="start_action_gap">10dp</dimen>
+    <style name="Theme.Jeongjungang.Start" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@color/start_background</item>
+        <item name="colorPrimary">@color/start_accent</item>
+        <item name="colorOnPrimary">@color/start_ink</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+    <style name="StartAction">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">76dp</item>
+        <item name="android:padding">18dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:background">@drawable/start_action_secondary</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+    <style name="StartActionTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/start_ink</item>
+    </style>
+    <style name="StartActionDetail">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/start_muted</item>
+    </style>
+</resources>
