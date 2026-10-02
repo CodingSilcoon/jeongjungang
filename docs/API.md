@@ -27,7 +27,7 @@ Authorization: Bearer {participantToken}
 
 - 토큰은 추측할 수 없는 무작위 문자열(32바이트, URL-safe)이고, 서버에는 **해시만** 저장한다
 - 토큰 하나는 "이 약속의 이 참가자"만 가리킨다. 다른 약속의 데이터는 볼 수 없다
-- 앱은 토큰을 안전한 저장소(EncryptedSharedPreferences)에 둔다. 앱을 지우면 약속에서 빠진 것으로 본다
+- 앱은 토큰을 Android Keystore 키(AES-GCM)로 암호화해 저장하고 백업에서 뺀다(EncryptedSharedPreferences는 2025년에 지원 중단). 앱을 지우면 약속에서 빠진 것으로 본다
 - 초대 코드는 8자리(혼동되는 글자 `I L O U 0 1` 제외)이고, 코드 자체가 참여 자격이다. 대신 가입 요청에 IP별 제한을 둔다
 - 인증이 필요 없는 엔드포인트는 표에 **공개**로 적는다
 
@@ -182,6 +182,19 @@ Authorization: Bearer {participantToken}
 
 초대 링크 `https://{도메인}/m/{inviteCode}`는 앱이 설치돼 있으면 앱으로 열리고(Android App Links), 없으면 안내 페이지로 간다.
 
+- App Links가 동작하려면 서버가 `https://{도메인}/.well-known/assetlinks.json`을 `Content-Type: application/json`으로, 리다이렉트 없이 준다
+- 내용은 패키지 `com.jeongjungang`과 앱 서명 인증서의 SHA-256 지문이다. 디버그 키는 사람마다 달라서 시연할 기기에 설치하는 빌드의 지문을 모두 넣는다(`cd android && gradlew.bat signingReport`로 확인)
+
+```json
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": { "namespace": "android_app", "package_name": "com.jeongjungang",
+              "sha256_cert_fingerprints": ["AA:BB:…"] }
+}]
+```
+
+- 앱은 링크가 안 열리는 경우를 대비해 **링크나 코드를 붙여 넣어 참가**하는 입력도 지원한다(소문자, 공백, 하이픈 허용)
+
 ### `GET /meetings/by-code/{inviteCode}` — 공개
 
 초대 화면에서 "누구의 어떤 약속인지" 미리 보여 준다. 위치 같은 개인 정보는 주지 않는다.
@@ -230,6 +243,7 @@ Authorization: Bearer {participantToken}
 
 - `version`은 약속·참가자 정보가 바뀔 때마다 올라간다. 응답에 `ETag: "v12"`를 주고, 앱이 `If-None-Match: "v12"`로 요청하면 바뀐 게 없을 때 **`304`** 로 응답한다
 - `place`가 확정되면 `{ "name": "답십리역", "lat": 37.5669, "lng": 127.0527, "lines": [5] }` 형태가 된다
+- `participants`는 **들어온 순서**(먼저 들어온 사람이 앞)로 준다. 방장이 나갈 때 이 순서로 다음 방장을 정한다
 
 ### `PATCH /meetings/{meetingId}` — 방장
 
@@ -265,7 +279,13 @@ Authorization: Bearer {participantToken}
 
 ### `DELETE /participants/{participantId}` — 본인 또는 방장
 
-약속에서 나가거나(본인) 내보낸다(방장). 응답 `204`. 방장이 나가려면 먼저 약속을 취소하거나 방장을 넘겨야 한다(미정, [9절](#9-아직-정해지지-않은-것)).
+약속에서 나가거나(본인) 내보낸다(방장). 응답 `204`.
+
+**방장이 나갈 때** (2026-10-02 결정)
+- 방장이 자기 자신을 지우면, 남은 참가자 중 **가장 먼저 들어온 사람**이 방장(`HOST`)이 된다. 응답은 `204`
+- 방장 혼자 남은 약속이면 **약속을 취소**한다(`DELETE /meetings/{id}`와 같게 데이터 삭제, 책임 알람이 켜져 있으면 취소 푸시). 응답은 `204`
+- 다른 참가자는 폴링에서 `role`이 바뀐 것으로 알게 된다. 새 방장의 토큰은 그대로 쓰고, 서버는 그 참가자의 권한만 바꾼다
+- 방장이 다른 참가자를 내보낼 때는 방장이 바뀌지 않는다
 
 ### `GET /places` — 공개 [단계 2]
 
@@ -409,7 +429,6 @@ SCHEDULED ──(기기 울림 보고)──> RINGING ──(끔 보고)──> 
 |:---|:---|:---|
 | 약속 저장소 | PostgreSQL에 저장하고 만료 삭제 작업을 돌린다. Redis는 요청 제한, 캐시, 에스컬레이션 ZSET에만 쓴다 | 서버 구현 시작 전 |
 | 전화 걸기 | 전화번호를 받지 않는다. 받는다면 참가자가 자발적으로 입력한 `phone`만 에스컬레이션 푸시에 실어 보낸다 | 3단계 시작 전 |
-| 방장이 나갈 때 | 방장 위임 또는 약속 취소 중 하나 | 2단계 |
 | `marginMinutes` 기본값 | 0 (이동시간이 정차시간을 뺀 근사값이라 늦게 울릴 수 있음) | 3단계 시연 후 |
 | 약속 시각이 새벽인 경우 | 서버는 `meetAt`을 막지 않고, 앱이 경고한다 | 3단계 |
 | 카카오 로컬 API 쿼터 | 콘솔에서 확인 필요 | 카카오 앱 생성 후 |

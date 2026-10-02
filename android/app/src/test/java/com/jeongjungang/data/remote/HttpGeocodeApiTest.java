@@ -202,7 +202,7 @@ public class HttpGeocodeApiTest {
             fail();
         } catch (ApiException e) {
             assertEquals("HTTP_500", e.code);
-            assertEquals(HttpGeocodeApi.MSG_SERVER, e.getMessage());
+            assertEquals(ApiHttp.MSG_SERVER, e.getMessage());
         }
     }
 
@@ -214,7 +214,7 @@ public class HttpGeocodeApiTest {
             fail();
         } catch (ApiException e) {
             assertEquals(ApiException.BAD_RESPONSE, e.code);
-            assertEquals(HttpGeocodeApi.MSG_BAD_RESPONSE, e.getMessage());
+            assertEquals(ApiHttp.MSG_BAD_RESPONSE, e.getMessage());
         }
     }
 
@@ -230,15 +230,15 @@ public class HttpGeocodeApiTest {
         } catch (ApiException e) {
             assertTrue(e.isNetwork());
             assertEquals(0, e.httpStatus);
-            assertEquals(HttpGeocodeApi.MSG_NETWORK, e.getMessage());
+            assertEquals(ApiHttp.MSG_NETWORK, e.getMessage());
         }
     }
 
     @Test
     public void retryAfterParsing() {
-        assertEquals(0, HttpGeocodeApi.parseRetryAfter(null));
-        assertEquals(7, HttpGeocodeApi.parseRetryAfter(" 7 "));
-        assertEquals(0, HttpGeocodeApi.parseRetryAfter("Wed, 21 Oct 2026 07:28:00 GMT"));
-        assertEquals(0, HttpGeocodeApi.parseRetryAfter("-3"));
+        assertEquals(0, ApiHttp.parseRetryAfter(null));
+        assertEquals(7, ApiHttp.parseRetryAfter(" 7 "));
+        assertEquals(0, ApiHttp.parseRetryAfter("Wed, 21 Oct 2026 07:28:00 GMT"));
+        assertEquals(0, ApiHttp.parseRetryAfter("-3"));
     }
 }
