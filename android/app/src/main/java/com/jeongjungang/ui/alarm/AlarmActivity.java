@@ -20,6 +20,7 @@ import com.jeongjungang.databinding.ActivityAlarmBinding;
 public class AlarmActivity extends AppCompatActivity {
 
     private static final String EXTRA_ALARM_ID = "alarmId";
+    private static final String EXTRA_NICKNAME = "sleeperNickname";
 
     private ActivityAlarmBinding binding;
     private String alarmId;
@@ -28,6 +29,11 @@ public class AlarmActivity extends AppCompatActivity {
         return new Intent(context, AlarmActivity.class)
                 .putExtra(EXTRA_ALARM_ID, alarmId)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_USER_ACTION);
+    }
+
+    /** 에스컬레이션 화면. key는 {@link AlarmRingService#ringingAlarmId()} 값. */
+    public static Intent escalationIntent(Context context, String key, String sleeperNickname) {
+        return intent(context, key).putExtra(EXTRA_NICKNAME, sleeperNickname);
     }
 
     @Override
@@ -61,9 +67,20 @@ public class AlarmActivity extends AppCompatActivity {
 
     private void bind(Intent intent) {
         alarmId = intent.getStringExtra(EXTRA_ALARM_ID);
+        if (AlarmRingService.isEscalationKey(alarmId)) {
+            String nickname = intent.getStringExtra(EXTRA_NICKNAME);
+            binding.alarmTitle.setText(getString(com.jeongjungang.R.string.alarm_escalation_title,
+                    nickname == null ? getString(com.jeongjungang.R.string.alarm_escalation_someone) : nickname));
+            binding.alarmSubtitle.setText(com.jeongjungang.R.string.alarm_escalation_subtitle);
+            binding.alarmMessage.setText(com.jeongjungang.R.string.alarm_escalation_message);
+            binding.dismissButton.setText(com.jeongjungang.R.string.alarm_escalation_dismiss);
+            return;
+        }
         AlarmSpec spec = alarmId == null ? null : new AlarmScheduler(this).find(alarmId);
         binding.alarmTitle.setText(spec != null ? spec.title : "출발할 시간이에요");
         binding.alarmSubtitle.setText(spec != null ? AlarmTexts.subtitle(spec) : "");
+        binding.alarmMessage.setText(com.jeongjungang.R.string.alarm_depart_now);
+        binding.dismissButton.setText(com.jeongjungang.R.string.alarm_dismiss);
     }
 
     private void showOverLockScreen() {

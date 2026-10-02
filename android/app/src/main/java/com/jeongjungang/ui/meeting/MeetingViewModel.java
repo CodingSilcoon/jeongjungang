@@ -16,6 +16,7 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.Purpose;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Snapshot;
 import com.jeongjungang.data.remote.meeting.MeetingUpdate;
 import com.jeongjungang.data.remote.meeting.ParticipantUpdate;
+import com.jeongjungang.data.repository.AccountabilityRepository;
 import com.jeongjungang.data.repository.MeetingRepository;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,6 +36,7 @@ public class MeetingViewModel extends AndroidViewModel {
     private static final String TAG = "MeetingViewModel";
 
     private final MeetingRepository repository;
+    private final AccountabilityRepository accountability;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
     private final MutableLiveData<MeetingState> state = new MutableLiveData<MeetingState>(MeetingState.idle());
@@ -62,6 +64,7 @@ public class MeetingViewModel extends AndroidViewModel {
     public MeetingViewModel(@NonNull Application application) {
         super(application);
         repository = MeetingRepository.getInstance(application);
+        accountability = AccountabilityRepository.getInstance(application);
     }
 
     /** 서버가 설정되지 않았으면 false. 약속 기능 버튼을 숨기거나 안내한다. */
@@ -173,6 +176,7 @@ public class MeetingViewModel extends AndroidViewModel {
         if (MeetingRepository.NOT_MEMBER.equals(err.code) || isGoneCode(err)) {
             stopPolling();
             last = null;
+            forgetAlarm(id);
             state.setValue(MeetingState.gone(id, goneMessage(err)));
             return;
         }
@@ -199,6 +203,16 @@ public class MeetingViewModel extends AndroidViewModel {
             return e.getMessage();
         }
         return "약속이 취소됐거나 더 이상 참가하고 있지 않아요.";
+    }
+
+    /** 약속이 사라졌으면 이 기기에 예약된 그 약속의 출발 알람도 지운다. */
+    private void forgetAlarm(final String meetingId) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                accountability.cancelLocal(meetingId);
+            }
+        });
     }
 
     // ---- 만들기와 참가 ----
@@ -283,6 +297,7 @@ public class MeetingViewModel extends AndroidViewModel {
             @Override
             public ActionResult call() throws ApiException {
                 repository.leave(id);
+                accountability.cancelLocal(id);
                 return ActionResult.done(ActionResult.Kind.LEAVE);
             }
         });
@@ -298,6 +313,7 @@ public class MeetingViewModel extends AndroidViewModel {
             @Override
             public ActionResult call() throws ApiException {
                 repository.cancel(id);
+                accountability.cancelLocal(id);
                 return ActionResult.done(ActionResult.Kind.CANCEL);
             }
         });

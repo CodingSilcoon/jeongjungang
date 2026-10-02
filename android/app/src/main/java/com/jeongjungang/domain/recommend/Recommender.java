@@ -70,6 +70,15 @@ public final class Recommender {
         return new ArrayList<Recommendation>(ranked.subList(0, Math.min(RESULT_COUNT, ranked.size())));
     }
 
+    /**
+     * 한 사람이 특정 역까지 가는 시간(접근 시간 포함)과 환승. 책임 알람의 이동시간 보고에 쓴다.
+     * @return 갈 수 없거나 없는 역이면 null
+     */
+    public PersonTrip tripTo(Participant participant, String station) {
+        RouteFinder.Route route = routesForEveryone(Collections.singletonList(participant)).get(0).get(station);
+        return route == null ? null : new PersonTrip(participant.name, route.minutes, route.transfers);
+    }
+
     private static LatLng medianOf(List<Participant> participants) {
         List<LatLng> points = new ArrayList<LatLng>();
         for (Participant p : participants) {
