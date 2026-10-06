@@ -128,7 +128,7 @@ Authorization: Bearer {participantToken}
 }
 ```
 
-결과가 없으면 `items`는 빈 배열이다(404가 아님).
+결과가 없으면 `items`는 빈 배열이다(404가 아님). 주소 검색 결과(`ADDRESS`)를 앞에, 장소 이름 검색 결과(`PLACE`)를 뒤에 둔다. `ADDRESS`의 `name`은 도로명, `address`는 지번 주소다.
 
 ### `GET /geocode/reverse?lat=&lng=` — 공개 [단계 1]
 
@@ -300,7 +300,7 @@ Authorization: Bearer {participantToken}
 | `lat`, `lng` | 필수. 보통 확정한 역 좌표 |
 | `category` | 필수. `FOOD` `CAFE` `BAR` |
 | `radius` | 선택, 100~1000(m), 기본 500 |
-| `page` | 선택, 기본 1 |
+| `page` | 선택, 1~45, 기본 1 (카카오 검색 한도). 한 쪽에 15곳, 가까운 순 |
 
 ```json
 {

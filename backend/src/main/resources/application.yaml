@@ -35,6 +35,12 @@ jeongjungang:
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
   # 기한이 지난 약속을 지우는 주기
   retention-interval: PT10M
+  kakao:
+    # 키는 환경변수로만 넣는다. 저장소에 두지 않는다
+    rest-api-key: ${KAKAO_REST_API_KEY:}
+    base-url: https://dapi.kakao.com
+    connect-timeout: 2s
+    read-timeout: 3s
 
 # 운영 점검용 actuator는 health만 열고, 세부 정보는 숨긴다
 management:
