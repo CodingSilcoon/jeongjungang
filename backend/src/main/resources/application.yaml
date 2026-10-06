@@ -1,10 +1,30 @@
 spring:
   application:
     name: jeongjungang-backend
+  # 배포에서는 환경변수로 주입한다. 로컬 bootRun은 compose.yaml 연결 정보가 이 값을 덮어쓴다
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/jeongjungang}
+    username: ${DB_USERNAME:jeongjungang}
+    password: ${DB_PASSWORD:}
+  jpa:
+    # 스키마는 Flyway 마이그레이션만 바꾼다. 엔티티와 어긋나면 시작할 때 실패한다
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+  docker:
+    compose:
+      # 서버를 끄면 컨테이너도 멈추고, 데이터 볼륨은 남긴다
+      lifecycle-management: start-and-stop
 
 # 운영 점검용 actuator는 health만 열고, 세부 정보는 숨긴다
 management:
