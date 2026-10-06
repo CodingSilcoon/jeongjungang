@@ -2,6 +2,15 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+// 서버 주소는 저장소에 두지 않는다. android/local.properties에
+// jeongjungang.apiBaseUrl=https://.../api/v1 를 넣으면 서버를 쓰고, 없으면 번들 역 이름 검색을 쓴다.
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+def apiBaseUrl = localProps.getProperty('jeongjungang.apiBaseUrl', '').trim()
+
 android {
     namespace 'com.jeongjungang'
     compileSdk {
@@ -16,6 +25,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
     }
 
     buildTypes {
@@ -31,6 +42,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
@@ -39,7 +51,13 @@ dependencies {
     implementation libs.appcompat
     implementation libs.constraintlayout
     implementation libs.material
+    // 서버 호출 (HttpURLConnection은 PATCH를 못 보낸다)
+    implementation libs.okhttp
+    // 알람 끔 기록 재전송 (앱 종료·재부팅 뒤에도 네트워크가 돌아오면 실행)
+    implementation libs.work.runtime
     testImplementation libs.junit
+    // Android의 org.json은 단위 테스트에서 스텁이라, JVM 테스트용 실제 구현을 넣는다.
+    testImplementation libs.json
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit
 }

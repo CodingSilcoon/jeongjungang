@@ -1,0 +1,72 @@
+<resources>
+
+    <!-- 출발지 입력과 검색 안내 -->
+    <string name="origin_title">어디서 출발해?</string>
+    <string name="origin_intro">너와 친구의 출발지를 알려줘.\n함께 만나기 좋은 곳을 찾아줄게.</string>
+    <string name="origin_me">내 위치</string>
+    <string name="origin_me_badge">나</string>
+    <string name="origin_friend">친구 %1$d</string>
+    <string name="origin_choose">출발지 검색하기</string>
+    <string name="origin_add">+ 친구 추가</string>
+    <string name="origin_limit">최대 10명까지 함께할 수 있어</string>
+    <string name="origin_delete">삭제</string>
+    <string name="origin_delete_named">%1$s 삭제</string>
+    <string name="origin_choose_named">%1$s 출발지: %2$s</string>
+    <string name="origin_remaining">출발지 %1$d곳을 선택해줘</string>
+    <string name="origin_ready">%1$d명의 출발지가 준비됐어</string>
+    <string name="origin_find">만날 곳 찾기</string>
+    <string name="origin_back">뒤로</string>
+
+    <string name="origin_search_title">출발지 찾기</string>
+    <string name="origin_search_hint">역 이름 또는 주소</string>
+    <string name="origin_station_hint">지하철역 이름</string>
+    <string name="origin_search_for">%1$s의 출발지를 검색해줘</string>
+    <string name="origin_search_local">지금은 서울 지하철 1~8호선 역 이름으로 검색할 수 있어요.</string>
+    <string name="origin_search_prompt">검색어를 2글자 이상 입력해줘</string>
+    <string name="origin_search_loading">출발지를 찾고 있어요…</string>
+    <string name="origin_search_empty">검색 결과가 없어요. 다른 이름으로 찾아봐요.</string>
+    <string name="origin_search_error">검색하지 못했어요. 다시 시도해 주세요.</string>
+    <string name="origin_outside">지원 지역 밖</string>
+
+    <!-- 출발지를 모두 고른 다음 표시하는 추천 기준 -->
+    <string name="origin_criteria_title">어떻게 만날까?</string>
+    <string name="origin_criteria_intro">입력한 출발지를 기준으로\n어떤 곳을 먼저 추천할지 골라줘.</string>
+    <string name="origin_criteria_total">다 같이 덜 이동하기\n모두의 이동시간 합이 짧은 곳</string>
+    <string name="origin_criteria_fair">한 명만 너무 멀지 않게\n가장 오래 걸리는 친구의 시간을 줄이는 곳</string>
+    <string name="origin_confirm">이 기준으로 찾기</string>
+    <string name="origin_results_pending">추천 장소 화면은 준비 중이에요</string>
+
+    <style name="OriginText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/start_ink</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="OriginTitle" parent="OriginText">
+        <item name="android:textSize">30sp</item>
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="android:accessibilityHeading">true</item>
+    </style>
+
+    <style name="OriginLead" parent="OriginText">
+        <item name="android:textColor">@color/start_muted</item>
+        <item name="android:lineSpacingExtra">4dp</item>
+        <item name="android:layout_marginBottom">24dp</item>
+    </style>
+
+    <style name="OriginButton" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">58dp</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/start_ink</item>
+        <item name="android:background">@drawable/start_action_primary</item>
+    </style>
+
+</resources>

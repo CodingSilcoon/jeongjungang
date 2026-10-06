@@ -116,9 +116,14 @@ sequenceDiagram
 |:---|:---|:---:|
 | 1 | 추천 코어: 기하 중앙값, 서울 지하철 1~8호선 그래프(역 240개), 최단시간·환승 탐색, 가까운 역 검색, 접근시간 추정 | ✅ 완료 |
 | 1 | 후보 3곳 선정(두 가지 추천 기준, 환승 우선 정렬)과 선정 이유 문구 (코어 전체 테스트 106개) | ✅ 완료 |
-| 1 | 안드로이드 화면(입력, 후보, 상세), 지도, 공유 | 🔨 다음 |
-| 2 | 초대 링크, 약속 목적 필터 (서버 도입) | ⏳ 예정 |
-| 3 | 책임 알람 (서버 스케줄러, 로컬 알람, FCM, 실기기 테스트) | ⏳ 예정 |
+| 1 | 앱 데이터 계층: 추천 실행, 주소 검색, 공유 문구, 지도 길찾기, 지원 지역(3km) 판정 | ✅ 완료 |
+| 1 | 안드로이드 화면(입력, 후보, 상세), 지도 | 🔨 진행 중 |
+| 2 | 초대 링크, 약속 목적 필터: 앱 쪽 | ✅ 완료 |
+| 2 | 초대 링크, 약속 목적 필터: 서버 | 🔨 진행 중 |
+| 3 | 책임 알람: 앱 쪽(기기 알람, 서버 동기화, 끔 기록 재전송, "아직 안 일어남" 알람) | ✅ 완료 |
+| 3 | 책임 알람: 서버 스케줄러, FCM 푸시, 실기기 테스트 | ⏳ 예정 |
+
+앱 쪽 작업 정리와 팀원별로 알아야 할 것은 [docs/HANDOFF.md](docs/HANDOFF.md)에 있습니다.
 | 이후 | 결제, 장거리, 다른 운영기관 노선 | 후순위 |
 
 <br>
@@ -155,6 +160,9 @@ sequenceDiagram
 | `android/app/src/main/java/com/jeongjungang/domain/geo` | `GeoMedian`(기하 중앙값), `GeoDistance` |
 | `android/app/src/main/java/com/jeongjungang/domain/transit` | CSV 파서, 지하철 그래프, 최단시간 탐색, 접근시간 추정, 가까운 역 검색 |
 | `android/app/src/main/java/com/jeongjungang/domain/recommend` | 후보 3곳 선정(`Recommender`), 추천 기준, 선정 이유 문구 |
+| `android/app/src/main/java/com/jeongjungang/data` | 서버 호출(`remote`), 지하철 데이터·약속·토큰·책임 알람 저장소(`repository`) |
+| `android/app/src/main/java/com/jeongjungang/ui` | 화면이 쓰는 ViewModel(`recommend`, `search`, `meeting`)과 알람 화면(`alarm`) |
+| `android/app/src/main/java/com/jeongjungang/alarm` | 기기 알람 예약·울림·재부팅 재예약, 끔 기록 재전송 |
 | `android/app/src/main/assets/data` | 번들 CSV (역간 소요시간, 역사 좌표, 환승) |
 | `android/app/src/test/java` | 단위 테스트와 실제 CSV 통합 테스트 |
 | `backend` | Spring Boot 뼈대 (2단계 이후 사용) |

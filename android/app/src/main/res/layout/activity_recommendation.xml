@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/start_background">
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="22dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/backButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/origin_back"
+                android:text="‹"
+                android:textSize="28sp"
+                android:textColor="@color/start_ink" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/start_logo"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@color/start_ink" />
+        </LinearLayout>
+
+        <!-- 지도 SDK 연결 전에도 추천 목록과 길찾기는 사용할 수 있다. -->
+        <TextView
+            android:id="@+id/mapPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginVertical="12dp"
+            android:padding="16dp"
+            android:gravity="center"
+            android:background="@drawable/recommend_map_background"
+            android:text="@string/recommend_map_pending"
+            android:textColor="@color/start_muted"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/criterionButton"
+            style="@style/OriginButton"
+            android:minHeight="48dp"
+            android:padding="10dp"
+            android:textSize="14sp"
+            android:background="@drawable/start_action_secondary"
+            android:layout_marginBottom="12dp"
+            app:backgroundTint="@null" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/resultScroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:id="@+id/resultList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="4dp"
+                android:paddingBottom="8dp"
+                android:orientation="vertical" />
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView
+            style="@style/OriginText"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:text="@string/recommend_notice"
+            android:textSize="12sp"
+            android:textColor="@color/start_muted" />
+
+        <Button
+            android:id="@+id/primaryButton"
+            style="@style/OriginButton"
+            android:layout_marginBottom="12dp"
+            android:text="@string/recommend_detail"
+            app:backgroundTint="@null" />
+    </LinearLayout>
+</LinearLayout>

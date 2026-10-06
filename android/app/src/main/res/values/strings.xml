@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">정중앙</string>
+    <string name="alarm_depart_now">지금 출발해야 약속에 늦지 않아요</string>
+    <string name="alarm_dismiss">알람 끄기</string>
+    <string name="alarm_escalation_title">%1$s님이 아직 안 일어났어요</string>
+    <string name="alarm_escalation_someone">친구</string>
+    <string name="alarm_escalation_subtitle">출발 알람을 끄지 않았어요</string>
+    <string name="alarm_escalation_message">연락해서 깨워 주세요</string>
+    <string name="alarm_escalation_dismiss">내 알람 끄기</string>
 </resources>
