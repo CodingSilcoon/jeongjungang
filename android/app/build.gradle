@@ -48,6 +48,13 @@ android {
     }
 }
 
+// 실제 서버 연동 테스트(LiveServerContractTest): gradlew testDebugUnitTest -PliveServer=http://localhost:8080/api/v1
+tasks.withType(Test).configureEach {
+    if (project.hasProperty('liveServer')) {
+        systemProperty 'liveServer', project.property('liveServer')
+    }
+}
+
 dependencies {
     implementation libs.activity
     implementation libs.appcompat
