@@ -33,6 +33,8 @@ spring:
 jeongjungang:
   # 초대 링크 앞부분. 배포에서는 https://{도메인}으로 준다
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
+  # 기한이 지난 약속을 지우는 주기
+  retention-interval: PT10M
 
 # 운영 점검용 actuator는 health만 열고, 세부 정보는 숨긴다
 management:
