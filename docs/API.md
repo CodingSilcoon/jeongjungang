@@ -3,7 +3,7 @@
 앱과 서버가 이 문서를 기준으로 병렬 작업한다. 바꿀 때는 이 문서를 먼저 고치고 알린다.
 
 - 기준 주소: `https://{도메인}/api/v1` (HTTPS만 허용)
-- 형식: JSON(UTF-8). 날짜·시각은 ISO 8601 + 오프셋 (예: `2026-10-10T19:00:00+09:00`). 서버는 UTC로 저장한다
+- 형식: JSON(UTF-8). 날짜·시각은 ISO 8601 + 오프셋 (예: `2026-10-10T19:00:00+09:00`). 서버는 UTC로 저장하고 응답도 UTC(`2026-10-10T10:00:00Z`)로 준다
 - 상태: **초안**. `[단계 1]`은 서버를 처음 띄울 때, `[단계 2]`는 초대 링크, `[단계 3]`은 책임 알람
 
 ## 1. 전체 구조
@@ -53,7 +53,9 @@ Authorization: Bearer {participantToken}
 | 400 | `VALIDATION_FAILED` | 입력 형식이 틀림 (필드별 사유는 `error.fields`) |
 | 401 | `UNAUTHORIZED` | 토큰이 없거나 올바르지 않음 |
 | 403 | `FORBIDDEN` | 방장만 할 수 있는 일, 남의 자원 접근 |
+| 404 | `NOT_FOUND` | 없는 주소로 요청함 |
 | 404 | `MEETING_NOT_FOUND` `PARTICIPANT_NOT_FOUND` `ALARM_NOT_FOUND` | 대상이 없음 |
+| 405 | `METHOD_NOT_ALLOWED` | 그 주소가 지원하지 않는 요청 방식(예: GET 자리에 POST) |
 | 409 | `MEETING_CLOSED` | 이미 확정·취소된 약속에 참가하려 함 |
 | 409 | `MEETING_FULL` | 참가자 상한(10명) 초과 |
 | 409 | `NOT_ALL_OPTED_IN` | 책임 알람을 켜려는데 전원이 동의하지 않음 |
@@ -70,18 +72,20 @@ Authorization: Bearer {participantToken}
 | `GET /geocode*`, `GET /places` | IP당 30회/분 |
 | `POST /meetings` | IP당 10회/분 |
 | `POST /meetings/by-code/{inviteCode}/participants` | IP당 20회/분 |
+| `GET /meetings/by-code/{inviteCode}` | IP당 30회/분 (초대 코드 무작위 대입 방지) |
 | 그 외 인증 API | 토큰당 120회/분 |
 
 ### 값 제한
 
 | 필드 | 규칙 |
 |:---|:---|
-| `nickname` | 1~20자, 앞뒤 공백 제거, 제어문자 불가 |
+| `nickname` | 1~20자, 앞뒤 공백 제거, 제어문자·보이지 않는 글자(방향 바꾸기, 폭 없는 공백 등) 불가 |
 | `title` | 0~40자 |
 | `origin.label` | 1~60자 |
 | `lat`, `lng` | `-90~90`, `-180~180` |
 | `purpose` | `MEAL` `CAFE` `DRINK` `ETC` |
 | `prepMinutes` | 0~240 |
+| `meetAt` | 지금부터 1시간 전 ~ 1년 뒤 (보관 기간이 약속 + 24시간이라 너무 먼 미래는 막는다) |
 | 참가자 수 | 약속당 최대 10명 |
 
 ## 4. 데이터 보관
@@ -124,7 +128,7 @@ Authorization: Bearer {participantToken}
 }
 ```
 
-결과가 없으면 `items`는 빈 배열이다(404가 아님).
+결과가 없으면 `items`는 빈 배열이다(404가 아님). 주소 검색 결과(`ADDRESS`)를 앞에, 장소 이름 검색 결과(`PLACE`)를 뒤에 둔다. `ADDRESS`의 `name`은 도로명, `address`는 지번 주소다.
 
 ### `GET /geocode/reverse?lat=&lng=` — 공개 [단계 1]
 
@@ -247,7 +251,7 @@ Authorization: Bearer {participantToken}
 
 ### `PATCH /meetings/{meetingId}` — 방장
 
-방장만 약속 정보를 바꾼다. 보낸 필드만 바뀐다.
+방장만 약속 정보를 바꾼다. 보낸 필드만 바뀐다. 응답은 `204`(본문 없음)이고, 바뀐 내용은 폴링으로 받는다.
 
 ```json
 {
@@ -269,7 +273,7 @@ Authorization: Bearer {participantToken}
 
 ### `PATCH /participants/{participantId}` — 본인
 
-내 정보를 바꾼다. 보낸 필드만 바뀐다. 다른 사람 것은 `FORBIDDEN`.
+내 정보를 바꾼다. 보낸 필드만 바뀐다. 다른 사람 것은 `FORBIDDEN`. 응답은 `204`.
 
 ```json
 { "nickname": "지현", "origin": { "label": "노원역", "lat": 37.6552, "lng": 127.0614 }, "prepMinutes": 40, "optedIn": true }
@@ -296,7 +300,7 @@ Authorization: Bearer {participantToken}
 | `lat`, `lng` | 필수. 보통 확정한 역 좌표 |
 | `category` | 필수. `FOOD` `CAFE` `BAR` |
 | `radius` | 선택, 100~1000(m), 기본 500 |
-| `page` | 선택, 기본 1 |
+| `page` | 선택, 1~45, 기본 1 (카카오 검색 한도). 한 쪽에 15곳, 가까운 순 |
 
 ```json
 {

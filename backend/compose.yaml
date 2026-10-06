@@ -1,0 +1,23 @@
+# 로컬 개발용 Postgres·Redis. `gradlew bootRun`이 자동으로 띄운다 (spring-boot-docker-compose).
+# 직접 띄우려면 backend 폴더에서 `docker compose up -d`.
+# 포트는 이 PC에서만 열고, 비밀번호는 로컬 전용 값이다. 배포용 설정은 따로 둔다.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: jeongjungang
+      POSTGRES_USER: jeongjungang
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD:-local-dev-only}
+    # 5432는 PC에 설치된 Postgres와 겹치기 쉬워서 5433으로 연다. bootRun은 바뀐 포트를 알아서 찾는다
+    ports:
+      - "127.0.0.1:${LOCAL_DB_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+
+volumes:
+  postgres-data:

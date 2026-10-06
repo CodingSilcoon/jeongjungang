@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.jeongjungang'
-version = '0.0.1-SNAPSHOT'
+version = '0.1.0'
 
 java {
 	toolchain {
@@ -17,12 +17,29 @@ repositories {
 	mavenCentral()
 }
 
+// Boot 3.5.6 기본값 1.21.3은 Docker Engine 29를 인식하지 못한다 (낮은 API 버전으로 요청함)
+ext['testcontainers.version'] = '1.21.4'
+
+// /api/v1/health 응답의 version에 쓰는 build-info.properties를 만든다
+springBoot {
+	buildInfo()
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-database-postgresql'
+	runtimeOnly 'org.postgresql:postgresql'
+	// bootRun 때 compose.yaml의 Postgres·Redis를 자동으로 띄우고 연결한다 (배포 jar에는 들어가지 않음)
+	developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

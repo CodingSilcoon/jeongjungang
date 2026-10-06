@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  디버그 빌드 전용. 로컬 개발 서버 주소에만 http를 허용하고, 그 밖은 기본값(https만)을 따른다.
+
+  에뮬레이터·실기기에서 내 PC 서버에 붙는 법 (2026-10-06 확인):
+    1. adb reverse tcp:8080 tcp:8080   (에뮬레이터를 켤 때마다 다시 실행)
+    2. local.properties: jeongjungang.apiBaseUrl=http://localhost:8080/api/v1
+  10.0.2.2(에뮬레이터에서 본 PC)는 targetSdk 37에서 앱 권한으로 연결이 시간 초과된다(셸에서는 됨).
+  사설 IP 접속을 막는 로컬 네트워크 보호로 보여서 loopback + adb reverse를 쓴다.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

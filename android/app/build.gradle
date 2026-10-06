@@ -4,6 +4,8 @@ plugins {
 
 // 서버 주소는 저장소에 두지 않는다. android/local.properties에
 // jeongjungang.apiBaseUrl=https://.../api/v1 를 넣으면 서버를 쓰고, 없으면 번들 역 이름 검색을 쓴다.
+// 에뮬레이터에서 내 PC 서버를 쓸 때는 adb reverse tcp:8080 tcp:8080 후 http://localhost:8080/api/v1
+// (디버그 빌드만 http 허용. 이유는 src/debug/res/xml/network_security_config.xml 참고)
 def localProps = new Properties()
 def localPropsFile = rootProject.file('local.properties')
 if (localPropsFile.exists()) {
@@ -43,6 +45,13 @@ android {
     buildFeatures {
         viewBinding true
         buildConfig true
+    }
+}
+
+// 실제 서버 연동 테스트(LiveServerContractTest): gradlew testDebugUnitTest -PliveServer=http://localhost:8080/api/v1
+tasks.withType(Test).configureEach {
+    if (project.hasProperty('liveServer')) {
+        systemProperty 'liveServer', project.property('liveServer')
     }
 }
 
