@@ -1,9 +1,11 @@
 package com.jeongjungang.common;
 
+import com.jeongjungang.ratelimit.RateLimitedException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -28,7 +30,15 @@ public class GlobalExceptionHandler {
         if (e.code().status().is5xxServerError()) {
             log.warn("API 오류: {}", e.getMessage(), e);
         }
-        return respond(ApiError.of(e.code()), e.code());
+        return respond(ApiError.of(e.code(), e.fields()), e.code());
+    }
+
+    /** 앱은 Retry-After(초)만큼 쉬고 다시 요청한다. */
+    @ExceptionHandler(RateLimitedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRateLimited(RateLimitedException e) {
+        return ResponseEntity.status(ErrorCode.RATE_LIMITED.status())
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(e.retryAfterSeconds()))
+                .body(ApiResponse.fail(ApiError.of(ErrorCode.RATE_LIMITED)));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

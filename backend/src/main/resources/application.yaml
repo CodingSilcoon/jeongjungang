@@ -1,3 +1,7 @@
+# Caddy 뒤에서 X-Forwarded-For로 실제 IP를 얻는다. 내부망(사설 IP) 프록시가 보낸 헤더만 믿는다
+server:
+  forward-headers-strategy: native
+
 spring:
   application:
     name: jeongjungang-backend
@@ -25,6 +29,10 @@ spring:
     compose:
       # 서버를 끄면 컨테이너도 멈추고, 데이터 볼륨은 남긴다
       lifecycle-management: start-and-stop
+
+jeongjungang:
+  # 초대 링크 앞부분. 배포에서는 https://{도메인}으로 준다
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
 
 # 운영 점검용 actuator는 health만 열고, 세부 정보는 숨긴다
 management:

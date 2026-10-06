@@ -121,5 +121,5 @@ Android 클라이언트
 - `android/` — Gradle 프로젝트 루트 (AGP 9.3 / Gradle 9.5, Groovy DSL, Java 11 호환, minSdk 26, ViewBinding 사용). `applicationId`와 패키지는 `com.jeongjungang`. Android Studio에서 이 폴더를 연다. 경로에 한글이 있으면 빌드가 실패한다
 - `android/app/src/main/assets/data/` — 위 CSV 데이터 번들 위치
 - 테스트: `cd android && gradlew.bat test` (Gradle 데몬이 JDK 25를 요구하므로 `JAVA_HOME`을 Android Studio 내장 JDK로 지정)
-- `backend/` — 2·3단계용 Spring Boot 3.5 / Java 17 뼈대(`common` `config` `cache` `proxy`). 1단계에서는 사용하지 않음. 이전 설계(ODsay 프록시 + 역 쌍 Redis 캐시) 기준이라 2단계 착수 시 재검토. 알람 도메인·에스컬레이션 스케줄러(Redis ZSET)는 새 패키지로 추가한다
+- `backend/` — Spring Boot 3.5 / Java 17 서버(`server/setup` 브랜치). `common`(응답·오류), `auth`(참가자 토큰), `meeting`(약속·참가자, `api`에 컨트롤러·요청/응답), `health`. DB 스키마는 `src/main/resources/db/migration`(Flyway). 로컬 실행은 `backend`에서 `gradlew bootRun`(Docker Desktop 필요, compose.yaml의 Postgres 5433·Redis 자동 기동). 알람 도메인·에스컬레이션 스케줄러(Redis ZSET)는 새 패키지로 추가한다
 - `docs/` — 문서
