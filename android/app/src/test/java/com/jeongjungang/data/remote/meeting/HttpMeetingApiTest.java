@@ -21,6 +21,7 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.Status;
 import com.jeongjungang.domain.model.LatLng;
 import com.jeongjungang.testing.FakeServer;
 import java.io.IOException;
+import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -37,6 +38,8 @@ public class HttpMeetingApiTest {
 
     private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
     private static final long MEET_AT = OffsetDateTime.parse("2026-10-10T19:00:00+09:00").toInstant().toEpochMilli();
+    private static final Clock NOW = Clock.fixed(
+            OffsetDateTime.parse("2026-10-01T12:00:00+09:00").toInstant(), ZoneId.of("UTC"));
     private static final Origin HONGDAE = new Origin("홍대입구역", new LatLng(37.5572, 126.9245));
 
     private FakeServer server;
@@ -45,7 +48,8 @@ public class HttpMeetingApiTest {
     @Before
     public void start() throws IOException {
         server = new FakeServer();
-        api = new HttpMeetingApi(new ApiHttp(server.baseUrl()), SEOUL);
+        // 약속 시각 범위(지금 기준 1시간 전 ~ 1년 뒤)를 검사하므로 '지금'을 예시 날짜 직전으로 고정한다
+        api = new HttpMeetingApi(new ApiHttp(server.baseUrl()), SEOUL, NOW);
     }
 
     @After
@@ -272,6 +276,63 @@ public class HttpMeetingApiTest {
         assertEquals("BAR", Purpose.DRINK.placeCategory);
         assertNull(Purpose.ETC.placeCategory);
         expectValidation(() -> api.places(new LatLng(37, 127), null, 500, 1));
+    }
+
+    @Test
+    public void validationFieldsBecomeTheMessage() {
+        server.enqueue(400, "{\"success\":false,\"data\":null,\"error\":{\"code\":\"VALIDATION_FAILED\","
+                + "\"message\":\"입력값을 확인해 주세요.\",\"fields\":{\"meetAt\":\"약속 시간은 지금부터 1년 안으로 정해 주세요.\"}}}");
+        try {
+            api.update("m-1", "tok", new MeetingUpdate().title("x"));
+            fail();
+        } catch (ApiException e) {
+            assertEquals("VALIDATION_FAILED", e.code);
+            assertEquals("약속 시간은 지금부터 1년 안으로 정해 주세요.", e.getMessage());
+            assertEquals("약속 시간은 지금부터 1년 안으로 정해 주세요.", e.fields.get("meetAt"));
+        }
+    }
+
+    @Test
+    public void validationWithoutFieldsKeepsServerMessage() {
+        server.enqueue(400, "{\"success\":false,\"data\":null,\"error\":{\"code\":\"VALIDATION_FAILED\","
+                + "\"message\":\"입력값을 확인해 주세요.\"}}");
+        try {
+            api.update("m-1", "tok", new MeetingUpdate().title("x"));
+            fail();
+        } catch (ApiException e) {
+            assertEquals("입력값을 확인해 주세요.", e.getMessage());
+            assertTrue(e.fields.isEmpty());
+        }
+    }
+
+    @Test
+    public void meetAtOutOfRangeIsRejectedBeforeCallingServer() {
+        long now = NOW.millis();
+        long hour = 60L * 60 * 1000;
+        long day = 24 * hour;
+        for (long bad : new long[] {now - 2 * hour, now + 366 * day}) {
+            try {
+                api.update("m-1", "tok", new MeetingUpdate().meetAt(bad));
+                fail();
+            } catch (ApiException e) {
+                assertEquals("VALIDATION_FAILED", e.code);
+                assertEquals("약속 시간은 지금부터 1년 안으로 정해 주세요.", e.fields.get("meetAt"));
+            }
+            try {
+                api.create("민수", null, null, bad, null);
+                fail();
+            } catch (ApiException e) {
+                assertEquals("VALIDATION_FAILED", e.code);
+            }
+        }
+        assertTrue(server.requests().isEmpty());
+    }
+
+    @Test
+    public void placePageIsCappedAt45() throws Exception {
+        server.enqueue(200, ok("{\"items\":[],\"page\":45,\"hasNext\":false}"));
+        api.places(new LatLng(37.5, 127.0), "FOOD", 500, 99);
+        assertTrue(server.last().target, server.last().target.endsWith("&page=45"));
     }
 
     @Test

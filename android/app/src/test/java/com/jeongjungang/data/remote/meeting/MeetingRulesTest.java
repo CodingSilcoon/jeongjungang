@@ -40,8 +40,24 @@ public class MeetingRulesTest {
         assertNotNull(MeetingRules.checkNickname(null));
         assertNotNull(MeetingRules.checkNickname("가나다라마바사아자차카타파하가나다라마바사")); // 21자
         assertNotNull(MeetingRules.checkNickname("민\n수"));
+        // 보이지 않는 글자: 폭 없는 공백, 방향 바꾸기, 줄 구분자, BOM (서버 @Nickname과 같은 규칙)
+        assertNotNull(MeetingRules.checkNickname("민\u200B수"));
+        assertNotNull(MeetingRules.checkNickname("민\u202E수"));
+        assertNotNull(MeetingRules.checkNickname("민\u2028수"));
+        assertNotNull(MeetingRules.checkNickname("\uFEFF민수"));
         // 이모지 하나는 한 글자로 센다
         assertNull(MeetingRules.checkNickname("😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"));
+    }
+
+    @Test
+    public void meetAtRange() {
+        long now = 1_000_000_000_000L;
+        long hour = MeetingRules.MEET_AT_PAST_LIMIT_MS;
+        assertNull(MeetingRules.checkMeetAt(now, now));
+        assertNull("1시간 전까지는 됨", MeetingRules.checkMeetAt(now - hour, now));
+        assertNotNull(MeetingRules.checkMeetAt(now - hour - 1, now));
+        assertNull("1년 뒤까지는 됨", MeetingRules.checkMeetAt(now + MeetingRules.MEET_AT_FUTURE_LIMIT_MS, now));
+        assertNotNull(MeetingRules.checkMeetAt(now + MeetingRules.MEET_AT_FUTURE_LIMIT_MS + 1, now));
     }
 
     @Test

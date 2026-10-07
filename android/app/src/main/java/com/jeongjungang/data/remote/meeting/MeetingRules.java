@@ -16,6 +16,11 @@ public final class MeetingRules {
     public static final int MAX_PREP_MINUTES = 240;
     public static final int MAX_PARTICIPANTS = 10;
     public static final int INVITE_CODE_LENGTH = 8;
+    /** docs/API.md: meetAt은 지금부터 1시간 전 ~ 1년(365일) 뒤. 서버 MeetingService와 같은 값. */
+    public static final long MEET_AT_PAST_LIMIT_MS = 60L * 60 * 1000;
+    public static final long MEET_AT_FUTURE_LIMIT_MS = 365L * 24 * 60 * 60 * 1000;
+    /** 서버가 쓰는 문장과 같게 맞춘다. */
+    static final String MEET_AT_MESSAGE = "약속 시간은 지금부터 1년 안으로 정해 주세요.";
     /** 혼동되는 글자 I L O U 0 1을 뺀 알파벳. */
     static final String INVITE_ALPHABET = "ABCDEFGHJKMNPQRSTVWXYZ23456789";
 
@@ -34,8 +39,19 @@ public final class MeetingRules {
         if (n.codePointCount(0, n.length()) > MAX_NICKNAME) {
             return "이름은 " + MAX_NICKNAME + "자까지 입력할 수 있어요.";
         }
-        if (hasControlChar(n)) {
+        if (hasInvisibleOrControlChar(n)) {
             return "이름에 쓸 수 없는 글자가 있어요.";
+        }
+        return null;
+    }
+
+    /**
+     * 약속 시각 범위 (지금부터 1시간 전 ~ 1년 뒤). 기기 시계 기준이라 경계 근처는 서버가 최종 판단한다.
+     * @return 문제가 없으면 null, 있으면 사용자에게 보여 줄 문장
+     */
+    public static String checkMeetAt(long meetAtMillis, long nowMillis) {
+        if (meetAtMillis < nowMillis - MEET_AT_PAST_LIMIT_MS || meetAtMillis > nowMillis + MEET_AT_FUTURE_LIMIT_MS) {
+            return MEET_AT_MESSAGE;
         }
         return null;
     }
@@ -84,11 +100,19 @@ public final class MeetingRules {
         return s;
     }
 
-    private static boolean hasControlChar(String s) {
-        for (int i = 0; i < s.length(); i++) {
-            if (Character.isISOControl(s.charAt(i))) {
+    /**
+     * 제어문자와 보이지 않는 글자(폭 없는 공백, 방향 바꾸기 등 FORMAT, 줄·문단 구분자). 서버 `@Nickname`과 같은 규칙.
+     * 이모지 결합용 ZWJ도 FORMAT이라 막힌다(서버와 같게 둔다).
+     */
+    private static boolean hasInvisibleOrControlChar(String s) {
+        for (int i = 0; i < s.length(); ) {
+            int cp = s.codePointAt(i);
+            int type = Character.getType(cp);
+            if (type == Character.CONTROL || type == Character.FORMAT
+                    || type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR) {
                 return true;
             }
+            i += Character.charCount(cp);
         }
         return false;
     }

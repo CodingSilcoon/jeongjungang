@@ -98,7 +98,8 @@ public class PlacesViewModel extends AndroidViewModel {
     /** 다음 페이지. 더 없거나 불러오는 중이면 아무것도 안 한다. */
     public void loadMore() {
         State cur = state.getValue();
-        if (cur == null || cur.status != State.Status.SUCCESS || !cur.hasMore || cur.loadingMore) {
+        if (cur == null || cur.status != State.Status.SUCCESS || !cur.hasMore || cur.loadingMore
+                || page >= HttpMeetingApi.MAX_PLACE_PAGE) {
             return;
         }
         state.setValue(new State(State.Status.SUCCESS, cur.items, true, true, null));
