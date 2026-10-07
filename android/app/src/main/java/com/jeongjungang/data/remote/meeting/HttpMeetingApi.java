@@ -9,6 +9,7 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.PlacePage;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Purpose;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Snapshot;
 import com.jeongjungang.domain.model.LatLng;
+import java.time.Clock;
 import java.time.ZoneId;
 import java.util.Locale;
 import org.json.JSONException;
@@ -21,17 +22,25 @@ public final class HttpMeetingApi implements MeetingApi {
     public static final int MIN_RADIUS = 100;
     public static final int MAX_RADIUS = 1000;
     public static final int DEFAULT_RADIUS = 500;
+    /** docs/API.md `GET /places` page 1~45 (카카오 검색 한도). */
+    public static final int MAX_PLACE_PAGE = 45;
 
     private final ApiHttp http;
     private final ZoneId zone;
+    private final Clock clock;
 
     public HttpMeetingApi(String baseUrl) {
         this(new ApiHttp(baseUrl), ZoneId.systemDefault());
     }
 
     HttpMeetingApi(ApiHttp http, ZoneId zone) {
+        this(http, zone, Clock.systemUTC());
+    }
+
+    HttpMeetingApi(ApiHttp http, ZoneId zone, Clock clock) {
         this.http = http;
         this.zone = zone;
+        this.clock = clock;
     }
 
     @Override
@@ -41,6 +50,9 @@ public final class HttpMeetingApi implements MeetingApi {
         requireValid(MeetingRules.checkTitle(title));
         if (origin != null) {
             requireValid(MeetingRules.checkOrigin(origin));
+        }
+        if (meetAtMillis != null) {
+            requireMeetAt(meetAtMillis);
         }
         try {
             JSONObject body = new JSONObject().put("hostNickname", hostNickname.trim());
@@ -108,6 +120,9 @@ public final class HttpMeetingApi implements MeetingApi {
         if (update.isEmpty()) {
             return;
         }
+        if (update.meetAtMillis() != null) {
+            requireMeetAt(update.meetAtMillis());
+        }
         try {
             http.patch("/meetings/" + ApiHttp.pathSegment(meetingId), update.toJson(zone), token);
         } catch (JSONException e) {
@@ -146,7 +161,7 @@ public final class HttpMeetingApi implements MeetingApi {
         }
         int radius = Math.max(MIN_RADIUS, Math.min(MAX_RADIUS, radiusMeters));
         String query = String.format(Locale.US, "/places?lat=%.6f&lng=%.6f&category=%s&radius=%d&page=%d",
-                center.lat, center.lng, category, radius, Math.max(1, page));
+                center.lat, center.lng, category, radius, Math.max(1, Math.min(MAX_PLACE_PAGE, page)));
         try {
             return MeetingJson.places(http.get(query, null, null).data);
         } catch (JSONException e) {
@@ -160,6 +175,15 @@ public final class HttpMeetingApi implements MeetingApi {
             throw new ApiException("VALIDATION_FAILED", 0, "초대 코드 8자리를 확인해 주세요.", 0, null);
         }
         return code;
+    }
+
+    /** 서버와 같은 필드 이름(meetAt)으로 사유를 담아, 화면이 서버 오류와 똑같이 다룰 수 있게 한다. */
+    private void requireMeetAt(long meetAtMillis) throws ApiException {
+        String problem = MeetingRules.checkMeetAt(meetAtMillis, clock.millis());
+        if (problem != null) {
+            throw new ApiException("VALIDATION_FAILED", 0, problem, 0, null,
+                    java.util.Collections.singletonMap("meetAt", problem));
+        }
     }
 
     private static void requireValid(String problem) throws ApiException {

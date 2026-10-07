@@ -48,6 +48,11 @@ public final class MeetingUpdate {
         return this;
     }
 
+    /** 바꾸려는 약속 시각. 안 바꾸면 null. */
+    Long meetAtMillis() {
+        return meetAtMillis;
+    }
+
     public boolean isEmpty() {
         return title == null && meetAtMillis == null && purpose == null && place == null && status == null;
     }

@@ -1,6 +1,10 @@
 package com.jeongjungang.data.remote;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -129,7 +133,7 @@ public final class ApiHttp {
             if (status >= 200 && status < 300) {
                 throw badResponse(e);
             }
-            throw fromStatus(status, null, null, retryAfter);
+            throw fromStatus(status, null, null, retryAfter, Collections.<String, String>emptyMap());
         }
         if (status >= 200 && status < 300 && envelope.optBoolean("success", false)) {
             JSONObject data = envelope.optJSONObject("data");
@@ -142,18 +146,56 @@ public final class ApiHttp {
         throw fromStatus(status,
                 error == null ? null : optString(error, "code"),
                 error == null ? null : optString(error, "message"),
-                retryAfter);
+                retryAfter,
+                fieldsOf(error));
     }
 
-    private static ApiException fromStatus(int status, String code, String serverMessage, int retryAfter) {
+    /** error.fields(필드 이름 → 사유). 없거나 형식이 다르면 빈 맵. */
+    static Map<String, String> fieldsOf(JSONObject error) {
+        JSONObject f = error == null ? null : error.optJSONObject("fields");
+        if (f == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> out = new LinkedHashMap<String, String>();
+        Iterator<String> keys = f.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            String reason = optString(f, key);
+            if (reason != null) {
+                out.put(key, reason);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * 필드별 사유가 있으면 그 문장을 보여 준다("입력값을 확인해 주세요."보다 구체적이다).
+     * 여러 개면 줄을 바꿔 모두 보여 준다.
+     */
+    static String messageWithFields(String serverMessage, Map<String, String> fields) {
+        if (fields.isEmpty()) {
+            return serverMessage;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String reason : new java.util.LinkedHashSet<String>(fields.values())) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(reason);
+        }
+        return sb.toString();
+    }
+
+    private static ApiException fromStatus(int status, String code, String serverMessage, int retryAfter,
+                                           Map<String, String> fields) {
         if (status == 429 || ApiException.RATE_LIMITED.equals(code)) {
             String message = serverMessage != null ? serverMessage
                     : retryAfter > 0 ? "요청이 너무 많아요. " + retryAfter + "초 뒤에 다시 시도해 주세요."
                     : "요청이 너무 많아요. 잠시 후 다시 시도해 주세요.";
             return new ApiException(ApiException.RATE_LIMITED, status, message, retryAfter, null);
         }
-        return new ApiException(code != null ? code : "HTTP_" + status, status,
-                serverMessage != null ? serverMessage : MSG_SERVER, retryAfter, null);
+        String message = messageWithFields(serverMessage != null ? serverMessage : MSG_SERVER, fields);
+        return new ApiException(code != null ? code : "HTTP_" + status, status, message, retryAfter, null, fields);
     }
 
     /** 경로 한 칸으로 인코딩한다. 서버가 준 id라도 / 등이 섞여 경로가 깨지지 않게 한다. */
