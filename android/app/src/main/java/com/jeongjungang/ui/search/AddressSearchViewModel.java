@@ -38,6 +38,7 @@ public class AddressSearchViewModel extends AndroidViewModel {
     /** 자동 검색 대기 시간. 서버 제한(IP당 30회/분)을 넘지 않게 한다. */
     public static final long DEBOUNCE_MS = 300;
     public static final int DEFAULT_RESULT_SIZE = 5;
+    static final String RATE_LIMITED_MESSAGE = "검색을 너무 자주 했어요. 잠시 후 다시 시도해 주세요.";
 
     private static final String TAG = "AddressSearchViewModel";
 
@@ -95,10 +96,16 @@ public class AddressSearchViewModel extends AndroidViewModel {
         }
         SearchState current = searchState.getValue();
         if (current != null && query.equals(current.query) && current.status != SearchState.Status.ERROR) {
-            return; // 같은 검색어(공백만 바뀜 등)는 다시 부르지 않는다
+            // 같은 검색어(공백만 바뀜 등)는 다시 부르지 않는다. 화면은 글자가 바뀔 때마다 목록을 비우므로
+            // 지금 상태를 다시 보내 다시 그리게 한다(안 보내면 "검색 중"에 멈춘다)
+            searchState.setValue(current);
+            return;
         }
         if (SystemClock.elapsedRealtime() < rateLimitedUntil) {
-            return; // 제한 안내가 떠 있는 동안은 자동 검색을 보내지 않는다
+            // 제한 중에는 보내지 않고, 이 검색어 기준으로 안내를 다시 보여 준다
+            searchGeneration.incrementAndGet();
+            searchState.setValue(SearchState.error(query, RATE_LIMITED_MESSAGE));
+            return;
         }
         pendingSearch = new Runnable() {
             @Override
