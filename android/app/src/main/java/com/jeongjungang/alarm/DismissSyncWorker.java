@@ -25,7 +25,7 @@ public class DismissSyncWorker extends Worker {
         super(context, params);
     }
 
-    /** 알람을 끈 직후, 그리고 서버 연결 상태가 바뀔 만한 때(약속 화면 열기 등) 부른다. 여러 번 불러도 하나만 돈다. */
+    /** 알람을 끈 직후, 그리고 서버 연결 상태가 바뀔 만한 때(약속 화면 열기 등) 부른다. 여러 번 불러도 차례로 돈다. */
     public static void enqueue(Context context) {
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(DismissSyncWorker.class)
                 .setConstraints(new Constraints.Builder()
@@ -33,7 +33,8 @@ public class DismissSyncWorker extends Worker {
                         .build())
                 .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
                 .build();
-        WorkManager.getInstance(context).enqueueUniqueWork(UNIQUE_NAME, ExistingWorkPolicy.KEEP, request);
+        // KEEP이면 이미 도는 작업이 새 기록을 못 보고 끝날 수 있어서, 도는 중이면 뒤에 한 번 더 붙인다
+        WorkManager.getInstance(context).enqueueUniqueWork(UNIQUE_NAME, ExistingWorkPolicy.APPEND_OR_REPLACE, request);
     }
 
     @NonNull
