@@ -43,7 +43,7 @@ enum RateLimitRule {
             if (rule.subject == Subject.TOKEN && !hasToken) {
                 continue;
             }
-            if (rule.method != null && !rule.method.matches(method)) {
+            if (rule.method != null && !methodMatches(rule.method, method)) {
                 continue;
             }
             if (rule.patterns.stream().anyMatch(p -> p.matches(container))) {
@@ -51,6 +51,15 @@ enum RateLimitRule {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Spring MVC는 GET 매핑에 HEAD 요청도 그대로 처리한다(본문만 빼고). 그래서 GET 규칙은 HEAD에도 적용하고,
+     * 같은 규칙 이름이라 같은 카운터를 쓴다. 이게 없으면 HEAD로 제한 없이 카카오를 부르거나 초대 코드를 대입할 수 있다.
+     */
+    private static boolean methodMatches(HttpMethod ruleMethod, String requestMethod) {
+        return ruleMethod.matches(requestMethod)
+                || (ruleMethod == HttpMethod.GET && HttpMethod.HEAD.matches(requestMethod));
     }
 
     Subject subject() {
