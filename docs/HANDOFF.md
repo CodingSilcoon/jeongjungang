@@ -150,7 +150,7 @@ jeongjungang.apiBaseUrl=https://{도메인}/api/v1
 |:---|:---|
 | 화면 전부 | 화면 담당 |
 | 서버 (위 결정 사항 포함) | 서버 담당 |
-| 카카오 키·키 해시 등록 | hefour. 지도를 띄울 PC마다 디버그 키 해시를 콘솔 플랫폼 → Android에 추가해야 함 (아래 "지도 키 넣는 법") |
+| 카카오 키·키 해시 등록 | hefour. 키 해시는 **PC당 처음 한 번만** 콘솔 플랫폼 → Android에 추가 (아래 "지도 키 넣는 법") |
 | 푸시(FCM) 수신 | Firebase 프로젝트와 `google-services.json` 필요. 생기면 `syncAlarm()`, `AlarmRingService.startEscalation()` 호출만 붙이면 됨 |
 | 초대 링크로 앱 바로 열기 | 도메인 확정 후 앱 설정 추가 |
 | 실기기 테스트 | 특히 삼성 (알람이 배터리 최적화에 밀리는지) |
@@ -163,7 +163,8 @@ jeongjungang.apiBaseUrl=https://{도메인}/api/v1
 
 **지도 키 넣는 법** (키는 git에 올리지 않습니다)
 1. hefour에게 네이티브 앱 키를 받아 `android/local.properties`에 `jeongjungang.kakaoNativeAppKey=키` 한 줄 추가
-2. 내 PC의 디버그 키 해시를 뽑아 hefour에게 전달 → 콘솔 플랫폼 → Android에 추가 (PC마다 다름)
+2. 내 PC의 디버그 키 해시를 뽑아 hefour에게 전달 → 콘솔 플랫폼 → Android에 추가. **PC당 처음 한 번만** 하면 되고, 지도를 띄울 때마다 할 필요는 없음
+   - 다시 해야 하는 경우: 다른 PC를 쓸 때, `debug.keystore`가 지워지거나 새로 생겼을 때(Android Studio 재설치 등), 배포용 서명 키를 새로 만들었을 때
    ```
    keytool -exportcert -alias androiddebugkey -keystore %USERPROFILE%\.android\debug.keystore -storepass android | openssl sha1 -binary | openssl base64
    ```
