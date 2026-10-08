@@ -29,25 +29,32 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        String path = request.getRequestURI();
+        if (RateLimitRule.ceilingApplies(path)) {
+            check(RateLimitRule.IP_CEILING, request.getRemoteAddr());
+        }
         Optional<String> token = BearerToken.from(request);
-        Optional<RateLimitRule> rule = RateLimitRule.match(request.getMethod(), request.getRequestURI(), token.isPresent());
+        Optional<RateLimitRule> rule = RateLimitRule.match(request.getMethod(), path, token.isPresent());
         if (rule.isEmpty()) {
             return true;
         }
         String subject = rule.get().subject() == RateLimitRule.Subject.TOKEN
                 ? ParticipantTokens.hash(token.orElseThrow())
                 : request.getRemoteAddr();
+        check(rule.get(), subject);
+        return true;
+    }
+
+    private void check(RateLimitRule rule, String subject) {
         Decision decision;
         try {
-            decision = limiter.tryAcquire(rule.get().name() + ":" + subject,
-                    rule.get().limitPerWindow(), RateLimitRule.WINDOW);
+            decision = limiter.tryAcquire(rule.name() + ":" + subject, rule.limitPerWindow(), RateLimitRule.WINDOW);
         } catch (DataAccessException | IllegalStateException e) {
             log.warn("요청 제한을 확인하지 못해 통과시킵니다: {}", e.toString());
-            return true;
+            return;
         }
         if (!decision.allowed()) {
             throw new RateLimitedException(decision.retryAfterSeconds());
         }
-        return true;
     }
 }

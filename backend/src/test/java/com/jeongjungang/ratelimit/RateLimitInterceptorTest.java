@@ -32,8 +32,40 @@ class RateLimitInterceptorTest {
         interceptor.preHandle(request("POST", "/api/v1/meetings", "10.0.0.1"), new MockHttpServletResponse(), null);
         interceptor.preHandle(authed, new MockHttpServletResponse(), null);
 
-        assertThat(keys.get(0)).isEqualTo("CREATE_MEETING:10.0.0.1/10");
-        assertThat(keys.get(1)).startsWith("AUTHENTICATED:").endsWith("/120").doesNotContain("secret-token");
+        assertThat(keys.get(0)).isEqualTo("IP_CEILING:10.0.0.1/600");
+        assertThat(keys.get(1)).isEqualTo("CREATE_MEETING:10.0.0.1/10");
+        assertThat(keys.get(2)).isEqualTo("IP_CEILING:10.0.0.1/600");
+        assertThat(keys.get(3)).startsWith("AUTHENTICATED:").endsWith("/120").doesNotContain("secret-token");
+    }
+
+    @Test
+    void requestsNoRuleMatches_stillCountTowardIpCeiling_exceptHealth() {
+        List<String> keys = new ArrayList<>();
+        RateLimitInterceptor interceptor = new RateLimitInterceptor((key, limit, window) -> {
+            keys.add(key);
+            return Decision.allow();
+        });
+
+        // 토큰 없는 요청, 너무 긴 토큰(토큰 없음으로 처리), 헬스 체크
+        interceptor.preHandle(request("GET", "/api/v1/meetings/abc", "10.0.0.2"), new MockHttpServletResponse(), null);
+        MockHttpServletRequest longToken = request("GET", "/api/v1/meetings/abc", "10.0.0.2");
+        longToken.addHeader("Authorization", "Bearer " + "x".repeat(200));
+        interceptor.preHandle(longToken, new MockHttpServletResponse(), null);
+        interceptor.preHandle(request("GET", "/api/v1/health", "10.0.0.2"), new MockHttpServletResponse(), null);
+
+        assertThat(keys).containsExactly("IP_CEILING:10.0.0.2", "IP_CEILING:10.0.0.2");
+    }
+
+    @Test
+    void ceilingReached_rejectsEvenWithFreshToken() {
+        RateLimitInterceptor interceptor = new RateLimitInterceptor((key, limit, window) ->
+                key.startsWith("IP_CEILING:") ? Decision.reject(7) : Decision.allow());
+        MockHttpServletRequest fakeToken = request("GET", "/api/v1/meetings/abc", "10.0.0.3");
+        fakeToken.addHeader("Authorization", "Bearer brand-new-random-token");
+
+        assertThatThrownBy(() -> interceptor.preHandle(fakeToken, new MockHttpServletResponse(), null))
+                .isInstanceOfSatisfying(RateLimitedException.class,
+                        e -> assertThat(e.retryAfterSeconds()).isEqualTo(7));
     }
 
     @Test

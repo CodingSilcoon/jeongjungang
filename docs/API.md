@@ -74,6 +74,9 @@ Authorization: Bearer {participantToken}
 | `POST /meetings/by-code/{inviteCode}/participants` | IP당 20회/분 |
 | `GET /meetings/by-code/{inviteCode}` | IP당 30회/분 (초대 코드 무작위 대입 방지) |
 | 그 외 인증 API | 토큰당 120회/분 |
+| 위와 별개로 모든 API (`/health` 제외) | IP당 600회/분. 요청마다 다른 가짜 토큰을 보내 토큰당 제한을 피하는 것을 막는다 |
+
+`GET` 제한은 `HEAD`에도 똑같이 적용된다(같은 카운터). Spring은 GET 매핑에 HEAD도 처리하기 때문이다.
 
 ### 값 제한
 

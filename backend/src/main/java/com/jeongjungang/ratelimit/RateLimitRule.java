@@ -11,6 +11,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
 /**
  * 요청 제한 규칙 (docs/API.md 3절). 위에서부터 처음 맞는 규칙 하나만 적용한다.
  * 공개 API는 IP 기준, 그 외 토큰을 보낸 요청은 토큰 기준이다.
+ * 이와 별개로 헬스 체크를 뺀 모든 요청은 IP 상한({@link #IP_CEILING})도 함께 센다.
  */
 enum RateLimitRule {
 
@@ -18,7 +19,14 @@ enum RateLimitRule {
     CREATE_MEETING(Subject.IP, 10, HttpMethod.POST, "/api/v1/meetings"),
     JOIN_MEETING(Subject.IP, 20, HttpMethod.POST, "/api/v1/meetings/by-code/*/participants"),
     INVITE_PREVIEW(Subject.IP, 30, HttpMethod.GET, "/api/v1/meetings/by-code/*"),
-    AUTHENTICATED(Subject.TOKEN, 120, null, "/api/v1/**");
+    AUTHENTICATED(Subject.TOKEN, 120, null, "/api/v1/**"),
+    /**
+     * 위 규칙과 별개로 거는 IP 상한. {@link #match}에는 나오지 않는다.
+     * 어느 규칙에도 안 맞는 요청이나, 요청마다 가짜 토큰을 바꿔 토큰 카운터를 피하는 요청도 여기서 막힌다.
+     */
+    IP_CEILING(Subject.IP, 600, null, "/api/v1/**");
+
+    private static final PathPattern HEALTH = PathPatternParser.defaultInstance.parse("/api/v1/health");
 
     static final Duration WINDOW = Duration.ofMinutes(1);
 
@@ -40,6 +48,9 @@ enum RateLimitRule {
     static Optional<RateLimitRule> match(String method, String path, boolean hasToken) {
         PathContainer container = PathContainer.parsePath(path);
         for (RateLimitRule rule : values()) {
+            if (rule == IP_CEILING) {
+                continue;
+            }
             if (rule.subject == Subject.TOKEN && !hasToken) {
                 continue;
             }
@@ -51,6 +62,12 @@ enum RateLimitRule {
             }
         }
         return Optional.empty();
+    }
+
+    /** 헬스 체크를 뺀 모든 API 요청은 IP 상한을 센다. */
+    static boolean ceilingApplies(String path) {
+        PathContainer container = PathContainer.parsePath(path);
+        return IP_CEILING.patterns.get(0).matches(container) && !HEALTH.matches(container);
     }
 
     /**

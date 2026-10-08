@@ -35,8 +35,16 @@ class RateLimitRuleTest {
     }
 
     @Test
-    void healthAndTokenlessPrivateRequests_areNotLimited() {
+    void healthAndTokenlessPrivateRequests_matchNoSpecificRule() {
         assertThat(RateLimitRule.match("GET", "/api/v1/health", false)).isEmpty();
         assertThat(RateLimitRule.match("GET", "/api/v1/meetings/abc", false)).isEmpty();
+    }
+
+    @Test
+    void ipCeiling_appliesToEveryApiPathButHealth_andNeverComesFromMatch() {
+        assertThat(RateLimitRule.ceilingApplies("/api/v1/meetings/abc")).isTrue();
+        assertThat(RateLimitRule.ceilingApplies("/api/v1/geocode")).isTrue();
+        assertThat(RateLimitRule.ceilingApplies("/api/v1/health")).isFalse();
+        assertThat(RateLimitRule.match("DELETE", "/api/v1/anything", false)).isEmpty();
     }
 }
