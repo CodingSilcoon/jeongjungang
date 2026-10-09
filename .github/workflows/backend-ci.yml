@@ -42,6 +42,14 @@ jobs:
       - name: Test
         run: ./gradlew test
 
+      # Docker가 없으면 통합 테스트가 조용히 건너뛰므로, 건너뛴 테스트가 있으면 실패시킨다
+      - name: Check skipped tests
+        run: |
+          total=$(cat build/test-results/test/*.xml | grep -o 'tests="[0-9]*"' | grep -o '[0-9]*' | paste -sd+ | bc)
+          skipped=$(cat build/test-results/test/*.xml | grep -o 'skipped="[0-9]*"' | grep -o '[0-9]*' | paste -sd+ | bc)
+          echo "테스트 ${total}개, 건너뜀 ${skipped}개" | tee -a "$GITHUB_STEP_SUMMARY"
+          test "$skipped" -eq 0
+
       # 실패하면 Actions 실행 화면의 Artifacts에서 HTML 리포트를 받아 볼 수 있다
       - name: Upload test report
         if: failure()
