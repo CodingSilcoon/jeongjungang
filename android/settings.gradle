@@ -19,6 +19,13 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // 카카오맵 SDK v2 (https://apis.map.kakao.com/android_v2/docs/getting-started/quickstart/)
+        maven {
+            url 'https://devrepo.kakao.com/nexus/repository/kakaomap-releases/'
+            content {
+                includeGroup 'com.kakao.maps.open'
+            }
+        }
     }
 }
 

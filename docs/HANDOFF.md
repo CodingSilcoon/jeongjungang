@@ -86,6 +86,15 @@
 
 **알람 화면 id**: `alarmTitle`, `alarmSubtitle`, `alarmMessage`, `dismissButton` (친구 알람 화면도 같은 레이아웃 사용)
 
+**지도 (카카오맵 SDK v2)**: 초기화는 앱 시작 시 끝나 있습니다. 화면에서는 이렇게만 쓰면 됩니다.
+- `KakaoMaps.isAvailable()`이 `false`면(키 없음 등) `MapView`를 만들지 말고 지도 없는 화면을 보여 주세요
+- 레이아웃에 `<com.kakao.vectormap.MapView android:id="@+id/map_view" .../>`
+- `mapView.start(new MapLifeCycleCallback(){…}, new KakaoMapReadyCallback(){ onMapReady(KakaoMap map) {…} })`
+- **Activity의 `onResume`/`onPause`에서 `mapView.resume()`/`mapView.pause()` 필수** (안 하면 알 수 없는 크래시, 공식 문서)
+- 앱 좌표 → 지도 좌표: `KakaoMaps.toKakao(latLng)` (`LatLng` 이름이 겹침)
+- 처음 위치는 `KakaoMapReadyCallback`의 `getPosition()`을 오버라이드
+- 예시 코드: `androidTest/.../KakaoMapSmokeTest.java`
+
 ---
 
 ## 서버 담당이 알아야 할 것
@@ -127,7 +136,7 @@ jeongjungang.apiBaseUrl=https://{도메인}/api/v1
 
 | 항목 | 내용 |
 |:---|:---|
-| 라이브러리 추가 | OkHttp 5.5.0, WorkManager 2.12.0, (테스트 전용) org.json |
+| 라이브러리 추가 | OkHttp 5.5.0, WorkManager 2.12.0, 카카오맵 SDK 2.15.2, (테스트 전용) org.json |
 | 권한 추가 | 인터넷, 정확한 알람, 전체 화면 알림, 알림, 부팅 완료, 진동, 포그라운드 서비스 |
 | 백업 제외 | 참가자 토큰, 알람 예약·끈 기록·연결 정보 (기기 전용 데이터) |
 | 서버 주소 | `BuildConfig.API_BASE_URL` ← `local.properties`의 `jeongjungang.apiBaseUrl` |
@@ -141,7 +150,7 @@ jeongjungang.apiBaseUrl=https://{도메인}/api/v1
 |:---|:---|
 | 화면 전부 | 화면 담당 |
 | 서버 (위 결정 사항 포함) | 서버 담당 |
-| 카카오 개발자 앱·키 발급 | 지도 SDK와 서버 `/geocode`가 필요. 담당 미정 |
+| 카카오 키·키 해시 등록 | hefour. 키 해시는 **PC당 처음 한 번만** 콘솔 플랫폼 → Android에 추가 (아래 "지도 키 넣는 법") |
 | 푸시(FCM) 수신 | Firebase 프로젝트와 `google-services.json` 필요. 생기면 `syncAlarm()`, `AlarmRingService.startEscalation()` 호출만 붙이면 됨 |
 | 초대 링크로 앱 바로 열기 | 도메인 확정 후 앱 설정 추가 |
 | 실기기 테스트 | 특히 삼성 (알람이 배터리 최적화에 밀리는지) |
@@ -151,3 +160,15 @@ jeongjungang.apiBaseUrl=https://{도메인}/api/v1
 
 - 에뮬레이터를 오래 켜 두면 앱 화면이 시작 애니메이션에서 멈추고 검은 화면/빈 화면이 될 때가 있습니다(다른 앱도 동일). **Cold Boot**하면 정상입니다. 앱 문제가 아닙니다
 - 테스트: `cd android && gradlew.bat test` (JAVA_HOME을 Android Studio 내장 JDK로)
+
+**지도 키 넣는 법** (키는 git에 올리지 않습니다)
+1. hefour에게 네이티브 앱 키를 받아 `android/local.properties`에 `jeongjungang.kakaoNativeAppKey=키` 한 줄 추가
+2. 내 PC의 디버그 키 해시를 뽑아 hefour에게 전달 → 콘솔 플랫폼 → Android에 추가. **PC당 처음 한 번만** 하면 되고, 지도를 띄울 때마다 할 필요는 없음
+   - 다시 해야 하는 경우: 다른 PC를 쓸 때, `debug.keystore`가 지워지거나 새로 생겼을 때(Android Studio 재설치 등), 배포용 서명 키를 새로 만들었을 때
+   ```
+   keytool -exportcert -alias androiddebugkey -keystore %USERPROFILE%\.android\debug.keystore -storepass android | openssl sha1 -binary | openssl base64
+   ```
+   (`keytool`은 Android Studio의 `jbr\bin`에 있음. `openssl`은 Git Bash에 있음)
+3. 확인: 에뮬레이터 화면을 켜 둔 채 `gradlew.bat connectedDebugAndroidTest` → `KakaoMapSmokeTest` 통과면 됨
+- 키가 없으면 지도만 꺼지고 앱은 그대로 동작합니다
+- 카카오맵 SDK는 ARM 전용이라 x86_64 에뮬레이터에서는 ARM 번역으로 돕니다(API 37 이미지에서 확인). 그래서 APK가 약 46MB로 커졌습니다
