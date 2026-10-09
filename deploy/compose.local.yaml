@@ -1,0 +1,6 @@
+# 로컬에서 이미지를 직접 빌드할 때만 덧붙인다 (merge 전 변경을 운영 구성으로 확인할 때)
+#   docker compose -f compose.yaml -f compose.local.yaml up -d --build
+services:
+  app:
+    build: ../backend
+    image: jeongjungang-backend:local
