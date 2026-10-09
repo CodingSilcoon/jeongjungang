@@ -1,4 +1,5 @@
-# 운영 구성: Caddy(HTTPS) → 앱 → Postgres·Redis. 서버에서 deploy 폴더에 들어가 `docker compose up -d --build`
+# 운영 구성: Caddy(HTTPS) → 앱 → Postgres·Redis. 서버에서 deploy 폴더에 들어가 `docker compose pull && docker compose up -d`
+# 앱 이미지는 CI가 main에서 빌드해 GHCR에 올린 것을 받는다(서버에서 빌드하지 않음). 로컬에서 빌드하려면 compose.local.yaml을 함께 쓴다
 # 밖으로 여는 포트는 Caddy의 80·443뿐이다. Postgres·Redis는 compose 내부 네트워크로만 접근한다
 name: jeongjungang
 
@@ -21,11 +22,11 @@ services:
         condition: service_healthy
 
   app:
-    build: ../backend
-    image: jeongjungang-backend
+    # 기본은 latest. 되돌릴 때는 .env의 APP_TAG를 이전 커밋 태그(sha-xxxxxxx)로 바꾼다
+    image: ghcr.io/codingsilcoon/jeongjungang-backend:${APP_TAG:-latest}
     restart: unless-stopped
-    # 힙은 이 값의 75% (Dockerfile의 MaxRAMPercentage)
-    mem_limit: 768m
+    # 힙은 이 값의 60% (Dockerfile의 MaxRAMPercentage). 1GB 서버(t3.micro) 기준. 로컬 측정 약 290MB
+    mem_limit: 512m
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/jeongjungang
       DB_USERNAME: jeongjungang
