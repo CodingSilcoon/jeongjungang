@@ -28,15 +28,15 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
 
       # Gradle 의존성·빌드 캐시. 두 번째 실행부터 빨라진다
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       # ubuntu 러너에는 Docker가 있어서 Testcontainers 통합 테스트도 건너뛰지 않고 돈다
       - name: Test
@@ -45,7 +45,7 @@ jobs:
       # 실패하면 Actions 실행 화면의 Artifacts에서 HTML 리포트를 받아 볼 수 있다
       - name: Upload test report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-test-report
           path: backend/build/reports/tests/test
