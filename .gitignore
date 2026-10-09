@@ -16,3 +16,6 @@ local.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# deploy/.env.example은 올린다
+!.env.example

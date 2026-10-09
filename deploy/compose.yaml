@@ -1,0 +1,74 @@
+# 운영 구성: Caddy(HTTPS) → 앱 → Postgres·Redis. 서버에서 deploy 폴더에 들어가 `docker compose up -d --build`
+# 밖으로 여는 포트는 Caddy의 80·443뿐이다. Postgres·Redis는 compose 내부 네트워크로만 접근한다
+name: jeongjungang
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?deploy/.env에 DOMAIN이 필요합니다}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+  app:
+    build: ../backend
+    image: jeongjungang-backend
+    restart: unless-stopped
+    # 힙은 이 값의 75% (Dockerfile의 MaxRAMPercentage)
+    mem_limit: 768m
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/jeongjungang
+      DB_USERNAME: jeongjungang
+      DB_PASSWORD: ${DB_PASSWORD:?deploy/.env에 DB_PASSWORD가 필요합니다}
+      REDIS_HOST: redis
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY:-}
+      PUBLIC_BASE_URL: https://${DOMAIN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jeongjungang
+      POSTGRES_USER: jeongjungang
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?deploy/.env에 DB_PASSWORD가 필요합니다}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jeongjungang -d jeongjungang"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # 책임 알람의 에스컬레이션 대기열을 Redis에 둘 예정이라, 재시작해도 남도록 디스크에 기록한다(AOF)
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  caddy-data:
+  caddy-config:
+  postgres-data:
+  redis-data:
