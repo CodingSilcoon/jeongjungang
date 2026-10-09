@@ -16,6 +16,16 @@
 | `deploy/.env.example` | 서버에 채울 값: `DOMAIN`, `DB_PASSWORD`, `KAKAO_REST_API_KEY`, `APP_TAG`(선택) |
 | `.github/workflows/backend-ci.yml` | main에 merge되면 테스트 통과 후 이미지를 GHCR에 올림 (`latest`, `sha-xxxxxxx`) |
 
+## 현재 서버
+
+| 항목 | 값 |
+|:---|:---|
+| 주소 | `https://jeongjungang.duckdns.org/api/v1` (앱 배포 후) |
+| EC2 | `jeongjungang-server`, t3.micro(크레딧 표준), Ubuntu 24.04 x86, gp3 20GB 암호화, 서울(ap-northeast-2) |
+| 탄력적 IP | `15.165.29.46` (DuckDNS `jeongjungang`이 가리킴) |
+| 보안 그룹 | 22·80·443 TCP 전체 허용 (SSH는 키로만 로그인) |
+| 접속 | `ssh -i jeongjungang-server.pem ubuntu@15.165.29.46` (키는 서버 담당이 보관) |
+
 ## 로컬에서 운영 구성 띄워 보기
 
 Docker Desktop을 켜고:
@@ -32,17 +42,19 @@ docker compose down       # 데이터는 남는다. 지우려면 down -v
 
 ## EC2에 처음 올리기
 
-1. **EC2 만들기**: Ubuntu 24.04, t3.micro(1GB)로 시작. 서버에서 빌드하지 않아서 실행만 하면 되고, 로컬 측정 기준 전체 약 400MB. 모자라면 인스턴스 정지 → 타입을 t3.small로 변경 → 시작 (디스크·탄력적 IP 유지)
-2. **보안 그룹**: 80·443(TCP), 443(UDP)은 전체 허용, 22는 **내 IP만**. 5432·6379는 열지 않는다
+1. **EC2 만들기**: Ubuntu 24.04 x86, t3.micro(1GB)로 시작. 고급 세부 정보에서 **크레딧 사양 표준**(무제한이면 CPU를 많이 쓸 때 추가 요금), **종료 방지** 켜기. 스토리지 gp3 20GB(8GB는 이미지·스왑·로그로 빠듯함). 서버에서 빌드하지 않아서 실행만 하면 되고, 로컬 측정 기준 전체 약 400MB. 모자라면 인스턴스 정지 → 타입을 t3.small로 변경 → 시작 (디스크·탄력적 IP 유지)
+2. **보안 그룹**: 80·443(TCP)은 전체 허용. 22는 작업 장소가 고정이면 내 IP만, 아니면 전체 허용(Ubuntu AMI는 키로만 로그인됨). 5432·6379는 열지 않는다
 3. **탄력적 IP** 할당 후 인스턴스에 연결 (안 하면 재시작 때 IP가 바뀜)
-4. **DuckDNS**: 서브도메인을 만들고 탄력적 IP를 넣는다. 인증서 발급 전에 도메인이 이 IP를 가리켜야 한다
+4. **DuckDNS**: 서브도메인을 만들고 탄력적 IP를 넣는다. 만들 때 **접속한 PC의 IP가 자동으로 들어가므로** 탄력적 IP로 바꾸고 update ip. 인증서 발급 전에 도메인이 이 IP를 가리켜야 한다
 5. **서버 준비** (SSH 접속 후):
    ```bash
    curl -fsSL https://get.docker.com | sudo sh
    sudo usermod -aG docker $USER && exit   # 다시 접속
-   # 1GB 서버라 스왑 2GB
+   # 1GB 서버라 스왑 2GB. 메모리가 꽤 찰 때만 쓰게 swappiness 10
    sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+   echo "vm.swappiness=10" | sudo tee /etc/sysctl.d/99-swappiness.conf && sudo sysctl -p /etc/sysctl.d/99-swappiness.conf
+   sudo timedatectl set-timezone Asia/Seoul   # 로그 시간을 한국 시간으로
    ```
 6. **설정 받고 띄우기** (저장소·이미지 모두 공개라 로그인 필요 없음)
    ```bash
