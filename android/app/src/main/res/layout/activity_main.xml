@@ -6,31 +6,31 @@
         android:orientation="vertical" android:paddingStart="@dimen/start_horizontal_padding" android:paddingEnd="@dimen/start_horizontal_padding" android:paddingTop="24dp" android:paddingBottom="24dp">
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/start_logo"
             android:textSize="27sp" android:textStyle="bold" android:letterSpacing="-0.06" android:textColor="@color/start_ink"/>
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="32dp"
-            android:fontFamily="sans-serif-black" android:text="@string/start_title" android:textSize="32sp" android:textStyle="bold" android:letterSpacing="-0.04" android:textColor="@color/start_ink" android:accessibilityHeading="true"/>
+        <TextView android:id="@+id/startHeading" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="32dp"
+            android:fontFamily="sans-serif-black" android:text="@string/start_title" android:textSize="32sp" android:textStyle="bold" android:letterSpacing="-0.04" android:textColor="@color/start_ink"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
             android:text="@string/start_subtitle" android:textSize="14sp" android:textColor="@color/start_muted"/>
         <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1"/>
         <FrameLayout android:layout_width="match_parent" android:layout_height="190dp" android:layout_marginTop="14dp" android:layout_marginBottom="8dp" android:importantForAccessibility="noHideDescendants">
-            <ImageView android:layout_width="match_parent" android:layout_height="190dp" android:layout_gravity="center" android:src="@drawable/start_meeting_illustration" android:scaleType="fitCenter"/>
+            <ImageView android:layout_width="match_parent" android:layout_height="190dp" android:layout_gravity="center" android:src="@drawable/start_meeting_illustration" android:scaleType="fitCenter" android:contentDescription="@null" android:importantForAccessibility="no"/>
             <TextView android:layout_width="110dp" android:layout_height="wrap_content" android:minHeight="29dp" android:layout_gravity="center" android:translationX="9dp" android:translationY="53dp" android:gravity="center" android:background="@drawable/start_here_background" android:text="@string/start_here" android:textColor="@color/start_muted" android:textSize="12sp"/>
         </FrameLayout>
 
-        <LinearLayout android:id="@+id/findPlaceButton" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" android:background="@drawable/start_action_primary" android:minHeight="84dp">
+        <LinearLayout android:id="@+id/findPlaceButton" android:contentDescription="@string/start_find" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" android:background="@drawable/start_action_primary" android:minHeight="84dp">
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:importantForAccessibility="noHideDescendants">
                 <TextView style="@style/StartActionTitle" android:text="@string/start_find" android:textColor="@color/start_ink"/>
                 <TextView style="@style/StartActionDetail" android:text="@string/start_find_detail" android:textColor="@color/start_ink"/>
             </LinearLayout>
             <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="12dp" android:src="@drawable/start_chevron" android:importantForAccessibility="no" app:tint="@color/start_ink"/>
         </LinearLayout>
-        <LinearLayout android:id="@+id/createMeetingButton" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" >
+        <LinearLayout android:id="@+id/createMeetingButton" android:contentDescription="@string/start_create" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" >
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:importantForAccessibility="noHideDescendants">
                 <TextView style="@style/StartActionTitle" android:text="@string/start_create" />
                 <TextView style="@style/StartActionDetail" android:text="@string/start_create_detail" />
             </LinearLayout>
             <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="12dp" android:src="@drawable/start_chevron" android:importantForAccessibility="no" />
         </LinearLayout>
-        <LinearLayout android:id="@+id/joinMeetingButton" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" >
+        <LinearLayout android:id="@+id/joinMeetingButton" android:contentDescription="@string/start_join" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" >
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:importantForAccessibility="noHideDescendants">
                 <TextView style="@style/StartActionTitle" android:text="@string/start_join" />
                 <TextView style="@style/StartActionDetail" android:text="@string/start_join_detail" />

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/start_background">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:paddingHorizontal="22dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical">
+            <Button android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp"
+                android:text="‹" android:textSize="28sp" android:contentDescription="@string/origin_back"
+                android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+            <TextView style="@style/OriginText" android:layout_width="0dp" android:layout_weight="1"
+                android:gravity="center" android:text="@string/start_logo" android:textStyle="bold" android:textSize="18sp" />
+            <Button android:id="@+id/menuButton" android:layout_width="wrap_content" android:layout_height="48dp"
+                android:text="관리" android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:fillViewport="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:paddingEnd="4dp" android:paddingBottom="16dp">
+                <TextView android:id="@+id/heading" style="@style/OriginTitle" android:text="@string/meeting_create_title" />
+
+                <LinearLayout android:id="@+id/details" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:visibility="gone">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+                        <TextView android:id="@+id/meetingTitle" style="@style/OriginText" android:layout_width="0dp"
+                            android:layout_weight="1" android:textSize="18sp" android:textStyle="bold" />
+                        <Button android:id="@+id/editButton" android:layout_width="wrap_content" android:layout_height="48dp"
+                            android:text="수정" android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+                    </LinearLayout>
+                    <TextView android:id="@+id/metadata" style="@style/OriginText" android:layout_marginTop="8dp" android:lineSpacingExtra="6dp" />
+
+                    <LinearLayout android:id="@+id/invitePanel" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="16dp" android:layout_marginTop="24dp"
+                        android:background="@drawable/start_action_primary">
+                        <TextView style="@style/OriginText" android:text="친구 초대 코드" android:textSize="12sp" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+                            <TextView android:id="@+id/inviteCode" style="@style/OriginText" android:layout_width="0dp"
+                                android:layout_weight="1" android:textSize="24sp" android:textStyle="bold" android:letterSpacing="0.08" android:textIsSelectable="true" />
+                            <Button android:id="@+id/copyButton" android:layout_width="wrap_content" android:layout_height="48dp"
+                                android:text="복사" android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+                        </LinearLayout>
+                        <androidx.appcompat.widget.AppCompatButton android:id="@+id/shareButton" style="@style/OriginButton"
+                            android:text="초대 링크 공유" android:background="@drawable/start_action_secondary" app:backgroundTint="@null" />
+                    </LinearLayout>
+
+                    <TextView android:id="@+id/peopleHeading" style="@style/MeetingLabel" android:textSize="17sp" />
+                    <TextView android:id="@+id/progress" style="@style/OriginText" android:textSize="12sp" />
+                    <LinearLayout android:id="@+id/people" android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:layout_marginTop="8dp" />
+                </LinearLayout>
+
+                <TextView android:id="@+id/status" style="@style/OriginText" android:layout_marginTop="16dp"
+                    android:accessibilityLiveRegion="polite" />
+                <Button android:id="@+id/retryButton" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:minHeight="48dp" android:text="다시 불러오기" android:visibility="gone" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView android:id="@+id/footerHint" style="@style/OriginText" android:textSize="12sp"
+            android:gravity="center" android:paddingVertical="12dp" />
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/findButton" style="@style/OriginButton"
+            android:text="만날 곳 찾기" android:layout_marginBottom="20dp" app:backgroundTint="@null" />
+    </LinearLayout>
+</LinearLayout>

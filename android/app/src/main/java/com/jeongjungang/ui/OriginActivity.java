@@ -39,6 +39,8 @@ import java.util.ArrayList;
 /** 출발지 입력 → 실제 장소 검색 → 추천 기준 선택 화면. */
 public class OriginActivity extends AppCompatActivity {
 
+    public static final String PICK_ORIGIN = "pickOrigin";
+
     private static final int ENTRY = 0;
     private static final int SEARCH = 1;
     private static final int CRITERIA = 2;
@@ -82,6 +84,11 @@ public class OriginActivity extends AppCompatActivity {
         }
 
         searchModel.getSearchState().observe(this, this::renderSearch);
+
+        // 약속 만들기에서는 같은 검색 화면을 출발지 선택기로 재사용한다.
+        if (getIntent().getBooleanExtra(PICK_ORIGIN, false) && savedInstanceState == null) {
+            openSearch(0);
+        }
     }
 
     /** 시스템 표시줄과 검색 키보드가 화면을 가리지 않게 한다. */
@@ -349,6 +356,16 @@ public class OriginActivity extends AppCompatActivity {
                 return;
             }
 
+            if (getIntent().getBooleanExtra(PICK_ORIGIN, false)) {
+                android.content.Intent originResult = new android.content.Intent()
+                        .putExtra("label", place.name)
+                        .putExtra("lat", place.location.lat)
+                        .putExtra("lng", place.location.lng);
+                setResult(RESULT_OK, originResult);
+                finish();
+                return;
+            }
+
             origins.set(editingIndex, place);
             searchModel.clear();
             renderParticipants();
@@ -379,6 +396,11 @@ public class OriginActivity extends AppCompatActivity {
     }
 
     private void goBack() {
+        if (getIntent().getBooleanExtra(PICK_ORIGIN, false)) {
+            finish();
+            return;
+        }
+
         if (criteriaDialog.isShowing()) {
             criteriaDialog.dismiss();
             return;

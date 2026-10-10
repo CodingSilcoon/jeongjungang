@@ -102,7 +102,8 @@ public class RecommendationActivity extends AppCompatActivity {
         if (values != null) {
             for (int i = 0; i < values.size(); i++) {
                 Bundle value = values.get(i);
-                String name = i == 0 ? "나" : getString(R.string.origin_friend, i);
+                String name = value.getString("name",
+                        i == 0 ? "나" : getString(R.string.origin_friend, i));
                 participants.add(new Participant(name,
                         new LatLng(value.getDouble("lat"), value.getDouble("lng"))));
                 originLabels.add(value.getString("label", "출발지"));

@@ -1,0 +1,33 @@
+<resources>
+    <string name="meeting_create_title">약속 만들기</string>
+    <string name="meeting_name_label">내 이름 · 필수</string>
+    <string name="meeting_name_hint">친구들이 알아볼 이름</string>
+    <string name="meeting_name_help">약속 안에서 사용할 이름 · 최대 20자</string>
+    <string name="meeting_title_label">약속 이름 · 선택</string>
+    <string name="meeting_title_hint">예: 오랜만에 저녁 한 끼</string>
+    <string name="meeting_purpose_label">뭐 하고 만날까? · 선택</string>
+    <string name="meeting_date_label">날짜와 시간 · 선택</string>
+    <string name="meeting_date_later">나중에 정할게</string>
+    <string name="meeting_origin_label">내 출발지 · 선택</string>
+    <string name="meeting_origin_later">나중에 입력할게</string>
+    <string name="meeting_create_hint">약속을 만들면 초대 링크를 받을 수 있어.</string>
+    <string name="meeting_server_unavailable">서버 연결 후 약속을 만들 수 있어요. 입력 화면은 미리 사용할 수 있어요.</string>
+    <style name="MeetingLabel" parent="OriginText">
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">9dp</item>
+    </style>
+    <style name="MeetingInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">54dp</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/start_ink</item>
+        <item name="android:textColorHint">@color/start_muted</item>
+        <item name="android:background">@drawable/start_action_secondary</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:inputType">text</item>
+    </style>
+</resources>

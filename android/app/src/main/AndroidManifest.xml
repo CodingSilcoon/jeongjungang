@@ -37,6 +37,24 @@
         </activity>
 
         <activity
+            android:name=".ui.JoinMeetingActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.MeetingRoomActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.CreateMeetingActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".ui.OriginActivity"
             android:theme="@style/Theme.Jeongjungang.Start"
             android:exported="false"

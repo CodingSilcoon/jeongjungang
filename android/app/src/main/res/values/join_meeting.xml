@@ -1,0 +1,12 @@
+<resources>
+    <string name="join_code_label">초대 코드 또는 링크</string>
+    <string name="join_code_hint">받은 코드나 링크를 붙여 넣어줘</string>
+    <string name="join_code_help">소문자나 하이픈이 있어도 괜찮아.</string>
+    <string name="join_origin_help">출발지는 대기방에서도 입력할 수 있어.</string>
+    <string name="join_preview_hint">누구의 약속인지 먼저 확인할 수 있어.</string>
+    <string name="join_check">약속 확인하기</string>
+    <string name="join_recheck">약속 다시 확인</string>
+    <string name="join_submit">참여하기</string>
+    <string name="join_unavailable">서버 연결 후 초대 조회와 참여를 사용할 수 있어요.</string>
+    <string name="join_invalid_code">초대 코드 8자리 또는 받은 초대 링크를 확인해 주세요.</string>
+</resources>

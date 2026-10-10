@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/start_background">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:paddingHorizontal="22dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical">
+            <Button android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp"
+                android:text="‹" android:textSize="28sp" android:contentDescription="@string/origin_back"
+                android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+            <TextView style="@style/OriginText" android:layout_width="0dp" android:layout_weight="1"
+                android:gravity="end" android:text="@string/start_logo" android:textStyle="bold" android:textSize="18sp" />
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView android:id="@+id/scroll" android:layout_width="match_parent"
+            android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:paddingEnd="4dp" android:paddingBottom="16dp">
+                <TextView android:id="@+id/heading" style="@style/OriginTitle" android:text="@string/start_join" />
+
+                <LinearLayout android:id="@+id/codePanel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView style="@style/MeetingLabel" android:text="@string/join_code_label" android:labelFor="@id/codeInput" />
+                    <EditText android:id="@+id/codeInput" style="@style/MeetingInput"
+                        android:hint="@string/join_code_hint" android:inputType="textUri" android:imeOptions="actionGo" />
+                    <TextView style="@style/OriginText" android:text="@string/join_code_help"
+                        android:textSize="12sp" android:layout_marginTop="12dp" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/previewPanel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="18dp" android:layout_marginTop="20dp"
+                        android:background="@drawable/start_action_primary">
+                        <TextView android:id="@+id/hostName" style="@style/OriginText" android:textSize="12sp" />
+                        <TextView android:id="@+id/meetingTitle" style="@style/OriginText"
+                            android:textSize="21sp" android:textStyle="bold" android:layout_marginTop="8dp" />
+                        <TextView android:id="@+id/meetingInfo" style="@style/OriginText"
+                            android:layout_marginTop="16dp" android:lineSpacingExtra="8dp" />
+                    </LinearLayout>
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_name_label" android:labelFor="@id/nickname" />
+                    <EditText android:id="@+id/nickname" style="@style/MeetingInput"
+                        android:hint="@string/meeting_name_hint" android:imeOptions="actionDone" />
+                    <TextView style="@style/OriginText" android:text="@string/meeting_name_help"
+                        android:textSize="12sp" android:layout_marginTop="12dp" />
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_origin_label" />
+                    <androidx.appcompat.widget.AppCompatButton android:id="@+id/originButton" style="@style/OriginButton"
+                        android:text="@string/meeting_origin_later" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:background="@drawable/start_action_secondary" app:backgroundTint="@null" />
+                    <TextView style="@style/OriginText" android:text="@string/join_origin_help"
+                        android:textSize="12sp" android:layout_marginTop="12dp" />
+                </LinearLayout>
+
+                <TextView android:id="@+id/status" style="@style/OriginText" android:layout_marginTop="16dp"
+                    android:accessibilityLiveRegion="polite" />
+                <Button android:id="@+id/retryButton" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:minHeight="48dp" android:text="@string/join_recheck" android:visibility="gone" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView android:id="@+id/footerHint" style="@style/OriginText" android:text="@string/join_preview_hint"
+            android:textSize="12sp" android:gravity="center" android:paddingVertical="12dp" />
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/submitButton" style="@style/OriginButton"
+            android:text="@string/join_check" android:layout_marginBottom="20dp" app:backgroundTint="@null" />
+    </LinearLayout>
+</LinearLayout>

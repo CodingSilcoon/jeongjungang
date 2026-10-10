@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/start_background">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:paddingHorizontal="22dp" android:orientation="vertical">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp"
+            android:gravity="center_vertical">
+            <Button android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp"
+                android:text="‹" android:textSize="28sp" android:textColor="@color/start_ink"
+                android:contentDescription="@string/origin_back"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:gravity="end" android:text="@string/start_logo" android:textSize="18sp"
+                android:textStyle="bold" android:textColor="@color/start_ink" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/heading" style="@style/OriginTitle" android:text="@string/meeting_create_title" />
+
+        <androidx.core.widget.NestedScrollView android:id="@+id/scroll"
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+            android:fillViewport="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:paddingEnd="4dp" android:paddingBottom="12dp" android:orientation="vertical">
+
+                <LinearLayout android:id="@+id/form" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView style="@style/MeetingLabel" android:labelFor="@id/nickname"
+                        android:text="@string/meeting_name_label" />
+                    <EditText android:id="@+id/nickname" style="@style/MeetingInput"
+                        android:maxLength="20" android:hint="@string/meeting_name_hint" />
+                    <TextView style="@style/OriginText" android:text="@string/meeting_name_help"
+                        android:textSize="12sp" android:paddingTop="8dp" />
+
+                    <TextView style="@style/MeetingLabel" android:labelFor="@id/titleInput"
+                        android:text="@string/meeting_title_label" />
+                    <EditText android:id="@+id/titleInput" style="@style/MeetingInput"
+                        android:maxLength="40" android:hint="@string/meeting_title_hint" />
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_purpose_label" />
+                    <com.google.android.material.chip.ChipGroup android:id="@+id/purposeGroup"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        app:singleSelection="true" app:selectionRequired="true"
+                        app:checkedChip="@id/purposeEtc" app:chipSpacingHorizontal="6dp">
+                        <com.google.android.material.chip.Chip android:id="@+id/purposeMeal"
+                            style="@style/Widget.Material3.Chip.Filter" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="식사" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purposeCafe"
+                            style="@style/Widget.Material3.Chip.Filter" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="카페" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purposeDrink"
+                            style="@style/Widget.Material3.Chip.Filter" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="술자리" />
+                        <com.google.android.material.chip.Chip android:id="@+id/purposeEtc"
+                            style="@style/Widget.Material3.Chip.Filter" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:text="기타" />
+                    </com.google.android.material.chip.ChipGroup>
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_date_label" />
+                    <Button android:id="@+id/dateButton" style="@style/OriginButton"
+                        android:text="@string/meeting_date_later" android:textSize="14sp"
+                        android:minHeight="48dp" android:background="@drawable/start_action_secondary" app:backgroundTint="@null" />
+                    <TextView style="@style/OriginText" android:text="한국 시간 기준" android:textSize="12sp" android:paddingTop="8dp" />
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_origin_label" />
+                    <Button android:id="@+id/originButton" style="@style/OriginButton"
+                        android:text="@string/meeting_origin_later" android:textSize="14sp"
+                        android:minHeight="48dp" android:background="@drawable/start_action_secondary" app:backgroundTint="@null" />
+                </LinearLayout>
+
+                <TextView android:id="@+id/invitation" style="@style/OriginText"
+                    android:visibility="gone" android:textIsSelectable="true" android:lineSpacingExtra="6dp" />
+                <TextView android:id="@+id/status" style="@style/OriginText"
+                    android:layout_marginTop="16dp" android:accessibilityLiveRegion="polite" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView android:id="@+id/footerHint" style="@style/OriginText" android:text="@string/meeting_create_hint"
+            android:gravity="center" android:textSize="12sp" android:layout_marginVertical="10dp" />
+        <Button android:id="@+id/createButton" style="@style/OriginButton"
+            android:text="@string/meeting_create_title" android:layout_marginBottom="12dp" app:backgroundTint="@null" />
+    </LinearLayout>
+</LinearLayout>
