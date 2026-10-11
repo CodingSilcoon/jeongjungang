@@ -25,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.jeongjungang.R;
 import com.jeongjungang.data.remote.GeoPlace;
 import com.jeongjungang.databinding.ActivityRecommendationBinding;
+import com.jeongjungang.databinding.ViewRecommendStateBinding;
 import com.jeongjungang.domain.model.LatLng;
 import com.jeongjungang.domain.recommend.Criterion;
 import com.jeongjungang.domain.recommend.Participant;
@@ -81,6 +82,10 @@ public class RecommendationActivity extends AppCompatActivity {
         binding.backButton.setOnClickListener(view -> goBack());
         binding.criterionButton.setOnClickListener(view -> chooseCriterion());
         binding.primaryButton.setOnClickListener(view -> primaryAction());
+        binding.stateSecondary.setOnClickListener(view -> {
+            if (current != null && current.status == RecommendState.Status.EMPTY) retryRecommendation();
+            else returnToOrigins();
+        });
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -167,23 +172,16 @@ public class RecommendationActivity extends AppCompatActivity {
         binding.criterionButton.setText("추천 기준 · " + getString(criterion == Criterion.TOTAL_TIME
                 ? R.string.recommend_total : R.string.recommend_fair));
         boolean success = state.status == RecommendState.Status.SUCCESS;
-        binding.mapPlaceholder.setVisibility(detail && success ? View.GONE : View.VISIBLE);
-        binding.criterionButton.setVisibility(detail && success ? View.GONE : View.VISIBLE);
+        binding.mapPlaceholder.setVisibility(success && !detail ? View.VISIBLE : View.GONE);
+        binding.criterionButton.setVisibility(success && !detail ? View.VISIBLE : View.GONE);
+        binding.footerNotice.setVisibility(success ? View.VISIBLE : View.GONE);
+        binding.stateSecondary.setVisibility(View.GONE);
         binding.primaryButton.setEnabled(success);
         binding.primaryButton.setAlpha(success ? 1f : 0.45f);
         binding.primaryButton.setText(detail ? R.string.recommend_share : R.string.recommend_detail);
 
         if (!success) {
-            String message = getString(R.string.recommend_loading);
-            if (state.status == RecommendState.Status.EMPTY) message = getString(R.string.recommend_empty);
-            if (state.status == RecommendState.Status.ERROR) message = state.errorMessage;
-            binding.resultList.addView(text(message, 16, false));
-            if (state.status == RecommendState.Status.ERROR || state.status == RecommendState.Status.EMPTY) {
-                if (state.outOfArea.isEmpty()) {
-                    addButton(binding.resultList, "다시 계산", () -> model.recommend(participants, criterion));
-                }
-                addButton(binding.resultList, "출발지 수정", this::finish);
-            }
+            renderRecommendationState(state);
             return;
         }
 
@@ -192,6 +190,77 @@ public class RecommendationActivity extends AppCompatActivity {
         else renderCandidates();
         int scroll = detail ? detailScroll : listScroll;
         binding.resultScroll.post(() -> binding.resultScroll.scrollTo(0, scroll));
+    }
+
+    /** 기존 추천 상태를 그대로 표시하며 실패를 빈 결과나 통신 오류로 바꾸지 않는다. */
+    private void renderRecommendationState(RecommendState state) {
+        ViewRecommendStateBinding panel = ViewRecommendStateBinding.inflate(
+                getLayoutInflater(), binding.resultList, false);
+        binding.resultList.addView(panel.getRoot());
+        boolean outside = !state.outOfArea.isEmpty();
+        boolean empty = state.status == RecommendState.Status.EMPTY;
+        boolean loading = state.status == RecommendState.Status.LOADING
+                || state.status == RecommendState.Status.IDLE;
+        boolean meeting = getIntent().hasExtra("meetingId");
+
+        panel.stateTitle.setText(outside ? "이 출발지는\n아직 지원하지 않아요"
+                : empty ? "함께 갈 수 있는 곳을\n찾지 못했어요"
+                : loading ? "만나기 좋은 곳을\n찾고 있어요" : "잠깐, 계산을\n마치지 못했어요");
+        panel.stateCopy.setText(outside ? "지금은 서울교통공사\n1~8호선 근처만 지원해요."
+                : empty ? "입력한 출발지로는 모두가 갈 수 있는\n추천 후보를 찾지 못했어요."
+                : loading ? "각자의 이동시간과 환승을 비교해\n함께 만날 후보를 찾고 있어요."
+                : state.errorMessage == null ? "추천을 계산하는 중 문제가 생겼어요. 다시 계산해 주세요."
+                : state.errorMessage);
+        panel.stateBadge.setText(outside ? "!" : empty ? "?" : loading ? "…" : "!");
+        panel.stateIcon.setImageResource(outside || empty ? R.drawable.ic_point_pin
+                : loading ? R.drawable.ic_recommend_route : R.drawable.ic_recommend_alert);
+        panel.stateHint.setText(outside || empty
+                ? meeting ? "약속방에서 각자 본인의 출발지를 확인해 주세요."
+                          : "출발지 입력 화면에서 위치를 확인해 주세요."
+                : loading ? "예상 이동시간은 실제 교통 상황과 다를 수 있어요."
+                : "입력한 출발지와 추천 기준으로 다시 계산해요.");
+        ViewCompat.setAccessibilityHeading(panel.stateTitle, true);
+
+        // 이름이 같은 참가자도 입력 순서와 객체를 기준으로 실제 출발지를 찾는다.
+        for (Participant person : state.outOfArea) {
+            int index = state.participants.indexOf(person);
+            String label = index >= 0 && index < originLabels.size() ? originLabels.get(index) : "출발지";
+            TextView entry = text(person.name + " · " + label + "\n지원 지역 밖", 14, true);
+            entry.setPadding(dp(14), dp(14), dp(14), dp(14));
+            entry.setBackgroundResource(R.drawable.meeting_role_badge);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
+            params.topMargin = dp(16);
+            panel.outsideList.addView(entry, params);
+        }
+        if (loading) {
+            panel.stateCriterion.setVisibility(View.VISIBLE);
+            panel.stateCriterion.setText(binding.criterionButton.getText());
+        }
+
+        String originsAction = meeting ? "약속방으로 돌아가기" : outside ? "출발지 수정" : "출발지 확인";
+        binding.primaryButton.setText(loading ? "계산 중" : outside || empty ? originsAction : "다시 계산");
+        binding.primaryButton.setEnabled(!loading);
+        binding.primaryButton.setAlpha(loading ? 0.45f : 1f);
+        binding.stateSecondary.setVisibility(outside ? View.GONE : View.VISIBLE);
+        binding.stateSecondary.setText(empty ? "다시 계산"
+                : meeting ? "약속방으로 돌아가기" : loading ? "출발지로 돌아가기" : "출발지 확인");
+        binding.resultScroll.post(() -> binding.resultScroll.scrollTo(0, 0));
+    }
+
+    /** 동일한 출발지·기준으로 다시 계산하고 이전 상세 선택은 비운다. */
+    private void retryRecommendation() {
+        if (current == null || current.status == RecommendState.Status.LOADING) return;
+        selectedStation = null;
+        detail = false;
+        listScroll = 0;
+        detailScroll = 0;
+        model.recommend(participants, criterion);
+    }
+
+    /** 호출한 입력 화면 또는 약속방으로 돌아가 기존 수정 권한을 유지한다. */
+    private void returnToOrigins() {
+        model.reset();
+        finish();
     }
 
     /** 후보 순위는 추천 코어가 정한 순서이며, 선택 표시는 별도로 둔다. */
@@ -281,6 +350,12 @@ public class RecommendationActivity extends AppCompatActivity {
 
     /** 한 후보 상세에서는 Android의 실제 공유창을 연다. */
     private void primaryAction() {
+        if (current == null) return;
+        if (current.status != RecommendState.Status.SUCCESS) {
+            if (!current.outOfArea.isEmpty() || current.status == RecommendState.Status.EMPTY) returnToOrigins();
+            else if (current.status == RecommendState.Status.ERROR) retryRecommendation();
+            return;
+        }
         Recommendation item = selected();
         if (item == null) return;
         String meetingId = getIntent().getStringExtra("meetingId");
@@ -346,6 +421,10 @@ public class RecommendationActivity extends AppCompatActivity {
     }
 
     private void goBack() {
+        if (current == null || current.status != RecommendState.Status.SUCCESS) {
+            returnToOrigins();
+            return;
+        }
         if (detail) {
             detail = false;
             render(current);

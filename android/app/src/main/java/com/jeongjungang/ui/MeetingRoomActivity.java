@@ -62,6 +62,9 @@ public class MeetingRoomActivity extends AppCompatActivity {
     private boolean busy;
     private boolean healthy;
     private Origin pendingOrigin;
+    private BottomSheetDialog managementDialog;
+    private com.jeongjungang.databinding.SheetMeetingManagementBinding managementBinding;
+    private boolean managementPending;
 
     private final ActivityResultLauncher<Intent> originPicker = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -206,7 +209,8 @@ public class MeetingRoomActivity extends AppCompatActivity {
         binding.shareButton.setText(inviteUrl == null ? "초대 코드 공유" : "초대 링크 공유");
 
         int count = snapshot.recommendParticipants().size();
-        binding.peopleHeading.setText("함께 만날 사람 " + snapshot.members.size());
+        binding.peopleCount.setText(snapshot.members.size() + "명");
+        binding.peopleCount.setContentDescription("참가자 " + snapshot.members.size() + "명");
         binding.progress.setText("출발지 " + count + " / " + snapshot.members.size());
         binding.people.removeAllViews();
         for (Member member : snapshot.members) addMember(member);
@@ -223,60 +227,94 @@ public class MeetingRoomActivity extends AppCompatActivity {
         savePendingOrigin();
     }
 
-    /** 이름·출발지는 서버 값, 변경 버튼은 본인 행에만 표시한다. */
+    /** 서버의 참가 순서를 유지하며 이름·역할·출발지·입력 상태를 한 행에 묶는다. */
     private void addMember(Member member) {
         LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        row.setPadding(dp(12), dp(12), dp(12), dp(12));
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setPadding(0, dp(16), 0, dp(16));
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
-        params.topMargin = dp(12);
         row.setLayoutParams(params);
         boolean mine = member.id.equals(snapshot.myParticipantId);
-        TextView avatar = new TextView(this);
-        avatar.setText(member.nickname.isEmpty() ? "?" : member.nickname.substring(0,
-                member.nickname.offsetByCodePoints(0, 1)));
-        avatar.setGravity(android.view.Gravity.CENTER);
-        avatar.setTextColor(getColor(mine ? R.color.start_ink : R.color.start_point));
-        avatar.setBackgroundResource(mine ? R.drawable.start_action_primary : R.drawable.point_badge_background);
-        LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(dp(40), dp(44));
-        avatarParams.setMarginEnd(dp(12));
-        row.addView(avatar, avatarParams);
 
-        LinearLayout labels = new LinearLayout(this);
-        labels.setOrientation(LinearLayout.VERTICAL);
-        row.addView(labels, new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout identity = new LinearLayout(this);
+        identity.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.addView(identity, new LinearLayout.LayoutParams(-1, -2));
         TextView name = new TextView(this);
-        name.setText(member.nickname + (mine ? " · 나" : "") + (member.role == Role.HOST ? " · 방장" : ""));
+        name.setText(member.nickname);
         name.setTextSize(15);
         name.setTypeface(null, Typeface.BOLD);
         name.setTextColor(getColor(R.color.start_ink));
-        labels.addView(name);
+        identity.addView(name, new LinearLayout.LayoutParams(0, -2, 1));
+        if (mine) addMemberBadge(identity, "나", true);
+        if (member.role == Role.HOST) addMemberBadge(identity, "방장", false);
+
+        LinearLayout location = new LinearLayout(this);
+        location.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        location.setPadding(0, dp(8), 0, 0);
+        row.addView(location, new LinearLayout.LayoutParams(-1, -2));
         TextView origin = new TextView(this);
-        origin.setText(member.origin == null ? "출발지 입력 전 · 대기" : member.origin.label);
+        origin.setText(member.origin == null ? "출발지 입력 전" : member.origin.label);
         origin.setTextSize(13);
         origin.setTextColor(getColor(R.color.start_muted));
-        origin.setPadding(0, dp(8), 0, 0);
+        origin.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_point_pin, 0, 0, 0);
+        origin.setCompoundDrawablePadding(dp(4));
+        location.addView(origin, new LinearLayout.LayoutParams(0, -2, 1));
+
+        TextView state = new TextView(this);
+        state.setText(member.origin == null ? "기다리는 중" : "입력 완료");
+        state.setTextSize(12);
+        state.setTextColor(getColor(member.origin == null ? R.color.start_muted : R.color.start_point));
+        // 큰 글씨에서도 상태가 출발지와 겹치지 않도록 줄바꿈을 허용한다.
+        state.setMaxWidth(dp(100));
         if (member.origin != null) {
-            origin.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_point_check, 0, 0, 0);
-            origin.setCompoundDrawablePadding(dp(4));
+            state.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_point_check, 0, 0, 0);
+            state.setCompoundDrawablePadding(dp(4));
         }
-        labels.addView(origin);
+        LinearLayout.LayoutParams stateParams = new LinearLayout.LayoutParams(-2, -2);
+        stateParams.setMarginStart(dp(12));
+        location.addView(state, stateParams);
+
+        // 본인의 출발지 변경 동작은 유지하고 긴 이름과 겹치지 않게 아래에 둔다.
         if (mine) {
             AppCompatButton edit = new AppCompatButton(this);
             edit.setText(member.origin == null ? "출발지 입력" : "출발지 변경");
             edit.setMinHeight(dp(48));
             edit.setTextSize(12);
             edit.setTextColor(getColor(R.color.start_ink));
-            edit.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            android.util.TypedValue feedback = new android.util.TypedValue();
+            getTheme().resolveAttribute(android.R.attr.selectableItemBackground, feedback, true);
+            edit.setBackgroundResource(feedback.resourceId);
             edit.setEnabled(canAct());
             edit.setOnClickListener(v -> {
                 if (canAct()) originPicker.launch(new Intent(this, OriginActivity.class)
                         .putExtra(OriginActivity.PICK_ORIGIN, true));
             });
-            row.addView(edit, new LinearLayout.LayoutParams(dp(84), -2));
+            LinearLayout.LayoutParams editParams = new LinearLayout.LayoutParams(-2, -2);
+            editParams.gravity = android.view.Gravity.END;
+            editParams.topMargin = dp(4);
+            row.addView(edit, editParams);
         }
         binding.people.addView(row);
+
+        View divider = new View(this);
+        divider.setBackgroundColor(getColor(R.color.start_muted));
+        divider.setAlpha(0.2f);
+        divider.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        binding.people.addView(divider, new LinearLayout.LayoutParams(-1, dp(1)));
+    }
+
+    /** '나'만 레몬색으로 강조하고 방장 표시는 부드러운 바탕을 사용한다. */
+    private void addMemberBadge(LinearLayout identity, String label, boolean mine) {
+        TextView badge = new TextView(this);
+        badge.setText(label);
+        badge.setTextSize(12);
+        badge.setTextColor(getColor(mine ? R.color.start_ink : R.color.start_muted));
+        badge.setTypeface(null, mine ? Typeface.BOLD : Typeface.NORMAL);
+        badge.setPadding(dp(6), dp(2), dp(6), dp(2));
+        badge.setBackgroundResource(mine ? R.drawable.meeting_lemon_badge : R.drawable.meeting_role_badge);
+        LinearLayout.LayoutParams badgeParams = new LinearLayout.LayoutParams(-2, -2);
+        badgeParams.setMarginStart(dp(7));
+        identity.addView(badge, badgeParams);
     }
 
     /** 추천을 시작한 시점의 참가자 목록을 고정해 확인한 대상이 바뀌지 않게 한다. */
@@ -329,100 +367,274 @@ public class MeetingRoomActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /** 관리 기능은 서버 권한과 동일하게 방장/본인으로 나눈다. */
+    /** 방장·참가자 메뉴를 기존 API 권한과 동일하게 구성한다. */
     private void showMenu() {
         if (!canAct()) return;
-        List<String> labels = new ArrayList<>();
-        List<Runnable> actions = new ArrayList<>();
-        labels.add("내 이름 수정");
-        actions.add(() -> editText("내 이름", snapshot.me() == null ? "" : snapshot.me().nickname, false));
+        openManagementSheet("약속 관리");
+        sheetText(snapshot.amHost() ? "방장으로 참여 중" : "참가자로 참여 중");
+        if (snapshot.amHost()) sheetButton("약속 수정 · 이름 / 목적 / 시간", false, this::editMeeting);
+        sheetButton("내 이름 수정", false, this::editNickname);
         if (snapshot.amHost()) {
-            labels.add("참가자 내보내기"); actions.add(this::kickMember);
-            labels.add("약속 취소"); actions.add(() -> confirmAction("약속을 취소할까?",
-                    "모든 참가자의 약속과 알람이 삭제돼.", () -> { if (snapshot.amHost()) model.cancelMeeting(); }));
+            sheetButton("참가자 관리", false, this::kickMember);
             if (snapshot.meeting.status == Status.CONFIRMED) {
-                labels.add("확정 되돌리기");
-                actions.add(() -> confirmAction("확정을 되돌릴까?", "만날 곳을 다시 찾을 수 있어.",
-                        () -> { if (snapshot.amHost()) model.updateMeeting(new MeetingUpdate().reopen()); }));
+                sheetButton("장소 다시 정하기", false, () -> confirmAction("장소를 다시 정할까요?",
+                        "약속 확정을 되돌리고 대기방에서 만날 곳을 다시 찾습니다.", "확정 되돌리기",
+                        true, () -> model.updateMeeting(new MeetingUpdate().reopen())));
             }
+            AppCompatButton cancel = sheetButton("약속 취소", false, () -> confirmAction("약속을 취소할까요?",
+                    "모든 참가자의 약속과 예약된 알람이 삭제됩니다. 취소한 약속은 되돌릴 수 없어요.",
+                    "약속 취소하기", true, model::cancelMeeting));
+            cancel.setTextColor(android.graphics.Color.rgb(161, 61, 50));
         }
-        labels.add("약속 나가기");
-        actions.add(() -> confirmAction("약속에서 나갈까?", snapshot.amHost()
-                ? snapshot.members.size() == 1 ? "혼자 남은 방장이 나가면 약속이 취소돼."
-                : "가장 먼저 들어온 참가자에게 방장이 넘어가."
-                : "다시 참여하려면 초대 코드가 필요해.", model::leave));
-        new MaterialAlertDialogBuilder(this).setTitle("약속 메뉴")
-                .setItems(labels.toArray(new String[0]), (d, w) -> { if (canAct()) actions.get(w).run(); })
-                .setNegativeButton("닫기", null).show();
+        sheetButton("약속 나가기", false, this::confirmLeave);
+        showManagementSheet();
+    }
+
+    /** 방장 승계와 혼자 남은 방장의 취소를 구분한다. */
+    private void confirmLeave() {
+        if (!canAct()) return;
+        String message;
+        if (!snapshot.amHost()) {
+            message = "이 약속에서 나가고 내 기기에 예약된 알람을 삭제합니다. 다시 참여하려면 참여 가능한 초대가 필요해요.";
+        } else if (snapshot.members.size() == 1) {
+            message = "혼자 남은 방장이 나가면 약속이 취소되고 예약된 알람도 삭제됩니다.";
+        } else {
+            String next = "가장 먼저 들어온 참가자";
+            for (Member member : snapshot.members) {
+                if (!member.id.equals(snapshot.myParticipantId)) { next = member.nickname + "님"; break; }
+            }
+            message = next + "에게 방장이 넘어갑니다. 내 기기에 예약된 이 약속의 알람도 삭제됩니다.";
+        }
+        confirmAction("약속에서 나갈까요?", message, "약속 나가기", false, model::leave);
     }
 
     private void kickMember() {
         if (!canAct() || !snapshot.amHost()) return;
-        List<Member> others = new ArrayList<>();
-        for (Member member : snapshot.members) if (!member.id.equals(snapshot.myParticipantId)) others.add(member);
-        String[] names = new String[others.size()];
-        for (int i = 0; i < names.length; i++) names[i] = others.get(i).nickname;
-        new MaterialAlertDialogBuilder(this).setTitle(names.length == 0 ? "다른 참가자가 없어." : "내보낼 참가자")
-                .setItems(names, (d, w) -> confirmAction(names[w] + "을 내보낼까?", "다시 참여하려면 초대가 필요해.",
-                        () -> { if (snapshot.amHost()) model.kick(others.get(w).id); }))
-                .setNegativeButton("닫기", null).show();
+        openManagementSheet("참가자 관리");
+        boolean found = false;
+        for (Member member : snapshot.members) {
+            if (member.id.equals(snapshot.myParticipantId)) continue;
+            found = true;
+            sheetButton(member.nickname + " · 내보내기", false, () ->
+                    confirmAction(member.nickname + "님을 내보낼까요?",
+                            "이 참가자는 약속에서 제외됩니다. 다시 참여하려면 참여 가능한 초대가 필요해요.",
+                            "내보내기", true, () -> model.kick(member.id)));
+        }
+        if (!found) sheetText("다른 참가자가 없어요.");
+        sheetButton("돌아가기", false, this::showMenu);
+        showManagementSheet();
     }
 
-    private void confirmAction(String title, String message, Runnable action) {
-        new MaterialAlertDialogBuilder(this).setTitle(title).setMessage(message)
-                .setNegativeButton("취소", null)
-                .setPositiveButton("확인", (d, w) -> { if (canAct()) action.run(); }).show();
+    /** 확인 중 참가자 구성이 바뀌면 영향 설명을 다시 읽도록 한다. */
+    private void confirmAction(String title, String message, String label, boolean hostOnly, Runnable action) {
+        if (!canAct() || hostOnly && !snapshot.amHost()) return;
+        long version = snapshot.version;
+        openManagementSheet(title);
+        sheetText(message);
+        sheetButton(label, true, () -> {
+            if (!sheetCanAct(hostOnly)) return;
+            if (snapshot.version != version) {
+                managementBinding.sheetError.setText("약속 정보가 바뀌었어요. 돌아가서 다시 확인해 주세요.");
+                return;
+            }
+            managementPending = true;
+            action.run();
+        });
+        sheetButton("돌아가기", false, this::showMenu);
+        showManagementSheet();
     }
 
+    /** 날짜 선택은 초안에만 반영한다. 저장 버튼을 눌러야 서버를 변경한다. */
     private void editMeeting() {
         if (!canAct() || !snapshot.amHost()) return;
-        new MaterialAlertDialogBuilder(this).setTitle("약속 수정")
-                .setItems(new String[]{"약속 이름", "목적", "날짜와 시간"}, (d, w) -> {
-                    if (!canAct() || !snapshot.amHost()) return;
-                    if (w == 0) editText("약속 이름", snapshot.meeting.title, true);
-                    if (w == 1) new MaterialAlertDialogBuilder(this).setTitle("목적")
-                            .setItems(new String[]{"식사", "카페", "술자리", "기타"}, (dialog, index) -> {
-                                if (canAct() && snapshot.amHost()) model.updateMeeting(
-                                        new MeetingUpdate().purpose(Purpose.values()[index]));
-                            }).show();
-                    if (w == 2) pickDate();
-                }).setNegativeButton("닫기", null).show();
+        Meeting original = snapshot.meeting;
+        openManagementSheet("약속 수정");
+        sheetText("약속 이름");
+        EditText name = sheetInput(original.title);
+        sheetText("목적");
+        android.widget.Spinner purpose = new android.widget.Spinner(this);
+        purpose.setAdapter(new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
+                new String[]{"식사", "카페", "술자리", "기타"}));
+        purpose.setSelection(original.purpose.ordinal());
+        managementBinding.sheetContent.addView(purpose, new LinearLayout.LayoutParams(-1, dp(48)));
+        Long[] selectedTime = {original.meetAtMillis};
+        AppCompatButton date = sheetButton(meetingDate(selectedTime[0]), false, () -> {});
+        date.setContentDescription("약속 날짜와 시간 선택");
+        date.setOnClickListener(v -> {
+            ZonedDateTime initial = selectedTime[0] == null ? ZonedDateTime.now(SEOUL)
+                    : Instant.ofEpochMilli(selectedTime[0]).atZone(SEOUL);
+            new DatePickerDialog(this, (picker, year, month, day) ->
+                    new TimePickerDialog(this, (clock, hour, minute) -> {
+                        selectedTime[0] = LocalDateTime.of(year, month + 1, day, hour, minute)
+                                .atZone(SEOUL).toInstant().toEpochMilli();
+                        date.setText(meetingDate(selectedTime[0]));
+                    }, initial.getHour(), initial.getMinute(), true).show(),
+                    initial.getYear(), initial.getMonthValue() - 1, initial.getDayOfMonth()).show();
+        });
+        sheetText("시간을 바꾸면 책임 알람이 켜진 약속의 참가자별 알람 시각도 다시 계산됩니다.");
+        sheetButton("변경 내용 저장", true, () -> {
+            if (!sheetCanAct(true)) return;
+            if (!java.util.Objects.equals(original.title, snapshot.meeting.title)
+                    || !java.util.Objects.equals(original.meetAtMillis, snapshot.meeting.meetAtMillis)
+                    || original.purpose != snapshot.meeting.purpose) {
+                managementBinding.sheetError.setText("다른 곳에서 약속이 수정됐어요. 다시 열어 확인해 주세요.");
+                return;
+            }
+            String title = name.getText().toString().trim();
+            String error = MeetingRules.checkTitle(title);
+            if (error != null) { name.setError(error); return; }
+            MeetingUpdate update = new MeetingUpdate();
+            if (!java.util.Objects.equals(title, original.title == null ? "" : original.title)) update.title(title);
+            Purpose chosen = Purpose.values()[purpose.getSelectedItemPosition()];
+            if (chosen != original.purpose) update.purpose(chosen);
+            if (!java.util.Objects.equals(selectedTime[0], original.meetAtMillis) && selectedTime[0] != null) {
+                error = MeetingRules.checkMeetAt(selectedTime[0], System.currentTimeMillis());
+                if (error != null) { managementBinding.sheetError.setText(error); return; }
+                update.meetAt(selectedTime[0]);
+            }
+            if (update.isEmpty()) { managementDialog.dismiss(); return; }
+            managementPending = true;
+            model.updateMeeting(update);
+        });
+        sheetButton("돌아가기", false, this::showMenu);
+        showManagementSheet();
     }
 
-    /** 잘못된 입력은 대화상자를 닫지 않고 해당 입력칸에서 설명한다. */
-    private void editText(String title, String current, boolean meetingTitle) {
+    private void editNickname() {
+        if (!canAct() || snapshot.me() == null) return;
+        openManagementSheet("내 이름 수정");
+        sheetText("이 약속에서 사용할 이름");
+        EditText name = sheetInput(snapshot.me().nickname);
+        sheetButton("저장하기", true, () -> {
+            if (!sheetCanAct(false)) return;
+            String value = name.getText().toString().trim();
+            String error = MeetingRules.checkNickname(value);
+            if (error != null) { name.setError(error); return; }
+            managementPending = true;
+            model.updateMe(new ParticipantUpdate().nickname(value));
+        });
+        sheetButton("돌아가기", false, this::showMenu);
+        showManagementSheet();
+    }
+
+    /** 저장 직전에 최신 역할과 연결 상태를 다시 확인한다. */
+    private boolean sheetCanAct(boolean hostOnly) {
+        if (canAct() && (!hostOnly || snapshot.amHost())) return true;
+        if (managementBinding != null) managementBinding.sheetError.setText("권한이나 연결 상태가 바뀌었어요. 다시 확인해 주세요.");
+        return false;
+    }
+
+    private String meetingDate(Long time) {
+        return time == null ? "약속 날짜와 시간 선택" : DateTimeFormatter.ofPattern("M월 d일 a h:mm", Locale.KOREAN)
+                .format(Instant.ofEpochMilli(time).atZone(SEOUL));
+    }
+
+    /** 같은 색감의 스크롤 가능한 하단 팝업을 모든 관리 동작에 재사용한다. */
+    private void openManagementSheet(String title) {
+        if (managementDialog != null) managementDialog.dismiss();
+        managementPending = false;
+        managementDialog = new BottomSheetDialog(this);
+        managementBinding = com.jeongjungang.databinding.SheetMeetingManagementBinding.inflate(getLayoutInflater());
+        managementDialog.setContentView(managementBinding.getRoot());
+        managementBinding.sheetTitle.setText(title);
+        ViewCompat.setAccessibilityHeading(managementBinding.sheetTitle, true);
+        managementBinding.closeButton.setOnClickListener(v -> { if (!busy) managementDialog.dismiss(); });
+    }
+
+    private void showManagementSheet() {
+        managementDialog.show();
+        managementDialog.getBehavior().setState(com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED);
+        if (managementDialog.getWindow() != null) managementDialog.getWindow().setSoftInputMode(
+                android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        managementBinding.getRoot().post(() -> {
+            if (managementBinding == null || !managementDialog.isShowing()) return;
+            int limit = Math.max(dp(120), getResources().getDisplayMetrics().heightPixels * 7 / 10 - dp(130));
+            if (managementBinding.sheetContent.getHeight() > limit) {
+                managementBinding.sheetScroll.getLayoutParams().height = limit;
+                managementBinding.sheetScroll.requestLayout();
+            }
+        });
+    }
+
+    private void sheetText(String value) {
+        TextView text = new TextView(this);
+        text.setText(value);
+        text.setTextSize(13);
+        text.setTextColor(getColor(R.color.start_muted));
+        text.setLineSpacing(dp(4), 1);
+        text.setPadding(0, dp(8), 0, dp(14));
+        managementBinding.sheetContent.addView(text);
+    }
+
+    private EditText sheetInput(String value) {
         EditText input = new EditText(this);
         input.setSingleLine(true);
-        input.setText(current);
-        var dialog = new MaterialAlertDialogBuilder(this).setTitle(title).setView(input)
-                .setNegativeButton("취소", null).setPositiveButton("저장", null).create();
-        dialog.setOnShowListener(d -> dialog.getButton(-1).setOnClickListener(v -> {
-            if (!canAct() || meetingTitle && !snapshot.amHost()) { dialog.dismiss(); return; }
-            String value = input.getText().toString().trim();
-            String error = meetingTitle ? MeetingRules.checkTitle(value) : MeetingRules.checkNickname(value);
-            if (error != null) { input.setError(error); return; }
-            if (meetingTitle) model.updateMeeting(new MeetingUpdate().title(value));
-            else model.updateMe(new ParticipantUpdate().nickname(value));
-            dialog.dismiss();
-        }));
-        dialog.show();
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        input.setText(value);
+        input.setContentDescription(managementBinding.sheetTitle.getText());
+        input.setTextSize(16);
+        input.setTextColor(getColor(R.color.start_ink));
+        input.setMinHeight(dp(48));
+        managementBinding.sheetContent.addView(input, new LinearLayout.LayoutParams(-1, -2));
+        return input;
     }
 
-    private void pickDate() {
-        ZonedDateTime initial = snapshot.meeting.meetAtMillis == null ? ZonedDateTime.now(SEOUL)
-                : Instant.ofEpochMilli(snapshot.meeting.meetAtMillis).atZone(SEOUL);
-        new DatePickerDialog(this, (picker, year, month, day) ->
-                new TimePickerDialog(this, (clock, hour, minute) -> {
-                    if (canAct() && snapshot.amHost()) model.updateMeeting(new MeetingUpdate().meetAt(
-                            LocalDateTime.of(year, month + 1, day, hour, minute).atZone(SEOUL).toInstant().toEpochMilli()));
-                }, initial.getHour(), initial.getMinute(), true).show(),
-                initial.getYear(), initial.getMonthValue() - 1, initial.getDayOfMonth()).show();
+    private AppCompatButton sheetButton(String label, boolean primary, Runnable action) {
+        AppCompatButton button = new AppCompatButton(this);
+        button.setText(label);
+        button.setAllCaps(false);
+        button.setTextSize(primary ? 16 : 14);
+        button.setTypeface(null, Typeface.BOLD);
+        button.setTextColor(getColor(R.color.start_ink));
+        button.setSupportBackgroundTintList(null);
+        button.setBackgroundResource(primary ? R.drawable.nearby_primary_background : R.drawable.start_action_secondary);
+        button.setMinHeight(dp(primary ? 58 : 48));
+        button.setPadding(dp(14), dp(12), dp(14), dp(12));
+        if (!primary) {
+            int icon = label.startsWith("약속 수정") ? R.drawable.ic_point_calendar
+                    : label.startsWith("내 이름") || label.startsWith("참가자") ? R.drawable.ic_alarm_person : 0;
+            button.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, 0, R.drawable.start_chevron, 0);
+            button.setCompoundDrawablePadding(dp(8));
+        }
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, -2);
+        params.bottomMargin = dp(10);
+        managementBinding.sheetContent.addView(button, params);
+        button.setOnClickListener(v -> { if (sheetCanAct(false)) action.run(); });
+        return button;
+    }
+
+    /** 통신 중에는 중복 저장과 팝업 닫기를 막고, 실패하면 입력을 유지한다. */
+    private void updateManagementPending(ActionResult action) {
+        if (managementDialog == null || !managementDialog.isShowing() || !managementPending) return;
+        setSheetEnabled(managementBinding.getRoot(), !busy);
+        managementDialog.setCancelable(!busy);
+        managementDialog.setCanceledOnTouchOutside(!busy);
+        managementDialog.getBehavior().setDraggable(!busy);
+        managementBinding.sheetError.setText(busy ? "처리 중입니다…" : action.message == null ? "" : action.message);
+        if (!busy) {
+            managementPending = false;
+            if (action.status == ActionResult.Status.DONE) managementDialog.dismiss();
+        }
+    }
+
+    private void setSheetEnabled(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup group = (android.view.ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) setSheetEnabled(group.getChildAt(i), enabled);
+        }
+    }
+
+    @Override protected void onDestroy() {
+        if (managementDialog != null) managementDialog.dismiss();
+        super.onDestroy();
     }
 
     /** 완료되기 전 중복 변경을 막고, 나가기·취소 성공 후에만 화면을 닫는다. */
     private void onAction(ActionResult action) {
         if (action == null) return;
         busy = action.status == ActionResult.Status.RUNNING;
+        updateManagementPending(action);
         MeetingState state = model.getState().getValue();
         if (state != null) render(state);
         if (busy) return;

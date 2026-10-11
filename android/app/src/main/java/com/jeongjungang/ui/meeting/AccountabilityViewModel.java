@@ -92,6 +92,16 @@ public class AccountabilityViewModel extends AndroidViewModel {
         return state;
     }
 
+    public com.jeongjungang.alarm.AlarmSpec localAlarm(String meetingId) {
+        return repo.localAlarm(meetingId);
+    }
+
+    /** 권한 화면에서 돌아오면 약속 버전이 같아도 다시 예약을 시도한다. */
+    public void resync(Snapshot snapshot) {
+        syncedVersion = -1;
+        onSnapshot(snapshot);
+    }
+
     public void consumeMessage() {
         State s = state.getValue();
         if (s != null && s.message != null) {
@@ -117,6 +127,8 @@ public class AccountabilityViewModel extends AndroidViewModel {
                     + me.origin.location.lat + "," + me.origin.location.lng;
             if (!key.equals(reportedKey)) {
                 reportedKey = key;
+                State previous = state.getValue();
+                if (previous != null) state.setValue(new State(null, 0, null, previous.busy, previous.message));
                 final String placeName = snap.meeting.place.name;
                 final Participant self = new Participant(me.nickname, me.origin.location);
                 executor.execute(new Runnable() {
@@ -129,6 +141,9 @@ public class AccountabilityViewModel extends AndroidViewModel {
         }
         if (snap.version != syncedVersion) {
             syncedVersion = snap.version;
+            State previous = state.getValue();
+            if (previous != null) state.setValue(new State(previous.travelMinutes,
+                    previous.travelTransfers, null, previous.busy, previous.message));
             final String title = snap.meeting.title;
             final String place = snap.meeting.place == null ? null : snap.meeting.place.name;
             final long meetAt = snap.meeting.meetAtMillis == null ? 0 : snap.meeting.meetAtMillis;
@@ -169,6 +184,7 @@ public class AccountabilityViewModel extends AndroidViewModel {
                 return;
             }
             repo.reportTravel(meetingId, placeName, trip.minutes, trip.transfers);
+            main.post(() -> syncedVersion = -1);
             final PersonTrip t = trip;
             post(new Mutator() {
                 @Override
@@ -269,6 +285,7 @@ public class AccountabilityViewModel extends AndroidViewModel {
 
     private void runAction(final String meetingId, final Action action) {
         State s = state.getValue();
+        if (s != null && s.busy) return;
         state.setValue((s == null ? new State(null, 0, null, false, null) : s).withBusy(true));
         executor.execute(new Runnable() {
             @Override
@@ -287,6 +304,7 @@ public class AccountabilityViewModel extends AndroidViewModel {
                 post(new Mutator() {
                     @Override
                     public State apply(State cur) {
+                        syncedVersion = -1;
                         return new State(cur.travelMinutes, cur.travelTransfers, cur.sync, false,
                                 m != null ? m : cur.message);
                     }

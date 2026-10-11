@@ -357,7 +357,7 @@ public class MeetingViewModel extends AndroidViewModel {
                     result = task.call();
                 } catch (ApiException e) {
                     Log.w(TAG, kind + " 실패: " + e.code, e);
-                    result = ActionResult.failed(kind, e.getMessage());
+                    result = ActionResult.failed(kind, e);
                 } catch (RuntimeException e) {
                     Log.e(TAG, kind + " 오류", e);
                     result = ActionResult.failed(kind, "처리하지 못했어요. 잠시 후 다시 시도해 주세요.");

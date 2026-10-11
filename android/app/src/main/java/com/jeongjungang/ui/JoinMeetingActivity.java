@@ -45,6 +45,7 @@ public class JoinMeetingActivity extends AppCompatActivity {
     private boolean showingPreview;
     private boolean joinable;
     private boolean busy;
+    private String errorScreen = "";
 
     private final ActivityResultLauncher<Intent> originPicker = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -66,7 +67,16 @@ public class JoinMeetingActivity extends AppCompatActivity {
         restore(saved);
 
         binding.backButton.setOnClickListener(v -> goBack());
-        binding.submitButton.setOnClickListener(v -> { if (showingPreview) join(); else preview(); });
+        binding.submitButton.setOnClickListener(v -> {
+            if (!errorScreen.isEmpty()) {
+                if ("NETWORK".equals(errorScreen)) preview(); else goHome();
+            } else if (showingPreview) join(); else preview();
+        });
+        binding.errorSecondary.setOnClickListener(v -> {
+            if ("NETWORK".equals(errorScreen)) goHome();
+            else if ("FULL".equals(errorScreen)) preview();
+            else resetToCode();
+        });
         binding.retryButton.setOnClickListener(v -> preview());
         binding.originButton.setOnClickListener(v -> chooseOrigin());
         TextWatcher watcher = new TextWatcher() {
@@ -88,7 +98,7 @@ public class JoinMeetingActivity extends AppCompatActivity {
         // 회전 시 진행 중인 요청은 기존 ViewModel이 마저 처리한다.
         boolean requestPending = model.getAction().getValue() != null;
         model.getAction().observe(this, this::onAction);
-        if (!requestPending && showingPreview && !isFinishing()) preview();
+        if (!requestPending && showingPreview && errorScreen.isEmpty() && !isFinishing()) preview();
         if (!model.isAvailable()) binding.status.setText(R.string.join_unavailable);
         showOrigin();
         updateControls();
@@ -149,7 +159,16 @@ public class JoinMeetingActivity extends AppCompatActivity {
         } else if (action.status == ActionResult.Status.FAILED) {
             joinable = false;
             binding.status.setText(action.message);
-            binding.retryButton.setVisibility(showingPreview ? View.VISIBLE : View.GONE);
+            errorScreen = "";
+            if (action.error != null) {
+                String code = action.error.code;
+                if ("MEETING_NOT_FOUND".equals(code) || "MEETING_EXPIRED".equals(code)) errorScreen = "GONE";
+                else if ("MEETING_CLOSED".equals(code)) errorScreen = "CLOSED";
+                else if ("MEETING_FULL".equals(code)) errorScreen = "FULL";
+                else if (action.error.isNetwork() || action.error.httpStatus >= 500) errorScreen = "NETWORK";
+            }
+            // 검증·요청 제한 오류는 서버의 설명을 유지한다.
+            binding.retryButton.setVisibility(errorScreen.isEmpty() && showingPreview ? View.VISIBLE : View.GONE);
             model.consumeAction();
         } else if (action.kind == ActionResult.Kind.PREVIEW) {
             showPreview(action.preview);
@@ -165,6 +184,7 @@ public class JoinMeetingActivity extends AppCompatActivity {
 
     /** 공개 미리보기의 필드만 표시한다. 타인의 출발지나 목적을 추측하지 않는다. */
     private void showPreview(InvitePreview preview) {
+        errorScreen = "";
         showingPreview = true;
         binding.hostName.setText(preview.hostNickname + "의 초대");
         binding.meetingTitle.setText(preview.title == null || preview.title.trim().isEmpty() ? "우리 약속" : preview.title);
@@ -175,7 +195,9 @@ public class JoinMeetingActivity extends AppCompatActivity {
         joinable = preview.status == Status.OPEN && preview.participantCount < MeetingRules.MAX_PARTICIPANTS;
         binding.status.setText(preview.status != Status.OPEN ? "지금은 참여할 수 없는 약속이에요."
                 : !joinable ? "참여 인원이 가득 찼어요." : "");
-        if (!joinable) binding.retryButton.setVisibility(View.VISIBLE);
+        if (preview.status == Status.CONFIRMED) errorScreen = "CONFIRMED";
+        else if (preview.status != Status.OPEN) errorScreen = "CLOSED";
+        else if (!joinable) errorScreen = "FULL";
         binding.scroll.scrollTo(0, 0);
     }
 
@@ -194,6 +216,13 @@ public class JoinMeetingActivity extends AppCompatActivity {
     }
 
     private void updateControls() {
+        if (!errorScreen.isEmpty()) {
+            renderError();
+            return;
+        }
+        binding.errorPanel.setVisibility(View.GONE);
+        binding.errorSecondary.setVisibility(View.GONE);
+        binding.status.setVisibility(View.VISIBLE);
         binding.codePanel.setVisibility(showingPreview ? View.GONE : View.VISIBLE);
         binding.previewPanel.setVisibility(showingPreview ? View.VISIBLE : View.GONE);
         binding.footerHint.setVisibility(showingPreview ? View.GONE : View.VISIBLE);
@@ -210,12 +239,73 @@ public class JoinMeetingActivity extends AppCompatActivity {
 
     private void goBack() {
         if (busy) { binding.status.setText("요청이 끝날 때까지 잠시 기다려 주세요."); return; }
+        if (!errorScreen.isEmpty()) { resetToCode(); return; }
         if (!showingPreview) { finish(); return; }
         showingPreview = false;
         joinable = false;
         binding.status.setText("");
         binding.retryButton.setVisibility(View.GONE);
         updateControls();
+    }
+
+    /** 같은 초대를 다시 조회한다. 참여 요청을 자동 재전송하지 않는다. */
+    private void renderError() {
+        hideKeyboard();
+        binding.codePanel.setVisibility(View.GONE);
+        binding.previewPanel.setVisibility(View.GONE);
+        binding.footerHint.setVisibility(View.GONE);
+        binding.retryButton.setVisibility(View.GONE);
+        binding.errorPanel.setVisibility(View.VISIBLE);
+        binding.errorSecondary.setVisibility(View.VISIBLE);
+        binding.status.setVisibility(busy ? View.VISIBLE : View.GONE);
+
+        boolean network = "NETWORK".equals(errorScreen);
+        boolean full = "FULL".equals(errorScreen);
+        boolean confirmed = "CONFIRMED".equals(errorScreen);
+        boolean closed = "CLOSED".equals(errorScreen);
+        binding.errorTitle.setText(network ? "초대를\n불러오지 못했어요"
+                : full ? "지금은 자리가\n다 찼어요"
+                : confirmed ? "이미 확정된\n약속이에요"
+                : closed ? "지금은 참여할 수\n없는 약속이에요" : "이 초대는\n사용할 수 없어요");
+        binding.errorCopy.setText(network ? "인터넷 연결을 확인하고\n잠시 후 다시 시도해 주세요."
+                : full ? "한 약속에는 최대 10명까지\n함께할 수 있어요."
+                : confirmed ? "확정된 약속에는\n새로 참여할 수 없어요."
+                : closed ? "확정되었거나 취소된 약속에는\n새로 참여할 수 없어요."
+                : "기간이 지났거나 찾을 수 없는 약속이에요.\n친구에게 새 초대를 받아 주세요.");
+        binding.errorHint.setText(network ? "연결이나 서버에 일시적인 문제가 있을 수 있어요."
+                : full ? "방장에게 참가 인원을 확인해 주세요."
+                : confirmed || closed ? "함께하기로 했다면 방장에게 확인해 주세요."
+                : "다른 초대가 있다면 코드나 링크로 참여할 수 있어요.");
+        binding.errorBadge.setText(full ? "10" : confirmed ? "✓" : "!");
+        binding.errorIcon.setImageResource(network ? R.drawable.ic_invite_offline
+                : full ? R.drawable.ic_invite_people
+                : confirmed || closed ? R.drawable.ic_point_calendar : R.drawable.ic_invite_unavailable);
+        binding.submitButton.setText(busy ? "확인 중…" : network ? "다시 시도" : "시작 화면으로");
+        binding.submitButton.setEnabled(!busy);
+        binding.submitButton.setAlpha(busy ? 0.45f : 1f);
+        binding.errorSecondary.setText(network ? "시작 화면으로"
+                : full ? "참여 가능 여부 다시 확인" : "다른 초대 입력하기");
+        binding.errorSecondary.setEnabled(!busy);
+        ViewCompat.setAccessibilityHeading(binding.errorTitle, true);
+    }
+
+    /** 오류에서 돌아와도 코드·이름·출발지 초안은 지우지 않는다. */
+    private void resetToCode() {
+        if (busy) return;
+        errorScreen = "";
+        showingPreview = false;
+        joinable = false;
+        binding.status.setText("");
+        binding.retryButton.setVisibility(View.GONE);
+        updateControls();
+        binding.scroll.scrollTo(0, 0);
+    }
+
+    private void goHome() {
+        if (busy) return;
+        startActivity(new Intent(this, MainActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
+        finish();
     }
 
     private void hideKeyboard() {
@@ -231,6 +321,7 @@ public class JoinMeetingActivity extends AppCompatActivity {
         binding.nickname.setText(state.getString("name", ""));
         verifiedCode = state.getString("verifiedCode");
         showingPreview = state.getBoolean("showingPreview");
+        errorScreen = state.getString("errorScreen", "");
         binding.hostName.setText(state.getString("host", ""));
         binding.meetingTitle.setText(state.getString("title", ""));
         binding.meetingInfo.setText(state.getString("info", ""));
@@ -245,6 +336,7 @@ public class JoinMeetingActivity extends AppCompatActivity {
         state.putString("name", binding.nickname.getText().toString());
         state.putString("verifiedCode", verifiedCode);
         state.putBoolean("showingPreview", showingPreview);
+        state.putString("errorScreen", errorScreen);
         state.putString("host", binding.hostName.getText().toString());
         state.putString("title", binding.meetingTitle.getText().toString());
         state.putString("info", binding.meetingInfo.getText().toString());

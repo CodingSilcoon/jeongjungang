@@ -4,8 +4,15 @@
     android:background="@color/start_background" android:fillViewport="true" android:clipToPadding="false">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:paddingStart="@dimen/start_horizontal_padding" android:paddingEnd="@dimen/start_horizontal_padding" android:paddingTop="24dp" android:paddingBottom="24dp">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/start_logo"
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/start_logo"
             android:textSize="27sp" android:textStyle="bold" android:letterSpacing="-0.06" android:textColor="@color/start_ink"/>
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/myMeetingsButton"
+            android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="48dp"
+            android:text="내 약속" android:textSize="14sp" android:textColor="@color/start_ink"
+            android:drawableStart="@drawable/ic_point_calendar" android:drawablePadding="6dp"
+            android:background="?attr/selectableItemBackground" android:paddingHorizontal="12dp"/>
+        </LinearLayout>
         <TextView android:id="@+id/startHeading" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="32dp"
             android:fontFamily="sans-serif-black" android:text="@string/start_title" android:textSize="32sp" android:textStyle="bold" android:letterSpacing="-0.04" android:textColor="@color/start_ink"/>
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"

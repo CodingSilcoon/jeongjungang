@@ -149,23 +149,37 @@
             android:layout_marginBottom="8dp"
             android:textSize="12sp" />
 
-        <TextView
-            android:id="@+id/searchStatus"
-            style="@style/OriginText"
-            android:layout_marginVertical="8dp"
-            android:accessibilityLiveRegion="polite" />
-
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <LinearLayout
-                android:id="@+id/searchResults"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="16dp" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:paddingBottom="16dp">
+
+                <!-- 안내도 키보드 위의 남은 공간에서 스크롤할 수 있다. -->
+                <LinearLayout android:id="@+id/searchGuidance" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="28dp"
+                    android:orientation="horizontal" android:gravity="top">
+                    <ImageView android:id="@+id/searchStateIcon" android:layout_width="42dp"
+                        android:layout_height="42dp" android:padding="10dp"
+                        android:background="@drawable/meeting_role_badge"
+                        android:src="@drawable/ic_origin_search" android:tint="@color/start_point"
+                        android:importantForAccessibility="no" />
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:layout_marginStart="13dp" android:orientation="vertical">
+                        <TextView android:id="@+id/searchStatus" style="@style/OriginText"
+                            android:text="@string/origin_guidance_idle" android:textSize="17sp"
+                            android:textStyle="bold" android:accessibilityLiveRegion="polite" />
+                        <TextView android:id="@+id/searchGuidanceDetail" style="@style/OriginText"
+                            android:layout_marginTop="8dp" android:textSize="13sp"
+                            android:lineSpacingExtra="5dp" android:textColor="@color/start_muted" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/searchResults" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+            </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </LinearLayout>
 

@@ -189,8 +189,8 @@ public class OriginActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence text, int start, int before, int count) {
                 binding.searchResults.removeAllViews();
-                binding.searchStatus.setText(text.toString().trim().length() < 2
-                        ? R.string.origin_search_prompt : R.string.origin_search_loading);
+                showSearchGuidance(text.toString().trim().length() < 2
+                        ? SearchState.Status.IDLE : SearchState.Status.LOADING, null);
                 searchModel.onQueryChanged(text.toString());
             }
 
@@ -306,27 +306,59 @@ public class OriginActivity extends AppCompatActivity {
         }
 
         binding.searchResults.removeAllViews();
+        showSearchGuidance(state.status, state.errorMessage);
+        if (state.status == SearchState.Status.SUCCESS) {
+            for (GeoPlace place : state.items) {
+                addSearchResult(place, state.isOutOfArea(place));
+            }
+        }
+    }
 
-        switch (state.status) {
-            case IDLE:
-                binding.searchStatus.setText(R.string.origin_search_prompt);
-                break;
+    /** 안내 영역만 교체한다. 자동 검색·키보드 재검색·결과 선택은 기존 동작을 유지한다. */
+    private void showSearchGuidance(SearchState.Status status, String errorMessage) {
+        binding.searchGuidance.setVisibility(status == SearchState.Status.SUCCESS ? View.GONE : View.VISIBLE);
+        if (status == SearchState.Status.SUCCESS) return;
+
+        int title;
+        String detail;
+        int icon = R.drawable.ic_origin_search;
+        switch (status) {
             case LOADING:
-                binding.searchStatus.setText(R.string.origin_search_loading);
+                title = R.string.origin_search_loading;
+                detail = getString(R.string.origin_guidance_loading);
+                icon = R.drawable.ic_recommend_route;
                 break;
             case EMPTY:
-                binding.searchStatus.setText(R.string.origin_search_empty);
+                title = R.string.origin_guidance_empty;
+                detail = getString(R.string.origin_guidance_empty_detail);
                 break;
             case ERROR:
-                binding.searchStatus.setText(state.errorMessage == null
-                        ? getString(R.string.origin_search_error) : state.errorMessage);
+                title = R.string.origin_guidance_error;
+                // 요청 제한·입력 오류 등 실제 원인 안내를 일반 문구로 덮지 않는다.
+                detail = errorMessage == null || errorMessage.trim().isEmpty()
+                        ? getString(R.string.origin_guidance_retry) : errorMessage;
+                icon = R.drawable.ic_recommend_alert;
                 break;
-            case SUCCESS:
-                binding.searchStatus.setText("");
-                for (GeoPlace place : state.items) {
-                    addSearchResult(place, state.isOutOfArea(place));
-                }
+            default:
+                title = R.string.origin_guidance_idle;
+                detail = getString(searchModel.usesServer()
+                        ? R.string.origin_guidance_idle_server : R.string.origin_guidance_idle_local);
                 break;
+        }
+        binding.searchStatus.setText(title);
+        binding.searchStateIcon.setImageResource(icon);
+        binding.searchGuidanceDetail.setText(detail);
+
+        // 검색 전 최소 글자 수만 기존 레몬색으로 가볍게 강조한다.
+        if (status == SearchState.Status.IDLE) {
+            int start = detail.indexOf("2글자 이상");
+            if (start >= 0) {
+                android.text.SpannableString highlighted = new android.text.SpannableString(detail);
+                highlighted.setSpan(new android.text.style.BackgroundColorSpan(
+                        ContextCompat.getColor(this, R.color.start_accent)), start, start + "2글자 이상".length(),
+                        android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                binding.searchGuidanceDetail.setText(highlighted);
+            }
         }
     }
 

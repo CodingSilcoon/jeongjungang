@@ -70,6 +70,12 @@ public final class AccountabilityRepository {
         return api != null;
     }
 
+    /** 동기화로 실제 저장된 기기 알람. 예상 시각을 예약 완료로 표시하지 않기 위해 쓴다. */
+    public AlarmSpec localAlarm(String meetingId) {
+        String id = links.alarmFor(meetingId);
+        return id == null ? null : scheduler.find(id);
+    }
+
     /** 확정 장소까지 내 이동시간 보고. placeName은 서버의 확정 장소 이름 그대로. */
     public void reportTravel(String meetingId, String placeName, double minutes, int transfers) throws ApiException {
         ParticipantTokenStore.Entry me = member(meetingId);

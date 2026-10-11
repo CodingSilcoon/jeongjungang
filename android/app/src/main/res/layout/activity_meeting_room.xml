@@ -47,7 +47,18 @@
                             android:text="초대 링크 공유" android:background="@drawable/start_action_secondary" app:backgroundTint="@null" />
                     </LinearLayout>
 
-                    <TextView android:id="@+id/peopleHeading" style="@style/MeetingLabel" android:textSize="17sp" />
+                    <!-- 인원수만 레몬색으로 강조하고 목록은 차분하게 유지한다. -->
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp" android:layout_marginBottom="8dp" android:gravity="center_vertical">
+                        <TextView android:id="@+id/peopleHeading" style="@style/OriginText"
+                            android:layout_width="0dp" android:layout_weight="1"
+                            android:text="함께 만날 사람" android:textSize="17sp" android:textStyle="bold" />
+                        <TextView android:id="@+id/peopleCount" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" android:layout_marginStart="8dp"
+                            android:paddingHorizontal="9dp" android:paddingVertical="3dp"
+                            android:background="@drawable/meeting_lemon_badge"
+                            android:textColor="@color/start_ink" android:textSize="12sp" android:textStyle="bold" />
+                    </LinearLayout>
                     <TextView android:id="@+id/progress" style="@style/OriginText" android:textSize="12sp" />
                     <LinearLayout android:id="@+id/people" android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="vertical" android:layout_marginTop="8dp" />

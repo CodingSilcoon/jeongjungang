@@ -225,6 +225,8 @@ public class ConfirmMeetingActivity extends AppCompatActivity {
 
         if (confirmed) {
             addButton(getString(R.string.nearby_entry), this::openNearbyPlaces).setEnabled(ready());
+            addButton("출발 알람 설정", () -> startActivity(
+                    com.jeongjungang.ui.alarm.DepartureAlarmActivity.intent(this, meetingId)));
             addButton("내 출발지에서 길찾기", this::chooseMap).setEnabled(ready());
             binding.primaryButton.setText("약속 공유하기");
         } else if (!snap.amHost()) binding.primaryButton.setText("방장의 확정을 기다리는 중");

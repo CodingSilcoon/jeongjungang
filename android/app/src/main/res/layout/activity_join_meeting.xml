@@ -21,6 +21,32 @@
                 android:orientation="vertical" android:paddingEnd="4dp" android:paddingBottom="16dp">
                 <TextView android:id="@+id/heading" style="@style/OriginTitle" android:text="@string/start_join" />
 
+                <!-- 오류 본문은 스크롤하고 복구 버튼은 화면 아래에 유지한다. -->
+                <LinearLayout android:id="@+id/errorPanel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical"
+                    android:paddingTop="48dp" android:paddingBottom="24dp" android:visibility="gone">
+                    <FrameLayout android:layout_width="88dp" android:layout_height="88dp">
+                        <ImageView android:id="@+id/errorIcon" android:layout_width="80dp"
+                            android:layout_height="80dp" android:padding="22dp"
+                            android:background="@drawable/point_badge_background"
+                            android:tint="@color/start_point" android:importantForAccessibility="no" />
+                        <TextView android:id="@+id/errorBadge" android:layout_width="30dp"
+                            android:layout_height="30dp" android:layout_gravity="bottom|end"
+                            android:gravity="center" android:background="@drawable/meeting_lemon_badge"
+                            android:textColor="@color/start_ink" android:textStyle="bold"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <TextView android:id="@+id/errorTitle" style="@style/OriginText"
+                        android:layout_marginTop="30dp" android:textSize="27sp" android:textStyle="bold"
+                        android:accessibilityLiveRegion="polite" />
+                    <TextView android:id="@+id/errorCopy" style="@style/OriginText"
+                        android:layout_marginTop="16dp" android:textSize="14sp" android:lineSpacingExtra="6dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginTop="22dp" android:background="@color/start_muted" android:alpha="0.2" />
+                    <TextView android:id="@+id/errorHint" style="@style/OriginText"
+                        android:layout_marginTop="16dp" android:textSize="12sp" android:lineSpacingExtra="5dp" />
+                </LinearLayout>
+
                 <LinearLayout android:id="@+id/codePanel" android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:orientation="vertical">
                     <TextView style="@style/MeetingLabel" android:text="@string/join_code_label" android:labelFor="@id/codeInput" />
@@ -67,5 +93,9 @@
             android:textSize="12sp" android:gravity="center" android:paddingVertical="12dp" />
         <androidx.appcompat.widget.AppCompatButton android:id="@+id/submitButton" style="@style/OriginButton"
             android:text="@string/join_check" android:layout_marginBottom="20dp" app:backgroundTint="@null" />
+        <Button android:id="@+id/errorSecondary" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:layout_marginBottom="12dp"
+            android:textColor="@color/start_muted" android:textSize="13sp"
+            android:background="?attr/selectableItemBackground" android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

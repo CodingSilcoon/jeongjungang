@@ -42,6 +42,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.MyMeetingsActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.ConfirmMeetingActivity"
             android:theme="@style/Theme.Jeongjungang.Start"
             android:exported="false" />
@@ -77,10 +82,22 @@
 
         <activity
             android:name=".ui.alarm.AlarmActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity="" />
+
+        <activity
+            android:name=".ui.alarm.AlarmPermissionsActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.alarm.DepartureAlarmActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false" />
 
         <service
             android:name=".alarm.AlarmRingService"

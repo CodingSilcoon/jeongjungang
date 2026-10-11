@@ -95,5 +95,15 @@
             android:layout_marginBottom="12dp"
             android:text="@string/recommend_detail"
             app:backgroundTint="@null" />
+        <Button
+            android:id="@+id/stateSecondary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:textColor="@color/start_muted"
+            android:textSize="13sp"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

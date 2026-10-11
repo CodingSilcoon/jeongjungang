@@ -1,0 +1,12 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:left="3dp" android:top="3dp">
+        <shape><solid android:color="@color/start_ink"/><corners android:radius="18dp"/></shape>
+    </item>
+    <item android:right="3dp" android:bottom="3dp">
+        <shape>
+            <solid android:color="@color/start_point_surface"/>
+            <corners android:radius="18dp"/>
+            <stroke android:width="2dp" android:color="@color/start_ink"/>
+        </shape>
+    </item>
+</layer-list>

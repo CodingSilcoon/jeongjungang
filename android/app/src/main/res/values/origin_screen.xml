@@ -28,6 +28,16 @@
     <string name="origin_search_error">검색하지 못했어요. 다시 시도해 주세요.</string>
     <string name="origin_outside">지원 지역 밖</string>
 
+    <!-- 기존 검색 화면의 상태 안내. 검색 방식은 변경하지 않는다. -->
+    <string name="origin_guidance_idle">어디에서 출발하나요?</string>
+    <string name="origin_guidance_idle_local">역 이름을 2글자 이상 입력해 주세요.\n예: 강남, 노량진</string>
+    <string name="origin_guidance_idle_server">역 이름이나 주소를 2글자 이상 입력해 주세요.</string>
+    <string name="origin_guidance_loading">입력한 이름으로 검색하고 있어요.</string>
+    <string name="origin_guidance_empty">검색 결과가 없어요</string>
+    <string name="origin_guidance_empty_detail">검색어가 맞는지 확인하고\n다른 이름으로 찾아봐요.</string>
+    <string name="origin_guidance_error">검색하지 못했어요</string>
+    <string name="origin_guidance_retry">키보드의 검색 키를 눌러 다시 시도해 주세요.</string>
+
     <!-- 출발지를 모두 고른 다음 표시하는 추천 기준 -->
     <string name="origin_criteria_title">어떻게 만날까?</string>
     <string name="origin_criteria_intro">입력한 출발지를 기준으로\n어떤 곳을 먼저 추천할지 골라줘.</string>
