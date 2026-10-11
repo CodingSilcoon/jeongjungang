@@ -7,6 +7,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import androidx.appcompat.widget.AppCompatButton;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -51,6 +56,7 @@ public class DepartureAlarmActivity extends AppCompatActivity {
     private int margin = 5;
     private int grace = 60;
     private String notice = "";
+    private BottomSheetDialog optionsDialog;
 
     public static Intent intent(Context context, String meetingId) {
         return new Intent(context, DepartureAlarmActivity.class).putExtra("meetingId", meetingId);
@@ -200,25 +206,138 @@ public class DepartureAlarmActivity extends AppCompatActivity {
     /** 공통 설정은 책임 알람이 꺼져 있을 때 명세 범위 안에서 선택한다. */
     private void chooseOptions() {
         if (!ready() || busy() || !snapshot().amHost() || enabled()) return;
-        new MaterialAlertDialogBuilder(this).setTitle("공통 알람 설정")
-                .setItems(new String[]{"여유시간 · " + margin + "분", "알람 끄기 유예시간 · " + grace + "초"},
-                        (dialog, which) -> {
-                            int[] values = which == 0 ? new int[]{0, 5, 10, 15} : new int[]{30, 60, 120, 300};
-                            String[] labels = new String[values.length];
-                            for (int i = 0; i < values.length; i++) labels[i] = values[i] + (which == 0 ? "분" : "초");
-                            new MaterialAlertDialogBuilder(this).setTitle(which == 0 ? "여유시간" : "유예시간")
-                                    .setItems(labels, (d, selected) -> {
-                                        if (!ready() || busy() || !snapshot().amHost() || enabled()) return;
-                                        if (which == 0) margin = values[selected]; else grace = values[selected];
-                                        optionsEdited = true;
-                                        render();
-                                    }).setNegativeButton("취소", null).show();
-                        }).setNegativeButton("닫기", null).show();
+        if (optionsDialog != null) optionsDialog.dismiss();
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        optionsDialog = dialog;
+        int[] draft = {margin, grace};
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp(22), dp(20), dp(22), dp(28));
+        content.setBackgroundColor(getColor(R.color.start_background));
+
+        LinearLayout heading = new LinearLayout(this);
+        heading.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        TextView title = optionText("공통 알람 설정", 24, true);
+        ViewCompat.setAccessibilityHeading(title, true);
+        heading.addView(title, new LinearLayout.LayoutParams(0, -2, 1));
+        AppCompatButton close = new AppCompatButton(this);
+        close.setText("×");
+        close.setTextSize(24);
+        close.setContentDescription("변경 취소하고 닫기");
+        close.setBackgroundResource(android.R.color.transparent);
+        close.setTextColor(getColor(R.color.start_ink));
+        close.setOnClickListener(v -> dialog.dismiss());
+        heading.addView(close, new LinearLayout.LayoutParams(dp(48), dp(48)));
+        content.addView(heading);
+        content.addView(optionText("이 약속의 모든 참가자에게 적용돼요.", 13, false));
+
+        content.addView(optionText("여유시간", 16, true));
+        content.addView(optionText("이동시간과 준비시간에 더해\n얼마나 일찍 알람을 울릴까요?", 13, false));
+        TextView effect = optionText("", 12, false);
+        effect.setBackgroundResource(R.drawable.meeting_role_badge);
+        effect.setTextColor(getColor(R.color.start_point));
+        effect.setPadding(dp(12), dp(12), dp(12), dp(12));
+        Runnable updateEffect = () -> effect.setText(draft[0] == 0
+                ? "추가 여유시간 없이 계산한 시각에 울려요."
+                : "여유시간 없이 계산한 시각보다 " + draft[0] + "분 일찍 울려요.");
+        addOptionChoices(content, new int[]{0, 5, 10, 15},
+                new String[]{"0분", "5분", "10분", "15분"}, draft, 0, updateEffect);
+        content.addView(effect);
+        updateEffect.run();
+
+        content.addView(optionText("알람 끄기 유예시간", 16, true));
+        content.addView(optionText("알람이 울린 뒤 이 시간 안에 끄지 않으면\n나머지 친구들에게도 알람이 울려요.", 13, false));
+        addOptionChoices(content, new int[]{30, 60, 120, 300},
+                new String[]{"30초", "1분", "2분", "5분"}, draft, 1, () -> { });
+        content.addView(optionText("방장만 책임 알람이 꺼져 있을 때 변경할 수 있어요.\n선택한 값은 책임 알람을 켤 때 적용돼요.", 12, false));
+
+        AppCompatButton done = new AppCompatButton(this);
+        done.setText("선택 완료");
+        done.setMinHeight(dp(54));
+        done.setTextColor(getColor(R.color.start_ink));
+        done.setBackgroundResource(R.drawable.start_action_primary);
+        done.setSupportBackgroundTintList(null);
+        done.setOnClickListener(v -> {
+            // 팝업을 연 뒤 서버 상태나 방장 권한이 달라졌는지 다시 확인한다.
+            if (!ready() || busy() || !snapshot().amHost() || enabled()) {
+                dialog.dismiss();
+                return;
+            }
+            margin = draft[0];
+            grace = draft[1];
+            optionsEdited = true;
+            dialog.dismiss();
+            render();
+        });
+        content.addView(done, new LinearLayout.LayoutParams(-1, -2));
+        ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.addView(content);
+        dialog.setContentView(scroll);
+        dialog.setOnDismissListener(d -> { if (optionsDialog == dialog) optionsDialog = null; });
+        dialog.show();
+        dialog.getBehavior().setMaxHeight((int)(getResources().getDisplayMetrics().heightPixels * 0.9f));
+        dialog.getBehavior().setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
+    /** 제목·설명 사이에 여백을 두어 큰 글씨에서도 읽기 쉽게 배치한다. */
+    private TextView optionText(String value, int size, boolean bold) {
+        TextView text = new TextView(this);
+        text.setText(value);
+        text.setTextSize(size);
+        text.setTextColor(getColor(bold ? R.color.start_ink : R.color.start_muted));
+        if (bold) text.setTypeface(null, android.graphics.Typeface.BOLD);
+        text.setPadding(0, dp(bold ? 20 : 8), 0, dp(12));
+        return text;
+    }
+
+    /** 선택은 팝업 초안에만 반영한다. 닫기·뒤로 가기는 기존 값을 보존한다. */
+    private void addOptionChoices(LinearLayout parent, int[] values, String[] labels,
+            int[] draft, int field, Runnable changed) {
+        java.util.List<AppCompatButton> buttons = new java.util.ArrayList<>();
+        int columns = getResources().getConfiguration().fontScale > 1.2f ? 2 : 4;
+        LinearLayout row = null;
+        Runnable refresh = () -> {
+            for (int i = 0; i < buttons.size(); i++) {
+                AppCompatButton button = buttons.get(i);
+                boolean selected = draft[field] == values[i];
+                button.setSelected(selected);
+                button.setBackgroundResource(selected ? R.drawable.start_action_primary : R.drawable.start_action_secondary);
+                button.setContentDescription((field == 0 ? "여유시간 " : "유예시간 ")
+                        + labels[i] + (selected ? ", 선택됨" : ""));
+            }
+        };
+        for (int i = 0; i < values.length; i++) {
+            if (i % columns == 0) {
+                row = new LinearLayout(this);
+                parent.addView(row, new LinearLayout.LayoutParams(-1, -2));
+            }
+            final int value = values[i];
+            AppCompatButton button = new AppCompatButton(this);
+            button.setText(labels[i]);
+            button.setTextSize(14);
+            button.setMinWidth(0);
+            button.setMinimumWidth(0);
+            button.setMinHeight(dp(48));
+            button.setTextColor(getColor(R.color.start_ink));
+            button.setSupportBackgroundTintList(null);
+            button.setPadding(dp(4), dp(8), dp(4), dp(8));
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, -2, 1);
+            params.bottomMargin = dp(12);
+            if (i % columns != 0) params.setMarginStart(dp(8));
+            row.addView(button, params);
+            buttons.add(button);
+            button.setOnClickListener(v -> { draft[field] = value; refresh.run(); changed.run(); });
+        }
+        refresh.run();
     }
 
     /** 서버 상태·입력 초안·기기 예약 결과를 구분해서 화면에 표시한다. */
     private void render() {
         if (binding == null || alarms == null) return;
+        if (optionsDialog != null && (!ready() || busy() || !snapshot().amHost() || enabled())) {
+            optionsDialog.dismiss();
+        }
         Snapshot snap = snapshot();
         boolean writable = ready() && !busy();
         binding.prepInput.setEnabled(writable);
@@ -324,6 +443,12 @@ public class DepartureAlarmActivity extends AppCompatActivity {
         out.putInt("grace", grace);
         out.putBoolean("optionsEdited", optionsEdited);
         super.onSaveInstanceState(out);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (optionsDialog != null) optionsDialog.dismiss();
+        super.onDestroy();
     }
 
     private String format(long millis) {
