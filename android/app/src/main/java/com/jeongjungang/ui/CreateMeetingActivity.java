@@ -115,7 +115,9 @@ public class CreateMeetingActivity extends AppCompatActivity {
             chip.setTextColor(getColor(R.color.start_ink));
             chip.setChipStrokeColor(ColorStateList.valueOf(getColor(R.color.start_ink)));
             chip.setChipStrokeWidth(getResources().getDisplayMetrics().density);
-            chip.setCheckedIconVisible(false);
+            chip.setCheckedIconResource(R.drawable.ic_point_check);
+            chip.setCheckedIconTint(ColorStateList.valueOf(getColor(R.color.start_point)));
+            chip.setCheckedIconVisible(true);
         }
     }
 

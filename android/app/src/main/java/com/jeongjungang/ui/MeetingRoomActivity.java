@@ -211,7 +211,9 @@ public class MeetingRoomActivity extends AppCompatActivity {
         binding.people.removeAllViews();
         for (Member member : snapshot.members) addMember(member);
         boolean open = snapshot.meeting.status == Status.OPEN;
-        boolean enabled = canAct() && open && count >= 2 && count <= 10;
+        boolean confirmed = snapshot.meeting.status == Status.CONFIRMED;
+        boolean enabled = canAct() && (confirmed || open && count >= 2 && count <= 10);
+        binding.findButton.setText(confirmed ? "확정된 약속 보기" : "만날 곳 찾기");
         binding.findButton.setEnabled(enabled);
         binding.findButton.setAlpha(enabled ? 1f : 0.45f);
         binding.footerHint.setText(!open ? "확정된 약속이야. 방장이 확정을 되돌리면 다시 찾을 수 있어."
@@ -235,8 +237,8 @@ public class MeetingRoomActivity extends AppCompatActivity {
         avatar.setText(member.nickname.isEmpty() ? "?" : member.nickname.substring(0,
                 member.nickname.offsetByCodePoints(0, 1)));
         avatar.setGravity(android.view.Gravity.CENTER);
-        avatar.setTextColor(getColor(R.color.start_ink));
-        avatar.setBackgroundResource(mine ? R.drawable.start_action_primary : R.drawable.start_action_secondary);
+        avatar.setTextColor(getColor(mine ? R.color.start_ink : R.color.start_point));
+        avatar.setBackgroundResource(mine ? R.drawable.start_action_primary : R.drawable.point_badge_background);
         LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(dp(40), dp(44));
         avatarParams.setMarginEnd(dp(12));
         row.addView(avatar, avatarParams);
@@ -255,6 +257,10 @@ public class MeetingRoomActivity extends AppCompatActivity {
         origin.setTextSize(13);
         origin.setTextColor(getColor(R.color.start_muted));
         origin.setPadding(0, dp(8), 0, 0);
+        if (member.origin != null) {
+            origin.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_point_check, 0, 0, 0);
+            origin.setCompoundDrawablePadding(dp(4));
+        }
         labels.addView(origin);
         if (mine) {
             AppCompatButton edit = new AppCompatButton(this);
@@ -275,6 +281,10 @@ public class MeetingRoomActivity extends AppCompatActivity {
 
     /** 추천을 시작한 시점의 참가자 목록을 고정해 확인한 대상이 바뀌지 않게 한다. */
     private void findPlaces() {
+        if (canAct() && snapshot.meeting.status == Status.CONFIRMED) {
+            startActivity(new Intent(this, ConfirmMeetingActivity.class).putExtra("meetingId", meetingId));
+            return;
+        }
         if (!canAct() || snapshot.meeting.status != Status.OPEN) return;
         Snapshot selected = snapshot;
         if (selected.recommendParticipants().size() < 2) return;
@@ -311,6 +321,8 @@ public class MeetingRoomActivity extends AppCompatActivity {
                 origins.add(item);
             }
             startActivity(new Intent(this, RecommendationActivity.class)
+                    .putExtra("meetingId", meetingId)
+                    .putExtra("meetingVersion", selected.version)
                     .putParcelableArrayListExtra("origins", origins)
                     .putExtra("fair", sheet.criteriaGroup.getCheckedRadioButtonId() == R.id.fairCriterion));
         });

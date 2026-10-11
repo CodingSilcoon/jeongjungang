@@ -21,7 +21,7 @@
                 <TextView style="@style/StartActionTitle" android:text="@string/start_find" android:textColor="@color/start_ink"/>
                 <TextView style="@style/StartActionDetail" android:text="@string/start_find_detail" android:textColor="@color/start_ink"/>
             </LinearLayout>
-            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="12dp" android:src="@drawable/start_chevron" android:importantForAccessibility="no" app:tint="@color/start_ink"/>
+            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_marginStart="12dp" android:src="@drawable/start_chevron" android:importantForAccessibility="no" app:tint="@color/start_point"/>
         </LinearLayout>
         <LinearLayout android:id="@+id/createMeetingButton" android:contentDescription="@string/start_create" style="@style/StartAction" android:layout_marginTop="@dimen/start_action_gap" >
             <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:importantForAccessibility="noHideDescendants">

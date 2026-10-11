@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/start_background">
+
+    <LinearLayout android:id="@+id/content"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:paddingHorizontal="22dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp"
+            android:gravity="center_vertical">
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/backButton"
+                android:layout_width="48dp" android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/origin_back" android:text="‹"
+                android:textSize="28sp" android:textColor="@color/start_ink" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:gravity="end" android:text="@string/start_logo"
+                android:textSize="18sp" android:textStyle="bold" android:textColor="@color/start_ink" />
+        </LinearLayout>
+
+        <TextView style="@style/OriginText" android:text="@string/nearby_title"
+            android:layout_marginTop="12dp" android:textSize="26sp" android:textStyle="bold" />
+        <TextView android:id="@+id/centerLabel" style="@style/OriginText"
+            android:textSize="12sp" android:textColor="@color/start_muted" android:layout_marginBottom="12dp" />
+
+        <!-- 실제 지도 SDK 연결 전에는 지형·가게 위치를 임의로 그리지 않는다. -->
+        <FrameLayout android:id="@+id/mapArea" android:layout_width="match_parent"
+            android:layout_height="300dp" android:background="@drawable/recommend_map_background">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_margin="12dp" android:text="@string/nearby_radius"
+                android:textSize="12sp" android:textColor="@color/start_muted" />
+            <TextView android:id="@+id/mapLabel" android:layout_width="match_parent"
+                android:layout_height="match_parent" android:gravity="center" android:padding="32dp"
+                android:textSize="14sp" android:textColor="@color/start_ink" />
+        </FrameLayout>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:layout_marginBottom="12dp">
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/foodButton"
+                style="@style/NearbyFilter" android:text="@string/nearby_food"
+                android:drawableStart="@drawable/ic_nearby_food" app:backgroundTint="@null" />
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/cafeButton"
+                style="@style/NearbyFilter" android:text="@string/nearby_cafe"
+                android:layout_marginHorizontal="8dp" android:drawableStart="@drawable/ic_nearby_cafe"
+                app:backgroundTint="@null" />
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/barButton"
+                style="@style/NearbyFilter" android:text="@string/nearby_bar"
+                android:drawableStart="@drawable/ic_nearby_bar" app:backgroundTint="@null" />
+        </LinearLayout>
+
+        <TextView android:id="@+id/listTitle" style="@style/OriginText"
+            android:textSize="12sp" android:textColor="@color/start_muted" android:layout_marginBottom="8dp" />
+
+        <androidx.core.widget.NestedScrollView android:id="@+id/listScroll"
+            android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+            android:fillViewport="true" android:clipToPadding="false">
+            <LinearLayout android:id="@+id/scrollContent" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:paddingEnd="4dp" android:paddingBottom="12dp"
+                android:orientation="vertical">
+                <LinearLayout android:id="@+id/placeList" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" />
+                <TextView android:id="@+id/statusText" style="@style/OriginText"
+                    android:paddingVertical="12dp" android:textColor="@color/start_muted"
+                    android:accessibilityLiveRegion="polite" />
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/moreButton"
+                    style="@style/NearbyQuiet" android:text="@string/nearby_more"
+                    android:drawableEnd="@drawable/ic_nearby_down" app:backgroundTint="@null" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <LinearLayout android:id="@+id/detailPanel" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:paddingTop="12dp" android:paddingBottom="12dp" android:visibility="gone">
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:background="@color/nearby_divider" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+                <TextView android:id="@+id/detailName" android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:layout_weight="1" android:textSize="17sp"
+                    android:textStyle="bold" android:textColor="@color/start_ink" />
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/closeButton"
+                    style="@style/NearbyQuiet" android:layout_width="wrap_content"
+                    android:drawableEnd="@drawable/ic_nearby_close" android:drawablePadding="4dp"
+                    android:text="@string/nearby_close" app:backgroundTint="@null" />
+            </LinearLayout>
+            <TextView android:id="@+id/detailAddress" style="@style/OriginText"
+                android:textSize="12sp" android:lineSpacingExtra="3dp" android:textColor="@color/start_muted"
+                android:layout_marginBottom="12dp" />
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/openButton"
+                style="@style/OriginButton" android:text="@string/nearby_open" android:textSize="14sp"
+                android:gravity="start|center_vertical" android:drawableEnd="@drawable/nearby_external_badge"
+                android:drawablePadding="8dp" android:background="@drawable/nearby_primary_background"
+                android:stateListAnimator="@null" app:backgroundTint="@null" />
+            <TextView android:id="@+id/linkStatus" style="@style/OriginText"
+                android:textSize="12sp" android:visibility="gone" android:accessibilityLiveRegion="polite" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -206,7 +206,12 @@ public class RecommendationActivity extends AppCompatActivity {
             params.bottomMargin = dp(12);
             card.setLayoutParams(params);
             card.addView(text((i + 1) + "  " + ShareText.stationLabel(item), 19, true));
-            if (chosen) card.addView(text("선택됨", 12, true));
+            if (chosen) {
+                TextView selectedLabel = text("선택됨", 12, true);
+                selectedLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_point_check, 0, 0, 0);
+                selectedLabel.setCompoundDrawablePadding(dp(4));
+                card.addView(selectedLabel);
+            }
             card.addView(text(item.reason, 14, true));
             card.addView(text(criterion == Criterion.TOTAL_TIME
                     ? "이동시간 합계 " + Math.round(item.totalMinutes) + "분"
@@ -236,7 +241,7 @@ public class RecommendationActivity extends AppCompatActivity {
         summary.addView(text("이동시간 합계 " + Math.round(item.totalMinutes) + "분"
                 + "  ·  최대 " + Math.round(item.maxMinutes) + "분", 16, true));
         binding.resultList.addView(summary);
-        binding.resultList.addView(text("각자 얼마나 걸릴까?", 18, true));
+        binding.resultList.addView(text("각자 걸리는 시간", 18, true));
         addTrips(binding.resultList, item, true);
         binding.resultList.addView(text("출발지에서 역까지의 접근시간이 포함된 근사값이에요. 실제 경로는 지도 앱에서 확인해 주세요.", 13, false));
         addButton(binding.resultList, "지도 앱에서 길찾기", this::chooseParticipant);
@@ -278,6 +283,14 @@ public class RecommendationActivity extends AppCompatActivity {
     private void primaryAction() {
         Recommendation item = selected();
         if (item == null) return;
+        String meetingId = getIntent().getStringExtra("meetingId");
+        if (!detail && meetingId != null) {
+            LatLng location = current.stationCoordinates.get(item.station);
+            if (location == null) return;
+            startActivity(ConfirmMeetingActivity.createIntent(this, meetingId,
+                    getIntent().getLongExtra("meetingVersion", -1), item, location));
+            return;
+        }
         if (detail) {
             ExternalApps.share(this, ShareText.forOne(item));
         } else {

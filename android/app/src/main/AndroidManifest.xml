@@ -37,6 +37,16 @@
         </activity>
 
         <activity
+            android:name=".ui.NearbyPlacesActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.ConfirmMeetingActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.JoinMeetingActivity"
             android:theme="@style/Theme.Jeongjungang.Start"
             android:exported="false"

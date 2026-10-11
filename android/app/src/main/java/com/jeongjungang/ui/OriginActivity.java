@@ -224,10 +224,15 @@ public class OriginActivity extends AppCompatActivity {
             row.number.setText(index == 0
                     ? getString(R.string.origin_me_badge) : String.valueOf(index));
             row.number.setBackground(createBadge(index));
+            row.number.setTextColor(ContextCompat.getColor(this,
+                    index == 0 ? R.color.start_ink : R.color.start_point));
 
             String placeName = place == null
                     ? getString(R.string.origin_choose) : place.name;
             row.chooseButton.setText(placeName);
+            // 입력 완료는 청록 체크로, 미입력은 이동 화살표로 구분한다.
+            row.chooseButton.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0,
+                    place == null ? R.drawable.start_chevron : R.drawable.ic_point_check, 0);
             row.chooseButton.setTextColor(ContextCompat.getColor(this,
                     place == null ? R.color.start_muted : R.color.start_ink));
             row.chooseButton.setContentDescription(getString(
@@ -264,11 +269,11 @@ public class OriginActivity extends AppCompatActivity {
         binding.addButton.setText(canAdd ? R.string.origin_add : R.string.origin_limit);
     }
 
-    /** 행 번호를 레몬·연두·살구 배지로 구분한다. */
+    /** 내 배지는 레몬색, 친구 배지는 연한 청록색으로 통일한다. */
     private GradientDrawable createBadge(int index) {
-        int[] colors = {0xFFF9DA49, 0xFFDEEDAA, 0xFFF2B7A6};
         GradientDrawable badge = new GradientDrawable();
-        badge.setColor(colors[index % colors.length]);
+        badge.setColor(ContextCompat.getColor(this,
+                index == 0 ? R.color.start_accent : R.color.start_point_surface));
         badge.setCornerRadius(dp(7));
         badge.setStroke(dp(1), ContextCompat.getColor(this, R.color.start_ink));
         return badge;
