@@ -12,6 +12,10 @@ if (localPropsFile.exists()) {
     localPropsFile.withInputStream { localProps.load(it) }
 }
 def apiBaseUrl = localProps.getProperty('jeongjungang.apiBaseUrl', '').trim()
+// 카카오맵 SDK 네이티브 앱 키도 local.properties에 둔다: jeongjungang.kakaoNativeAppKey=...
+// 없으면 지도만 안 뜨고 나머지는 그대로 동작한다(KakaoMaps.isAvailable()이 false).
+// 키는 카카오 콘솔에 등록한 패키지명·키 해시로 서명된 앱에서만 쓰인다.
+def kakaoNativeAppKey = localProps.getProperty('jeongjungang.kakaoNativeAppKey', '').trim()
 
 android {
     namespace 'com.jeongjungang'
@@ -29,6 +33,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
+        buildConfigField "String", "KAKAO_NATIVE_APP_KEY", "\"${kakaoNativeAppKey}\""
     }
 
     buildTypes {
@@ -64,6 +69,8 @@ dependencies {
     implementation libs.okhttp
     // 알람 끔 기록 재전송 (앱 종료·재부팅 뒤에도 네트워크가 돌아오면 실행)
     implementation libs.work.runtime
+    // 지도 (ARM 전용 네이티브 라이브러리. x86_64 에뮬레이터는 API 30+ 이미지의 ARM 번역으로 돈다)
+    implementation libs.kakao.map
     testImplementation libs.junit
     // Android의 org.json은 단위 테스트에서 스텁이라, JVM 테스트용 실제 구현을 넣는다.
     testImplementation libs.json
