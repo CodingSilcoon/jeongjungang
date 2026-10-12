@@ -122,4 +122,5 @@ Android 클라이언트
 - `android/app/src/main/assets/data/` — 위 CSV 데이터 번들 위치
 - 테스트: `cd android && gradlew.bat test` (Gradle 데몬이 JDK 25를 요구하므로 `JAVA_HOME`을 Android Studio 내장 JDK로 지정)
 - `backend/` — Spring Boot 3.5 / Java 17 서버(`server/setup` 브랜치). `common`(응답·오류), `auth`(참가자 토큰), `meeting`(약속·참가자·만료 삭제, `api`에 컨트롤러·요청/응답), `ratelimit`(Redis 요청 제한), `geocode`(카카오 로컬 프록시: 주소 검색·핀 주소·주변 장소, Redis 캐시), `health`. DB 스키마는 `src/main/resources/db/migration`(Flyway). 로컬 실행은 `backend`에서 `gradlew bootRun`(Docker Desktop 필요, compose.yaml의 Postgres 5433·Redis 자동 기동). 알람 도메인·에스컬레이션 스케줄러(Redis ZSET)는 새 패키지로 추가한다. 카카오 REST 키는 환경변수 `KAKAO_REST_API_KEY`(없으면 카카오 호출만 502)
+- `deploy/` — 운영 배포 구성(Caddy + 앱 + Postgres + Redis compose). 방법은 `docs/DEPLOY.md`
 - `docs/` — 문서

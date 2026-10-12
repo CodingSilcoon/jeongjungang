@@ -1,0 +1,14 @@
+# DOMAIN은 deploy/.env에서 온다. 실제 도메인이면 Let's Encrypt 인증서를 자동으로 받고,
+# localhost면 Caddy 자체 인증서를 쓴다(로컬 확인용)
+{$DOMAIN} {
+	encode gzip
+
+	# API만 앱으로 넘긴다. actuator 등 나머지 경로는 밖에 열지 않는다
+	handle /api/* {
+		reverse_proxy app:8080
+	}
+
+	handle {
+		respond 404
+	}
+}
