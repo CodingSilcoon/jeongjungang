@@ -1,47 +1,176 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 알람 화면 뼈대. 디자인은 화면 담당이 바꿔도 된다(id 4개만 유지). 에스컬레이션 화면도 같은 레이아웃을 쓴다. -->
+<!-- 본문만 스크롤하고 알람 끄기는 하단에 유지한다. 기존 네 개 ID는 공통으로 쓴다. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="32dp"
-    tools:context=".ui.alarm.AlarmActivity">
+    android:background="@color/start_background"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/alarmTitle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textAppearance="?attr/textAppearanceHeadlineMedium"
-        tools:text="민수 생일 모임" />
+        android:gravity="center_vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/start_logo"
+            android:textColor="@color/start_ink"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/alarmKind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/alarm_friend_kind"
+            android:textColor="@color/start_muted"
+            android:textSize="12sp" />
+    </LinearLayout>
 
-    <TextView
-        android:id="@+id/alarmSubtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        tools:text="19:00 답십리역 약속" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:paddingHorizontal="24dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingBottom="8dp">
 
-    <TextView
-        android:id="@+id/alarmMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="@string/alarm_depart_now"
-        android:textAppearance="?attr/textAppearanceBodyLarge" />
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:format12Hour="M월 d일 EEEE"
+                android:format24Hour="M월 d일 EEEE"
+                android:textColor="@color/start_muted"
+                android:textSize="14sp" />
 
-    <com.google.android.material.button.MaterialButton
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:format12Hour="a h:mm"
+                android:format24Hour="HH:mm"
+                android:textColor="@color/start_ink"
+                android:textSize="48sp"
+                android:textStyle="bold" />
+
+            <FrameLayout
+                android:layout_width="88dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="24dp"
+                android:importantForAccessibility="noHideDescendants">
+                <ImageView
+                    android:id="@+id/alarmAvatar"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="top|center_horizontal"
+                    android:background="@drawable/alarm_avatar_background"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_alarm_person" />
+                <ImageView
+                    android:id="@+id/alarmBell"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/point_badge_background"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_alarm_bell" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/alarmTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:breakStrategy="balanced"
+                android:textColor="@color/start_ink"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <Space
+                android:layout_width="1dp"
+                android:layout_height="24dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:id="@+id/meetingCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/start_action_secondary"
+                android:orientation="vertical"
+                android:padding="18dp">
+                <TextView
+                    android:id="@+id/meetingTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:textColor="@color/start_muted"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/meetingPlace"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_point_pin"
+                    android:drawablePadding="8dp"
+                    android:textColor="@color/start_ink"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/alarmSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/start_muted"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/meetingUnavailable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="@string/alarm_meeting_unavailable"
+                android:textColor="@color/start_muted"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/alarmMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/start_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/dismissButton"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_marginTop="48dp"
-        android:text="@string/alarm_dismiss"
-        android:textSize="20sp" />
-
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/nearby_primary_background"
+        android:drawableStart="@drawable/ic_point_check"
+        android:drawablePadding="8dp"
+        android:minHeight="76dp"
+        android:padding="16dp"
+        android:text="@string/alarm_escalation_dismiss"
+        android:textAllCaps="false"
+        android:textColor="@color/start_ink"
+        android:textSize="21sp"
+        android:textStyle="bold"
+        app:backgroundTint="@null" />
 </LinearLayout>

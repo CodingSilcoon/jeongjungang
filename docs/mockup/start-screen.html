@@ -1,5 +1,3 @@
-<!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>정중앙 레몬 플레이</title></head><body>
 <style>
 
 #jj-six{padding:24px 8px;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;color:#18243b;background:transparent}#jj-six *{box-sizing:border-box}#jj-six .phone{position:relative;display:flex;flex-direction:column;width:100%;max-width:390px;min-height:820px;aspect-ratio:390/844;margin:auto;background:#fff;border:5px solid #202733;border-radius:36px;overflow:hidden;color-scheme:light}#jj-six .camera{position:absolute;top:13px;left:50%;width:9px;height:9px;transform:translateX(-50%);background:#202733;border-radius:50%}#jj-six .gesture{position:absolute;bottom:11px;left:50%;width:90px;height:4px;transform:translateX(-50%);border-radius:4px;background:#202733}#jj-six .logo{margin:48px 25px 0;font-size:27px;line-height:1.3;font-weight:900;letter-spacing:-1.5px}#jj-six .logo span{color:#e8412f}#jj-six .intro{padding:42px 25px 0}#jj-six h2{margin:0;font-size:32px;line-height:1.4;letter-spacing:-1.5px;font-weight:800}#jj-six .intro p{margin:13px 0 0;color:#65718a;font-size:14px;line-height:1.7;word-break:keep-all}#jj-six .illustration{position:relative;height:205px;min-height:180px;margin:26px 22px 12px;flex:1;max-height:230px}#jj-six .illustration svg{display:block;width:100%;height:100%}#jj-six .choices{margin:auto 22px 70px;display:flex;flex-direction:column;gap:10px}#jj-six .choice{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:72px;padding:15px 19px;background:#f5f7fb;border:1px solid #e8ecf3;border-radius:18px;color:#18243b;text-align:left;font-family:inherit}#jj-six .choice strong{display:block;font-size:16px;font-weight:750;line-height:1.5;letter-spacing:-.3px}#jj-six .choice small{display:block;font-size:12px;line-height:1.5;margin-top:3px;color:#69768e}#jj-six .choice .arrow{font-size:25px;color:#8390a5;font-weight:400}#jj-six .choice.main{background:#1e46d6;border-color:#1e46d6;min-height:84px;box-shadow:0 5px 12px #1e46d619;color:#fff}#jj-six .choice.main small{color:#e0e7ff}#jj-six .choice.main .arrow{color:#fff}#jj-six .choice:hover{background:#eaf0ff;border-color:#b3c4fa}#jj-six .choice.main:hover{background:#1738b5}#jj-six .choice:active{filter:brightness(.96)}#jj-six .choice:focus-visible{outline:3px solid #e8412f;outline-offset:3px}#jj-six .choice[aria-pressed=true]{outline:2px solid #e8412f;outline-offset:2px}@media(max-width:350px){#jj-six .intro{padding-top:34px}#jj-six h2{font-size:29px}#jj-six .choices{margin-left:18px;margin-right:18px}#jj-six .choice{padding-left:16px;padding-right:16px}}
@@ -48,6 +46,12 @@
 @media(prefers-reduced-motion:reduce){#jj-six .choice{transition:none}}
 
 #jj-six .directions{grid-template-columns:minmax(0,1fr);max-width:390px}
+
+/* 확정된 청록 포인트: 작은 아이콘과 완료 표시만 강조한다. */
+#jj-six{--kick:#3F7770;--kick-soft:#EAF2EF}
+#jj-six .yellow .choice .arrow,#jj-six .yellow .choice.main .arrow{color:var(--kick)}
+#jj-six .illustration circle[r="15"]{fill:var(--kick)}
+#jj-six .illustration rect[fill="#DEEDAA"],#jj-six .illustration rect[fill="#F2B7A6"]{fill:var(--kick-soft)}
 </style>
 <div id="jj-six" class="viz-dotted-background"><div class="directions">
 
@@ -60,6 +64,3 @@
 <script>
 (()=>{const root=document.getElementById('jj-six');root.querySelectorAll('.direction').forEach(section=>{section.querySelectorAll('.choice').forEach(button=>button.addEventListener('click',()=>{section.querySelectorAll('.choice').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));section.querySelector('.status').textContent=button.querySelector('strong').textContent+' · 디자인 미리보기';}));if(globalThis.Tweak){const phone=section.querySelector('.phone');const state={accent:getComputedStyle(section).getPropertyValue('--accent').trim()};const tweak=new Tweak({container:phone,onChange:()=>phone.style.setProperty('--accent',state.accent)});tweak.addColorPicker(state,'accent',{label:'포인트 색상'});}});})();
 </script>
-
-
-</body></html>

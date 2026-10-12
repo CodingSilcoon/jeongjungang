@@ -10,6 +10,9 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.Membership;
  */
 public final class ActionResult {
 
+    /** 문구 대신 오류 코드로 화면을 분기한다. 기존 호출부는 null을 사용한다. */
+    public final com.jeongjungang.data.remote.ApiException error;
+
     public enum Kind { CREATE, PREVIEW, JOIN, UPDATE_MEETING, UPDATE_ME, LEAVE, CANCEL, KICK }
 
     public enum Status { RUNNING, DONE, FAILED }
@@ -24,6 +27,12 @@ public final class ActionResult {
     public final InvitePreview preview;
 
     private ActionResult(Kind kind, Status status, String message, Membership membership, InvitePreview preview) {
+        this(kind, status, message, membership, preview, null);
+    }
+
+    private ActionResult(Kind kind, Status status, String message, Membership membership,
+            InvitePreview preview, com.jeongjungang.data.remote.ApiException error) {
+        this.error = error;
         this.kind = kind;
         this.status = status;
         this.message = message;
@@ -49,5 +58,9 @@ public final class ActionResult {
 
     static ActionResult failed(Kind kind, String message) {
         return new ActionResult(kind, Status.FAILED, message, null, null);
+    }
+
+    static ActionResult failed(Kind kind, com.jeongjungang.data.remote.ApiException error) {
+        return new ActionResult(kind, Status.FAILED, error.getMessage(), null, null, error);
     }
 }

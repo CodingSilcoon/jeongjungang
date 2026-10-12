@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/start_background">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:paddingHorizontal="24dp" android:paddingVertical="12dp" android:gravity="center_vertical">
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/backButton"
+            android:layout_width="48dp" android:layout_height="48dp" android:minWidth="0dp"
+            android:text="‹" android:textSize="28sp" android:contentDescription="이전 화면"
+            android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:gravity="end" android:text="@string/start_logo" android:textSize="18sp"
+            android:textStyle="bold" android:textColor="@color/start_ink" />
+    </LinearLayout>
+
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:fillViewport="true" android:paddingHorizontal="24dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:paddingBottom="12dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="출발 알람" android:textSize="28sp" android:textStyle="bold"
+                android:layout_marginTop="16dp" android:layout_marginBottom="16dp" android:textColor="@color/start_ink" />
+            <TextView android:id="@+id/meetingSummary" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:textSize="14sp" android:lineSpacingExtra="5dp"
+                android:drawableStart="@drawable/ic_point_pin" android:drawablePadding="10dp"
+                android:textColor="@color/start_ink" android:layout_marginBottom="20dp" />
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:background="@drawable/start_action_secondary" android:padding="20dp" android:orientation="vertical">
+                <TextView android:id="@+id/timeLabel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:text="내 예상 알람 시각" android:textSize="13sp"
+                    android:drawableEnd="@drawable/ic_alarm_bell" android:textColor="@color/start_ink" />
+                <TextView android:id="@+id/alarmTime" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:text="— —" android:textSize="36sp"
+                    android:textStyle="bold" android:textColor="@color/start_ink" android:layout_marginVertical="12dp" />
+                <TextView android:id="@+id/timeHint" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:textSize="12sp" android:textColor="@color/start_muted" />
+                <TextView android:id="@+id/breakdown" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_marginTop="14dp"
+                    android:textSize="12sp" android:textColor="@color/start_muted" />
+            </LinearLayout>
+
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" android:text="내 준비시간" android:labelFor="@id/prepInput"
+                android:textSize="16sp" android:textStyle="bold" android:textColor="@color/start_ink" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:gravity="center_vertical" android:layout_marginTop="8dp">
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/minusButton"
+                    android:layout_width="48dp" android:layout_height="48dp" android:minWidth="0dp"
+                    android:text="−" android:contentDescription="준비시간 5분 줄이기" android:textColor="@color/start_ink" />
+                <EditText android:id="@+id/prepInput" android:layout_width="80dp" android:layout_height="wrap_content"
+                    android:minHeight="48dp" android:inputType="number" android:maxLength="3"
+                    android:gravity="center" android:textSize="20sp" android:textColor="@color/start_ink" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="분" android:textColor="@color/start_ink" />
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/plusButton"
+                    android:layout_width="48dp" android:layout_height="48dp" android:minWidth="0dp"
+                    android:text="+" android:contentDescription="준비시간 5분 늘리기" android:textColor="@color/start_ink" />
+            </LinearLayout>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="나갈 준비에 필요한 시간 · 0~240분\n이동시간은 근사값이에요. 실제 경로도 확인해 주세요."
+                android:textSize="12sp" android:lineSpacingExtra="4dp" android:textColor="@color/start_muted" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox android:id="@+id/consent"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:layout_marginTop="16dp" android:text="책임 알람에 참여할게" android:textSize="15sp"
+                android:textStyle="bold" android:textColor="@color/start_ink" app:buttonTint="@color/start_point" />
+            <TextView android:id="@+id/consentExplanation" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:textSize="12sp" android:lineSpacingExtra="4dp"
+                android:textColor="@color/start_muted" />
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/permissionsButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:layout_marginVertical="16dp" android:text="알람 권한 확인" android:textColor="@color/start_ink"
+                android:drawableStart="@drawable/ic_point_check" android:background="@drawable/start_action_secondary"
+                android:padding="12dp" app:backgroundTint="@null" />
+
+            <TextView android:id="@+id/peopleTitle" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="친구들 참여 상태" android:textSize="16sp"
+                android:textStyle="bold" android:textColor="@color/start_ink" />
+            <LinearLayout android:id="@+id/people" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" />
+
+            <LinearLayout android:id="@+id/hostControls" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/optionsButton"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                    android:text="공통 알람 설정 · 방장" android:textColor="@color/start_ink" />
+                <androidx.appcompat.widget.AppCompatButton android:id="@+id/enableButton"
+                    android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="56dp"
+                    android:background="@drawable/nearby_primary_background" app:backgroundTint="@null"
+                    android:text="책임 알람 켜기" android:textColor="@color/start_ink" android:padding="12dp" />
+            </LinearLayout>
+            <TextView android:id="@+id/hostHint" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="12dp"
+                android:textSize="12sp" android:textColor="@color/start_muted" />
+            <androidx.appcompat.widget.AppCompatButton android:id="@+id/retryButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp"
+                android:text="다시 불러오기" android:textColor="@color/start_ink" />
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView android:id="@+id/feedback" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp" android:layout_marginTop="8dp" android:accessibilityLiveRegion="polite"
+        android:textSize="12sp" android:textColor="@color/start_muted" />
+    <androidx.appcompat.widget.AppCompatButton android:id="@+id/saveButton"
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp"
+        android:layout_marginHorizontal="24dp" android:layout_marginTop="12dp" android:layout_marginBottom="16dp"
+        android:text="내 설정 저장하기" android:textSize="17sp" android:textStyle="bold" android:padding="14dp"
+        android:textColor="@color/start_ink" android:background="@drawable/nearby_primary_background" app:backgroundTint="@null" />
+</LinearLayout>

@@ -17,8 +17,8 @@ public class EscalationTest {
 
     @Test
     public void escalationTitle() {
-        assertEquals("민수님이 아직 안 일어났어요", AlarmRingService.escalationTitle("민수"));
-        assertEquals("친구님이 아직 안 일어났어요", AlarmRingService.escalationTitle(null));
+        assertEquals("민수님이 아직 알람을 끄지 않았어요", AlarmRingService.escalationTitle("민수"));
+        assertEquals("친구님이 아직 알람을 끄지 않았어요", AlarmRingService.escalationTitle(null));
     }
 
     @Test

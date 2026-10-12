@@ -42,12 +42,11 @@ public final class AlarmPermissions {
         return nm != null && nm.canUseFullScreenIntent();
     }
 
-    /** Android 13 미만은 항상 true. 13 이상에서 false면 화면이 POST_NOTIFICATIONS 권한을 요청한다. */
+    /** 런타임 권한과 앱 전체 알림 차단을 함께 확인한다. 구버전의 설정 차단도 반영한다. */
     public static boolean hasNotificationPermission(Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            return true;
-        }
-        return context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        boolean runtimeAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+        return runtimeAllowed && androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled();
     }
 
     public static boolean isIgnoringBatteryOptimizations(Context context) {

@@ -1,6 +1,8 @@
 package com.jeongjungang.ui.meeting;
 
 import android.app.Application;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -54,6 +56,7 @@ public class PlacesViewModel extends AndroidViewModel {
     private final MutableLiveData<State> state = new MutableLiveData<State>(
             new State(State.Status.IDLE, Collections.<NearbyPlace>emptyList(), false, false, null));
     private final AtomicInteger generation = new AtomicInteger();
+    private final Handler main = new Handler(Looper.getMainLooper());
 
     private LatLng center;
     private String category;
@@ -116,26 +119,27 @@ public class PlacesViewModel extends AndroidViewModel {
             public void run() {
                 try {
                     PlacePage result = repository.places(c, cat, r, nextPage);
-                    if (gen != generation.get()) {
-                        return;
-                    }
-                    synchronized (loaded) {
-                        loaded.addAll(result.items);
-                        page = result.page;
-                        state.postValue(new State(loaded.isEmpty() ? State.Status.EMPTY : State.Status.SUCCESS,
-                                loaded, result.hasNext, false, null));
-                    }
+                    // 분류 변경과 결과 반영을 같은 메인 스레드에서 판정한다.
+                    main.post(() -> {
+                        if (gen != generation.get()) return;
+                        synchronized (loaded) {
+                            loaded.addAll(result.items);
+                            page = result.page;
+                            state.setValue(new State(loaded.isEmpty() ? State.Status.EMPTY : State.Status.SUCCESS,
+                                    loaded, result.hasNext, false, null));
+                        }
+                    });
                 } catch (ApiException e) {
                     Log.w(TAG, "장소 검색 실패: " + e.code, e);
-                    if (gen != generation.get()) {
-                        return;
-                    }
-                    synchronized (loaded) {
-                        // 다음 페이지 실패면 지금까지 목록은 유지하고 더 불러오기만 다시 할 수 있게 한다
-                        state.postValue(loaded.isEmpty()
-                                ? new State(State.Status.ERROR, loaded, false, false, e.getMessage())
-                                : new State(State.Status.SUCCESS, loaded, true, false, e.getMessage()));
-                    }
+                    main.post(() -> {
+                        if (gen != generation.get()) return;
+                        synchronized (loaded) {
+                            // 다음 페이지 실패면 지금까지 목록은 유지한다.
+                            state.setValue(loaded.isEmpty()
+                                    ? new State(State.Status.ERROR, loaded, false, false, e.getMessage())
+                                    : new State(State.Status.SUCCESS, loaded, true, false, e.getMessage()));
+                        }
+                    });
                 }
             }
         });
@@ -143,6 +147,8 @@ public class PlacesViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
+        generation.incrementAndGet();
+        main.removeCallbacksAndMessages(null);
         executor.shutdownNow();
     }
 }

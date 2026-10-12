@@ -2,9 +2,16 @@
     <string name="app_name">정중앙</string>
     <string name="alarm_depart_now">지금 출발해야 약속에 늦지 않아요</string>
     <string name="alarm_dismiss">알람 끄기</string>
-    <string name="alarm_escalation_title">%1$s님이 아직 안 일어났어요</string>
+    <string name="alarm_escalation_title">%1$s님이 아직\n알람을 끄지 않았어요</string>
     <string name="alarm_escalation_someone">친구</string>
     <string name="alarm_escalation_subtitle">출발 알람을 끄지 않았어요</string>
-    <string name="alarm_escalation_message">연락해서 깨워 주세요</string>
+    <string name="alarm_escalation_message">친구에게 연락해 확인해 주세요.\n아래 버튼은 내 휴대폰의 알람만 끕니다.</string>
+    <string name="alarm_friend_kind">책임 알람</string>
+    <string name="alarm_departure_kind">출발 알람</string>
+    <string name="alarm_meeting_unavailable">약속 정보를 불러오지 못했습니다.\n알람은 끌 수 있습니다.</string>
+    <string name="alarm_meeting_loading">약속 정보를 불러오는 중입니다.\n알람은 바로 끌 수 있습니다.</string>
+    <string name="alarm_meeting_time">약속 시간 · %1$s</string>
+    <string name="alarm_time_unknown">약속 시간 미정</string>
+    <string name="alarm_place_unknown">약속 장소 미정</string>
     <string name="alarm_escalation_dismiss">내 알람 끄기</string>
 </resources>

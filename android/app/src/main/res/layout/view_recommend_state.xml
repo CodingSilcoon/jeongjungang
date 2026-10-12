@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:paddingBottom="24dp">
+
+    <TextView style="@style/OriginText" android:text="만날 곳 찾기"
+        android:textSize="13sp" android:layout_marginTop="18dp" />
+
+    <FrameLayout android:layout_width="88dp" android:layout_height="88dp"
+        android:layout_marginTop="40dp">
+        <ImageView android:id="@+id/stateIcon" android:layout_width="80dp"
+            android:layout_height="80dp" android:padding="22dp"
+            android:background="@drawable/point_badge_background"
+            android:tint="@color/start_point" android:importantForAccessibility="no" />
+        <TextView android:id="@+id/stateBadge" android:layout_width="30dp"
+            android:layout_height="30dp" android:layout_gravity="bottom|end"
+            android:gravity="center" android:background="@drawable/meeting_lemon_badge"
+            android:textColor="@color/start_ink" android:textStyle="bold"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
+
+    <TextView android:id="@+id/stateTitle" style="@style/OriginText"
+        android:layout_marginTop="30dp" android:textSize="27sp" android:textStyle="bold"
+        android:accessibilityLiveRegion="polite" />
+    <TextView android:id="@+id/stateCopy" style="@style/OriginText"
+        android:layout_marginTop="16dp" android:textSize="14sp" android:lineSpacingExtra="6dp" />
+
+    <!-- 지원 지역 밖의 실제 참가자만 추가한다. -->
+    <LinearLayout android:id="@+id/outsideList" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:orientation="vertical" />
+    <TextView android:id="@+id/stateCriterion" style="@style/OriginText"
+        android:layout_marginTop="18dp" android:padding="10dp"
+        android:background="@drawable/meeting_role_badge"
+        android:textColor="@color/start_point" android:textSize="12sp" android:visibility="gone" />
+    <View android:layout_width="match_parent" android:layout_height="1dp"
+        android:layout_marginTop="22dp" android:background="@color/start_muted" android:alpha="0.2" />
+    <TextView android:id="@+id/stateHint" style="@style/OriginText"
+        android:layout_marginTop="16dp" android:textSize="12sp" android:lineSpacingExtra="5dp" />
+</LinearLayout>

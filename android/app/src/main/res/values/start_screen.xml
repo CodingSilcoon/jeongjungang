@@ -3,6 +3,9 @@
     <color name="start_ink">#24271F</color>
     <color name="start_muted">#5E604D</color>
     <color name="start_accent">#F9DA49</color>
+    <!-- 작은 아이콘·체크·완료 표시용. 주요 버튼은 레몬색을 유지한다. -->
+    <color name="start_point">#3F7770</color>
+    <color name="start_point_surface">#EAF2EF</color>
     <color name="start_logo_accent">#827000</color>
     <color name="start_surface">#FFFFFF</color>
     <color name="start_border">#24271F</color>

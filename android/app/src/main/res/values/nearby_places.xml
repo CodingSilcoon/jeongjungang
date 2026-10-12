@@ -1,0 +1,45 @@
+<resources>
+    <string name="nearby_title">주변 장소</string>
+    <string name="nearby_entry">주변 장소 찾기</string>
+    <string name="nearby_center">%1$s 기준</string>
+    <string name="nearby_radius">반경 500m</string>
+    <string name="nearby_food">식사</string>
+    <string name="nearby_cafe">카페</string>
+    <string name="nearby_bar">술집</string>
+    <string name="nearby_order">%1$s · 역에서 가까운 순</string>
+    <string name="nearby_choose">식사·카페·술집 중에서 골라줘.</string>
+    <string name="nearby_loading">주변 장소를 찾고 있어요…</string>
+    <string name="nearby_empty">주변 500m 안에서 찾은 장소가 없어. 다른 분류를 골라봐.</string>
+    <string name="nearby_retry">다시 불러오기</string>
+    <string name="nearby_more">더 보기</string>
+    <string name="nearby_close">닫기</string>
+    <string name="nearby_open">카카오맵에서 자세히 보기</string>
+    <string name="nearby_no_link">이 장소의 상세 링크가 없어요.</string>
+    <string name="nearby_open_failed">카카오맵 상세 페이지를 열 수 없어요.</string>
+    <string name="nearby_distance">%1$dm</string>
+    <string name="nearby_detail">%1$s · 역에서 %2$dm\n%3$s</string>
+    <string name="nearby_selected">선택한 장소 · %1$s</string>
+    <color name="nearby_divider">#D6D2BB</color>
+    <color name="nearby_selected_surface">#FFF4BA</color>
+
+    <style name="NearbyFilter" parent="OriginButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:drawablePadding">6dp</item>
+        <item name="android:background">@drawable/nearby_filter_background</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+
+    <style name="NearbyQuiet" parent="OriginButton">
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/start_muted</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+</resources>

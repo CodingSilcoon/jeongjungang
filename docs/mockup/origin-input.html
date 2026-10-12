@@ -60,6 +60,13 @@
 #jj-origin .criteria-screen h2{margin-top:4px;font-size:27px}
 #jj-origin .criteria-screen .lead{margin-bottom:20px}
 @media(prefers-reduced-motion:no-preference){#jj-origin .criteria-screen:not([hidden]){animation:jj-sheet-in .22s ease-out}@keyframes jj-sheet-in{from{transform:translateY(35px)}to{transform:translateY(0)}}}
+
+/* 확정된 청록 포인트: 작은 아이콘과 완료 표시만 강조한다. */
+#jj-origin{--kick:#3F7770;--kick-soft:#EAF2EF}
+#jj-origin .person:nth-child(3n+2) .number,#jj-origin .person:nth-child(3n) .number{background:var(--kick-soft);color:var(--kick)}
+#jj-origin .criterion input{accent-color:var(--kick)}
+#jj-origin .origin b{color:var(--kick)}
+#jj-origin .origin:not(.empty) b{color:var(--kick)}
 </style>
 <div id="jj-origin" class="viz-dotted-background">
  <div class="phone">

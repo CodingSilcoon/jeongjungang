@@ -29,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // 이전 Android 버전에서도 제목을 접근성 헤딩으로 표시한다.
+        ViewCompat.setAccessibilityHeading(binding.startHeading, true);
+
         WindowCompat.getInsetsController(getWindow(), binding.getRoot())
                 .setAppearanceLightStatusBars(true);
         WindowCompat.getInsetsController(getWindow(), binding.getRoot())
@@ -47,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
         // 첫 번째 메뉴에서 출발지 입력 화면을 연다.
         binding.findPlaceButton.setOnClickListener(view ->
                 startActivity(new Intent(this, OriginActivity.class)));
+
+        binding.createMeetingButton.setOnClickListener(view ->
+                startActivity(new Intent(this, CreateMeetingActivity.class)));
+        binding.myMeetingsButton.setOnClickListener(view ->
+                startActivity(new Intent(this, MyMeetingsActivity.class)));
+        binding.joinMeetingButton.setOnClickListener(view ->
+                startActivity(new Intent(this, JoinMeetingActivity.class)));
     }
 
     // 카드 전체를 접근성 버튼으로 읽고, 미구현 메뉴에는 안내를 표시한다.

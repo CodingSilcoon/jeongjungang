@@ -122,7 +122,7 @@ public class AlarmRingService extends Service {
     }
 
     static String escalationTitle(String nickname) {
-        return (nickname == null || nickname.isEmpty() ? "친구" : nickname) + "님이 아직 안 일어났어요";
+        return (nickname == null || nickname.trim().isEmpty() ? "친구" : nickname) + "님이 아직 알람을 끄지 않았어요";
     }
 
     @Override
@@ -132,7 +132,8 @@ public class AlarmRingService extends Service {
         if (ACTION_RING.equals(action) && alarmId != null) {
             startRinging(alarmId);
         } else if (ACTION_ESCALATE.equals(action) && alarmId != null) {
-            startEscalationRinging(alarmId, intent.getStringExtra(EXTRA_NICKNAME));
+            startEscalationRinging(alarmId, intent.getStringExtra(EXTRA_NICKNAME),
+                    intent.getStringExtra(EXTRA_MEETING_ID));
         } else if (ACTION_DISMISS.equals(action) && alarmId != null) {
             dismiss(alarmId);
         } else if (ringingId == null) {
@@ -161,14 +162,14 @@ public class AlarmRingService extends Service {
         reportRingingInBackground(alarmId);
     }
 
-    private void startEscalationRinging(String alarmId, String nickname) {
+    private void startEscalationRinging(String alarmId, String nickname, String meetingId) {
         String key = ESCALATION_PREFIX + alarmId;
         if (ringingId != null && !isEscalationKey(ringingId)) {
             // 내 출발 알람이 울리는 중이면 끊지 않고 알림만 남긴다
             notifyEscalationOnly(this, nickname);
             return;
         }
-        startInForeground(buildEscalationNotification(key, nickname));
+        startInForeground(buildEscalationNotification(key, nickname, meetingId));
         ringingId = key;
         RINGING.setValue(key);
         playSound();
@@ -253,9 +254,9 @@ public class AlarmRingService extends Service {
                 .build();
     }
 
-    private Notification buildEscalationNotification(String key, String nickname) {
+    private Notification buildEscalationNotification(String key, String nickname, String meetingId) {
         ensureChannel(this);
-        Intent screen = AlarmActivity.escalationIntent(this, key, nickname);
+        Intent screen = AlarmActivity.escalationIntent(this, key, nickname, meetingId);
         PendingIntent fullScreen = PendingIntent.getActivity(this, key.hashCode(), screen,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent dismiss = PendingIntent.getService(this, key.hashCode(), dismissIntent(this, key),

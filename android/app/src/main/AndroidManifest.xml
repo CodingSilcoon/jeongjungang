@@ -38,6 +38,39 @@
         </activity>
 
         <activity
+            android:name=".ui.NearbyPlacesActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.MyMeetingsActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.ConfirmMeetingActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.JoinMeetingActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.MeetingRoomActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".ui.CreateMeetingActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
             android:name=".ui.OriginActivity"
             android:theme="@style/Theme.Jeongjungang.Start"
             android:exported="false"
@@ -50,10 +83,22 @@
 
         <activity
             android:name=".ui.alarm.AlarmActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity="" />
+
+        <activity
+            android:name=".ui.alarm.AlarmPermissionsActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.alarm.DepartureAlarmActivity"
+            android:theme="@style/Theme.Jeongjungang.Start"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false" />
 
         <service
             android:name=".alarm.AlarmRingService"

@@ -39,6 +39,8 @@ import java.util.ArrayList;
 /** 출발지 입력 → 실제 장소 검색 → 추천 기준 선택 화면. */
 public class OriginActivity extends AppCompatActivity {
 
+    public static final String PICK_ORIGIN = "pickOrigin";
+
     private static final int ENTRY = 0;
     private static final int SEARCH = 1;
     private static final int CRITERIA = 2;
@@ -82,6 +84,11 @@ public class OriginActivity extends AppCompatActivity {
         }
 
         searchModel.getSearchState().observe(this, this::renderSearch);
+
+        // 약속 만들기에서는 같은 검색 화면을 출발지 선택기로 재사용한다.
+        if (getIntent().getBooleanExtra(PICK_ORIGIN, false) && savedInstanceState == null) {
+            openSearch(0);
+        }
     }
 
     /** 시스템 표시줄과 검색 키보드가 화면을 가리지 않게 한다. */
@@ -182,8 +189,8 @@ public class OriginActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence text, int start, int before, int count) {
                 binding.searchResults.removeAllViews();
-                binding.searchStatus.setText(text.toString().trim().length() < 2
-                        ? R.string.origin_search_prompt : R.string.origin_search_loading);
+                showSearchGuidance(text.toString().trim().length() < 2
+                        ? SearchState.Status.IDLE : SearchState.Status.LOADING, null);
                 searchModel.onQueryChanged(text.toString());
             }
 
@@ -217,10 +224,15 @@ public class OriginActivity extends AppCompatActivity {
             row.number.setText(index == 0
                     ? getString(R.string.origin_me_badge) : String.valueOf(index));
             row.number.setBackground(createBadge(index));
+            row.number.setTextColor(ContextCompat.getColor(this,
+                    index == 0 ? R.color.start_ink : R.color.start_point));
 
             String placeName = place == null
                     ? getString(R.string.origin_choose) : place.name;
             row.chooseButton.setText(placeName);
+            // 입력 완료는 청록 체크로, 미입력은 이동 화살표로 구분한다.
+            row.chooseButton.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0,
+                    place == null ? R.drawable.start_chevron : R.drawable.ic_point_check, 0);
             row.chooseButton.setTextColor(ContextCompat.getColor(this,
                     place == null ? R.color.start_muted : R.color.start_ink));
             row.chooseButton.setContentDescription(getString(
@@ -257,11 +269,11 @@ public class OriginActivity extends AppCompatActivity {
         binding.addButton.setText(canAdd ? R.string.origin_add : R.string.origin_limit);
     }
 
-    /** 행 번호를 레몬·연두·살구 배지로 구분한다. */
+    /** 내 배지는 레몬색, 친구 배지는 연한 청록색으로 통일한다. */
     private GradientDrawable createBadge(int index) {
-        int[] colors = {0xFFF9DA49, 0xFFDEEDAA, 0xFFF2B7A6};
         GradientDrawable badge = new GradientDrawable();
-        badge.setColor(colors[index % colors.length]);
+        badge.setColor(ContextCompat.getColor(this,
+                index == 0 ? R.color.start_accent : R.color.start_point_surface));
         badge.setCornerRadius(dp(7));
         badge.setStroke(dp(1), ContextCompat.getColor(this, R.color.start_ink));
         return badge;
@@ -294,27 +306,59 @@ public class OriginActivity extends AppCompatActivity {
         }
 
         binding.searchResults.removeAllViews();
+        showSearchGuidance(state.status, state.errorMessage);
+        if (state.status == SearchState.Status.SUCCESS) {
+            for (GeoPlace place : state.items) {
+                addSearchResult(place, state.isOutOfArea(place));
+            }
+        }
+    }
 
-        switch (state.status) {
-            case IDLE:
-                binding.searchStatus.setText(R.string.origin_search_prompt);
-                break;
+    /** 안내 영역만 교체한다. 자동 검색·키보드 재검색·결과 선택은 기존 동작을 유지한다. */
+    private void showSearchGuidance(SearchState.Status status, String errorMessage) {
+        binding.searchGuidance.setVisibility(status == SearchState.Status.SUCCESS ? View.GONE : View.VISIBLE);
+        if (status == SearchState.Status.SUCCESS) return;
+
+        int title;
+        String detail;
+        int icon = R.drawable.ic_origin_search;
+        switch (status) {
             case LOADING:
-                binding.searchStatus.setText(R.string.origin_search_loading);
+                title = R.string.origin_search_loading;
+                detail = getString(R.string.origin_guidance_loading);
+                icon = R.drawable.ic_recommend_route;
                 break;
             case EMPTY:
-                binding.searchStatus.setText(R.string.origin_search_empty);
+                title = R.string.origin_guidance_empty;
+                detail = getString(R.string.origin_guidance_empty_detail);
                 break;
             case ERROR:
-                binding.searchStatus.setText(state.errorMessage == null
-                        ? getString(R.string.origin_search_error) : state.errorMessage);
+                title = R.string.origin_guidance_error;
+                // 요청 제한·입력 오류 등 실제 원인 안내를 일반 문구로 덮지 않는다.
+                detail = errorMessage == null || errorMessage.trim().isEmpty()
+                        ? getString(R.string.origin_guidance_retry) : errorMessage;
+                icon = R.drawable.ic_recommend_alert;
                 break;
-            case SUCCESS:
-                binding.searchStatus.setText("");
-                for (GeoPlace place : state.items) {
-                    addSearchResult(place, state.isOutOfArea(place));
-                }
+            default:
+                title = R.string.origin_guidance_idle;
+                detail = getString(searchModel.usesServer()
+                        ? R.string.origin_guidance_idle_server : R.string.origin_guidance_idle_local);
                 break;
+        }
+        binding.searchStatus.setText(title);
+        binding.searchStateIcon.setImageResource(icon);
+        binding.searchGuidanceDetail.setText(detail);
+
+        // 검색 전 최소 글자 수만 기존 레몬색으로 가볍게 강조한다.
+        if (status == SearchState.Status.IDLE) {
+            int start = detail.indexOf("2글자 이상");
+            if (start >= 0) {
+                android.text.SpannableString highlighted = new android.text.SpannableString(detail);
+                highlighted.setSpan(new android.text.style.BackgroundColorSpan(
+                        ContextCompat.getColor(this, R.color.start_accent)), start, start + "2글자 이상".length(),
+                        android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                binding.searchGuidanceDetail.setText(highlighted);
+            }
         }
     }
 
@@ -349,6 +393,16 @@ public class OriginActivity extends AppCompatActivity {
                 return;
             }
 
+            if (getIntent().getBooleanExtra(PICK_ORIGIN, false)) {
+                android.content.Intent originResult = new android.content.Intent()
+                        .putExtra("label", place.name)
+                        .putExtra("lat", place.location.lat)
+                        .putExtra("lng", place.location.lng);
+                setResult(RESULT_OK, originResult);
+                finish();
+                return;
+            }
+
             origins.set(editingIndex, place);
             searchModel.clear();
             renderParticipants();
@@ -379,6 +433,11 @@ public class OriginActivity extends AppCompatActivity {
     }
 
     private void goBack() {
+        if (getIntent().getBooleanExtra(PICK_ORIGIN, false)) {
+            finish();
+            return;
+        }
+
         if (criteriaDialog.isShowing()) {
             criteriaDialog.dismiss();
             return;

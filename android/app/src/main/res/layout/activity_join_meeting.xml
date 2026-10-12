@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/start_background">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:paddingHorizontal="22dp">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical">
+            <Button android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp"
+                android:text="‹" android:textSize="28sp" android:contentDescription="@string/origin_back"
+                android:textColor="@color/start_ink" android:background="?attr/selectableItemBackgroundBorderless" />
+            <TextView style="@style/OriginText" android:layout_width="0dp" android:layout_weight="1"
+                android:gravity="end" android:text="@string/start_logo" android:textStyle="bold" android:textSize="18sp" />
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView android:id="@+id/scroll" android:layout_width="match_parent"
+            android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:paddingEnd="4dp" android:paddingBottom="16dp">
+                <TextView android:id="@+id/heading" style="@style/OriginTitle" android:text="@string/start_join" />
+
+                <!-- 오류 본문은 스크롤하고 복구 버튼은 화면 아래에 유지한다. -->
+                <LinearLayout android:id="@+id/errorPanel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical"
+                    android:paddingTop="48dp" android:paddingBottom="24dp" android:visibility="gone">
+                    <FrameLayout android:layout_width="88dp" android:layout_height="88dp">
+                        <ImageView android:id="@+id/errorIcon" android:layout_width="80dp"
+                            android:layout_height="80dp" android:padding="22dp"
+                            android:background="@drawable/point_badge_background"
+                            android:tint="@color/start_point" android:importantForAccessibility="no" />
+                        <TextView android:id="@+id/errorBadge" android:layout_width="30dp"
+                            android:layout_height="30dp" android:layout_gravity="bottom|end"
+                            android:gravity="center" android:background="@drawable/meeting_lemon_badge"
+                            android:textColor="@color/start_ink" android:textStyle="bold"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <TextView android:id="@+id/errorTitle" style="@style/OriginText"
+                        android:layout_marginTop="30dp" android:textSize="27sp" android:textStyle="bold"
+                        android:accessibilityLiveRegion="polite" />
+                    <TextView android:id="@+id/errorCopy" style="@style/OriginText"
+                        android:layout_marginTop="16dp" android:textSize="14sp" android:lineSpacingExtra="6dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp"
+                        android:layout_marginTop="22dp" android:background="@color/start_muted" android:alpha="0.2" />
+                    <TextView android:id="@+id/errorHint" style="@style/OriginText"
+                        android:layout_marginTop="16dp" android:textSize="12sp" android:lineSpacingExtra="5dp" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/codePanel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical">
+                    <TextView style="@style/MeetingLabel" android:text="@string/join_code_label" android:labelFor="@id/codeInput" />
+                    <EditText android:id="@+id/codeInput" style="@style/MeetingInput"
+                        android:hint="@string/join_code_hint" android:inputType="textUri" android:imeOptions="actionGo" />
+                    <TextView style="@style/OriginText" android:text="@string/join_code_help"
+                        android:textSize="12sp" android:layout_marginTop="12dp" />
+                </LinearLayout>
+
+                <LinearLayout android:id="@+id/previewPanel" android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="vertical" android:padding="18dp" android:layout_marginTop="20dp"
+                        android:background="@drawable/start_action_primary">
+                        <TextView android:id="@+id/hostName" style="@style/OriginText" android:textSize="12sp" />
+                        <TextView android:id="@+id/meetingTitle" style="@style/OriginText"
+                            android:textSize="21sp" android:textStyle="bold" android:layout_marginTop="8dp" />
+                        <TextView android:id="@+id/meetingInfo" style="@style/OriginText"
+                            android:layout_marginTop="16dp" android:lineSpacingExtra="8dp" />
+                    </LinearLayout>
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_name_label" android:labelFor="@id/nickname" />
+                    <EditText android:id="@+id/nickname" style="@style/MeetingInput"
+                        android:hint="@string/meeting_name_hint" android:imeOptions="actionDone" />
+                    <TextView style="@style/OriginText" android:text="@string/meeting_name_help"
+                        android:textSize="12sp" android:layout_marginTop="12dp" />
+
+                    <TextView style="@style/MeetingLabel" android:text="@string/meeting_origin_label" />
+                    <androidx.appcompat.widget.AppCompatButton android:id="@+id/originButton" android:drawableStart="@drawable/ic_point_pin" android:drawablePadding="8dp" style="@style/OriginButton"
+                        android:text="@string/meeting_origin_later" android:textSize="14sp" android:gravity="start|center_vertical"
+                        android:background="@drawable/start_action_secondary" app:backgroundTint="@null" />
+                    <TextView style="@style/OriginText" android:text="@string/join_origin_help"
+                        android:textSize="12sp" android:layout_marginTop="12dp" />
+                </LinearLayout>
+
+                <TextView android:id="@+id/status" style="@style/OriginText" android:layout_marginTop="16dp"
+                    android:accessibilityLiveRegion="polite" />
+                <Button android:id="@+id/retryButton" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:minHeight="48dp" android:text="@string/join_recheck" android:visibility="gone" />
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <TextView android:id="@+id/footerHint" style="@style/OriginText" android:text="@string/join_preview_hint"
+            android:textSize="12sp" android:gravity="center" android:paddingVertical="12dp" />
+        <androidx.appcompat.widget.AppCompatButton android:id="@+id/submitButton" style="@style/OriginButton"
+            android:text="@string/join_check" android:layout_marginBottom="20dp" app:backgroundTint="@null" />
+        <Button android:id="@+id/errorSecondary" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:minHeight="48dp" android:layout_marginBottom="12dp"
+            android:textColor="@color/start_muted" android:textSize="13sp"
+            android:background="?attr/selectableItemBackground" android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>
