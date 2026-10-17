@@ -4,6 +4,8 @@ import com.jeongjungang.auth.Caller;
 import com.jeongjungang.auth.ParticipantTokens;
 import com.jeongjungang.common.ApiException;
 import com.jeongjungang.common.ErrorCode;
+import com.jeongjungang.meeting.MeetingEvents.AlarmInputsChanged;
+import com.jeongjungang.meeting.MeetingEvents.MeetingCancelling;
 import com.jeongjungang.meeting.Participant.OriginInfo;
 import com.jeongjungang.meeting.api.MeetingRequests.CreateMeeting;
 import com.jeongjungang.meeting.api.MeetingRequests.JoinMeeting;
@@ -22,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,12 +41,15 @@ public class MeetingService {
     private final MeetingRepository meetings;
     private final ParticipantRepository participants;
     private final MeetingViews views;
+    private final ApplicationEventPublisher events;
     private final Clock clock;
 
-    MeetingService(MeetingRepository meetings, ParticipantRepository participants, MeetingViews views, Clock clock) {
+    MeetingService(MeetingRepository meetings, ParticipantRepository participants, MeetingViews views,
+                   ApplicationEventPublisher events, Clock clock) {
         this.meetings = meetings;
         this.participants = participants;
         this.views = views;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -100,10 +106,7 @@ public class MeetingService {
 
     @Transactional(readOnly = true)
     public Snapshot snapshot(Caller caller, UUID meetingId) {
-        requireOwnMeeting(caller, meetingId);
-        Meeting meeting = meetings.findById(meetingId)
-                .orElseThrow(() -> new ApiException(ErrorCode.MEETING_NOT_FOUND));
-        requireNotExpired(meeting);
+        Meeting meeting = findOwnMeeting(caller, meetingId);
         List<Participant> members = participants.findByMeetingIdOrderByJoinOrderAsc(meetingId);
         return new Snapshot(meeting.stateVersion(), views.meeting(meeting),
                 members.stream().map(MeetingViews::participant).toList(),
@@ -131,22 +134,42 @@ public class MeetingService {
             }
             meeting.changeStatus(request.status());
         }
+        if (request.meetAt() != null || request.place() != null) {
+            events.publishEvent(new AlarmInputsChanged(meetingId));
+        }
     }
 
     @Transactional
     public void cancel(Caller caller, UUID meetingId) {
-        meetings.delete(lockForHost(caller, meetingId));
+        Meeting meeting = lockForHost(caller, meetingId);
+        events.publishEvent(new MeetingCancelling(meetingId));
+        meetings.delete(meeting);
     }
 
     /** 방장만, 자기 약속만. 약속 행을 잠근 채로 돌려준다. */
-    private Meeting lockForHost(Caller caller, UUID meetingId) {
+    public Meeting lockForHost(Caller caller, UUID meetingId) {
+        Meeting meeting = lockOwnMeeting(caller, meetingId);
+        if (!isHostNow(caller)) {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        return meeting;
+    }
+
+    /** 참가자 누구나, 자기 약속만. 읽기용이라 잠그지 않는다. */
+    public Meeting findOwnMeeting(Caller caller, UUID meetingId) {
+        requireOwnMeeting(caller, meetingId);
+        Meeting meeting = meetings.findById(meetingId)
+                .orElseThrow(() -> new ApiException(ErrorCode.MEETING_NOT_FOUND));
+        requireNotExpired(meeting);
+        return meeting;
+    }
+
+    /** 참가자 누구나, 자기 약속만. 약속 행을 잠근 채로 돌려준다. */
+    public Meeting lockOwnMeeting(Caller caller, UUID meetingId) {
         requireOwnMeeting(caller, meetingId);
         Meeting meeting = meetings.findByIdForUpdate(meetingId)
                 .orElseThrow(() -> new ApiException(ErrorCode.MEETING_NOT_FOUND));
         requireNotExpired(meeting);
-        if (!isHostNow(caller)) {
-            throw new ApiException(ErrorCode.FORBIDDEN);
-        }
         return meeting;
     }
 
@@ -159,7 +182,7 @@ public class MeetingService {
                 .orElseThrow(() -> new ApiException(ErrorCode.UNAUTHORIZED));
     }
 
-    static void requireOwnMeeting(Caller caller, UUID meetingId) {
+    public static void requireOwnMeeting(Caller caller, UUID meetingId) {
         if (!caller.meetingId().equals(meetingId)) {
             throw new ApiException(ErrorCode.FORBIDDEN);
         }

@@ -331,6 +331,17 @@ fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 
 `travelMinutes`는 앱이 계산해서 보고하고, `prepMinutes`는 본인이 설정한다. `marginMinutes`(여유시간)의 기본값은 **5분**이다(2026-10-02 결정). 이동시간이 근사값(역까지 접근은 가정값, 배차 대기 미포함)이라 실제보다 짧게 나올 수 있어서 둔다. 약속마다 바꿀 수 있다.
 
+앱의 `AlarmTimeCalculator`와 같게 `travelMinutes`는 분 단위로 올리고, `fireAt`은 분 단위로 내린다.
+
+**알람이 생기는 조건**: 책임 알람이 켜져 있고, 장소·시간이 정해져 있고, 본인이 `optedIn: true`이고, `prepMinutes`와 **지금 확정 장소 기준** 이동시간을 보고한 참가자. 서버는 이 값들이 바뀔 때마다(약속 시각·장소, 준비시간, 동의, 이동시간, 켜기·끄기) 알람을 다시 맞춘다.
+
+- 시각이 바뀌면 알람을 새 시각으로 다시 건다(`SCHEDULED`, 이전 끔·에스컬레이션 기록은 지움). 시각이 같으면 그대로 둔다
+- 장소가 바뀌면 예전 장소 기준 이동시간은 쓰지 않는다. 새 장소의 이동시간을 보고할 때까지 알람은 `CANCELLED`
+- 동의를 끄면(`optedIn: false`) 그 사람의 기다리던 알람만 `CANCELLED`가 되고, 에스컬레이션도 받지 않는다
+- 이미 끝난 알람(`DISMISSED`·`ESCALATED`)은 취소하지 않고 그대로 둔다. 동의를 껐다 켜도 이미 끈 알람이 다시 걸리지 않는다
+- 계산한 `fireAt`이 이미 지났으면 알람을 만들지 않는다(만들면 곧바로 에스컬레이션되기 때문). 기다리던 알람의 시각이 지난 시각으로 바뀌면 `CANCELLED`
+- 알람이 바뀌면 약속 `version`도 올라간다(폴링이 `304`로 끝나지 않게)
+
 ### `PUT /participants/{participantId}/travel` — 본인
 
 확정된 장소까지 내가 걸리는 시간. 앱이 `Recommender`/`RouteFinder`로 계산한 값이다. 장소가 바뀌면 다시 보낸다.
@@ -339,7 +350,9 @@ fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 { "placeName": "답십리역", "minutes": 27.0, "transfers": 1 }
 ```
 
-응답 `204`. `placeName`이 서버의 확정 장소와 다르면 `409 ALARM_NOT_READY`.
+응답 `204`. `placeName`이 서버의 확정 장소와 다르면(장소가 아직 없을 때 포함) `409 ALARM_NOT_READY`.
+
+- `placeName` 1~60자, `minutes` 0~600, `transfers` 0~20
 
 ### `POST /meetings/{meetingId}/accountability` — 방장
 
@@ -350,13 +363,15 @@ fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 ```
 
 - `gracePeriodSec`: 30~300, 기본 60
-- 전원 동의가 아니면 `409 NOT_ALL_OPTED_IN`, 장소·시간이 확정되지 않았으면 `409 ALARM_NOT_READY`
+- `marginMinutes`: 0~60, 기본 5
+- 본문이나 필드를 빼면 지금 설정을 유지한다. 이미 켜져 있으면 설정만 바꾼다
+- 전원 동의가 아니면 `409 NOT_ALL_OPTED_IN`, 장소·시간(`place`, `meetAt`)이 없으면 `409 ALARM_NOT_READY`. `status`가 `CONFIRMED`일 필요는 없다
 - 켜진 뒤 `travelMinutes`·`prepMinutes`가 모두 들어온 참가자부터 알람이 만들어지고(`SCHEDULED`), 각 기기에 `ALARM_SYNC` 푸시가 간다
 - 응답 `200`: `{ "enabled": true, "gracePeriodSec": 60, "marginMinutes": 5 }`
 
 ### `DELETE /meetings/{meetingId}/accountability` — 방장
 
-책임 알람을 끈다. 모든 알람이 `CANCELLED`가 되고 `ALARM_CANCELLED` 푸시가 간다. 응답 `204`.
+책임 알람을 끈다. 기다리던 알람(`SCHEDULED`·`RINGING`)이 모두 `CANCELLED`가 되고 `ALARM_CANCELLED` 푸시가 간다. 응답 `204`.
 
 ### `POST /devices` — 본인
 
@@ -366,7 +381,9 @@ fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 { "fcmToken": "…", "platform": "ANDROID", "appVersion": "0.1.0" }
 ```
 
-응답 `204`. FCM 토큰이 바뀌면 다시 호출한다.
+응답 `204`. FCM 토큰이 바뀌면 다시 호출한다. 기기는 참가자(토큰)마다 하나다. 여러 약속에 들어가 있으면 약속마다 등록한다.
+
+- `fcmToken` 1~512자, `platform`은 `ANDROID`만, `appVersion` 0~20자
 
 ### `GET /meetings/{meetingId}/alarms` — 본인
 
@@ -398,9 +415,12 @@ fireAt = meetAt − travelMinutes − prepMinutes − marginMinutes
 { "dismissedAt": "2026-10-10T17:53:20+09:00", "source": "DEVICE" }
 ```
 
-- `source`: `DEVICE`(알람 화면에서 끔) 또는 `MANUAL_AWAKE`(앱의 "이미 일어남" 버튼)
+- `source`: `DEVICE`(알람 화면에서 끔) 또는 `MANUAL_AWAKE`(앱의 "이미 일어남" 버튼). 빼면 `DEVICE`
+- `dismissedAt`은 기기 시각이라 판단에 쓰지 않는다. 서버가 받은 시점의 상태로 정한다
+- 남의 알람이나 없는 알람은 `404 ALARM_NOT_FOUND`
 - 응답은 항상 `200`이고 처리 후 상태를 준다: `{ "status": "DISMISSED" }`
 - 이미 `ESCALATED`면 되돌리지 않고 `{ "status": "ESCALATED" }`를 준다
+- 유예시간(`graceUntil`)이 지난 뒤에 온 보고는 끔으로 치지 않는다. 아직 에스컬레이션 전이면 그 자리에서 에스컬레이션하고 `ESCALATED`를 준다
 - 상태 전이: `SCHEDULED`/`RINGING` → `DISMISSED`. `CANCELLED`는 그대로
 
 ### 알람 상태
@@ -428,6 +448,8 @@ SCHEDULED ──(기기 울림 보고)──> RINGING ──(끔 보고)──> 
 
 `ESCALATION` 메시지는 TTL을 120초로 둔다. 오래 지난 뒤 도착하면 무의미하기 때문이다.
 
+**현재 상태 (2026-10-17)**: FCM은 아직 연동하지 않았다(Firebase 프로젝트·서비스 계정 없음). 서버는 위 푸시를 만들지만 보내지 않고 로그만 남긴다(`LoggingPushSender`). 그동안 앱은 약속 폴링과 `GET /meetings/{id}/alarms`로 알람을 맞춘다. 서비스 계정이 생기면 `PushSender` 구현 하나만 추가하면 된다.
+
 ---
 
 ## 9. 아직 정해지지 않은 것
@@ -442,5 +464,6 @@ SCHEDULED ──(기기 울림 보고)──> RINGING ──(끔 보고)──> 
 ## 10. 서버 구현 메모
 
 - 스택: Java 17, Spring Boot 3.5, PostgreSQL 16(Flyway), Redis, Docker Compose, Caddy(HTTPS)
-- 단계별 패키지(제안): `common`(응답·예외), `geocode`(카카오 프록시), `meeting`, `participant`, `alarm`, `push`(FCM), `ratelimit`
+- 단계별 패키지: `common`(응답·예외), `geocode`(카카오 프록시), `meeting`(약속·참가자), `alarm`(책임 알람·에스컬레이션), `push`(기기·푸시), `ratelimit`
+- 에스컬레이션: Redis ZSET `escalation:due`(score = `graceUntil`)를 1초마다 확인한다. 기한이 된 항목은 Lua로 꺼내서(서버가 여러 대여도 한 서버만 가져감) 알람 행을 잠그고 DB 상태를 다시 본 뒤 바꾼다. 큐는 "언제 볼지"만 정하고, 보낼지는 DB가 정한다. Redis가 비어도 30초마다 DB의 대기 중 알람으로 큐를 다시 채운다. 큐에 넣을 때는 더 이른 기한을 남기고(`ZADD LT`), 끝난 알람은 큐에서 빼지 않고 꺼냈을 때 버린다
 - 비밀 값(카카오 REST 키, FCM 서비스 계정, DB 비밀번호)은 환경변수로만 주입하고 저장소에 두지 않는다

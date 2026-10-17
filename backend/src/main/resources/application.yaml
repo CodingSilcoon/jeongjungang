@@ -35,6 +35,13 @@ jeongjungang:
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:8080}
   # 기한이 지난 약속을 지우는 주기
   retention-interval: PT10M
+  escalation:
+    # 유예시간이 지난 알람을 확인하는 주기
+    poll-interval: PT1S
+    # Redis 큐를 DB의 대기 중 알람으로 다시 채우는 주기. Redis 재시작이나 꺼낸 직전 서버가 죽은 경우를 메운다.
+    # 에스컬레이션 푸시 TTL(120초)보다 충분히 짧게 둔다
+    reseed-interval: PT30S
+    reseed-initial-delay: PT5S
   kakao:
     # 키는 환경변수로만 넣는다. 저장소에 두지 않는다
     rest-api-key: ${KAKAO_REST_API_KEY:}

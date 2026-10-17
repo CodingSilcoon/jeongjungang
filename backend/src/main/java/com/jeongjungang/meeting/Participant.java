@@ -45,6 +45,15 @@ public class Participant {
     @Column(name = "opted_in", nullable = false)
     private boolean optedIn;
 
+    @Column(name = "travel_place_name")
+    private String travelPlaceName;
+
+    @Column(name = "travel_minutes")
+    private Double travelMinutes;
+
+    @Column(name = "travel_transfers")
+    private Integer travelTransfers;
+
     @Column(name = "join_order", nullable = false)
     private int joinOrder;
 
@@ -88,6 +97,18 @@ public class Participant {
         this.optedIn = optedIn;
     }
 
+    /** 앱이 계산한 확정 장소까지의 이동시간 (docs/API.md 7절). */
+    public void reportTravel(String placeName, double minutes, int transfers) {
+        this.travelPlaceName = placeName;
+        this.travelMinutes = minutes;
+        this.travelTransfers = transfers;
+    }
+
+    /** 이 장소까지의 이동시간. 보고가 없거나 다른 장소 기준으로 보고했으면 null. */
+    public Double travelMinutesTo(String placeName) {
+        return placeName != null && placeName.equals(travelPlaceName) ? travelMinutes : null;
+    }
+
     void promoteToHost() {
         this.role = Role.HOST;
     }
@@ -108,15 +129,15 @@ public class Participant {
         return role;
     }
 
-    String nickname() {
+    public String nickname() {
         return nickname;
     }
 
-    Integer prepMinutes() {
+    public Integer prepMinutes() {
         return prepMinutes;
     }
 
-    boolean optedIn() {
+    public boolean optedIn() {
         return optedIn;
     }
 
