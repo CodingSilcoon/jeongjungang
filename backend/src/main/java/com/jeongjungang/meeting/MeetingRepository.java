@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-interface MeetingRepository extends JpaRepository<Meeting, UUID> {
+public interface MeetingRepository extends JpaRepository<Meeting, UUID> {
 
     Optional<Meeting> findByInviteCode(String inviteCode);
 

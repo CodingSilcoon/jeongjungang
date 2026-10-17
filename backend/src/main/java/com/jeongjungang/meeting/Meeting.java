@@ -130,12 +130,25 @@ public class Meeting {
         touch();
     }
 
+    /** 책임 알람 켜기. 이미 켜져 있으면 설정만 바꾼다. 전원 동의·준비 확인은 호출하는 쪽이 한다. */
+    public void enableAccountability(int gracePeriodSec, int marginMinutes) {
+        this.accountabilityEnabled = true;
+        this.gracePeriodSec = gracePeriodSec;
+        this.marginMinutes = marginMinutes;
+        touch();
+    }
+
+    public void disableAccountability() {
+        this.accountabilityEnabled = false;
+        touch();
+    }
+
     /** 참가자 정보처럼 약속 밖의 변화도 폴링에 보이도록 버전만 올린다. */
-    void touch() {
+    public void touch() {
         stateVersion++;
     }
 
-    PlaceInfo place() {
+    public PlaceInfo place() {
         if (placeName == null) {
             return null;
         }
@@ -159,7 +172,7 @@ public class Meeting {
         return purpose;
     }
 
-    Instant meetAt() {
+    public Instant meetAt() {
         return meetAt;
     }
 
@@ -167,15 +180,15 @@ public class Meeting {
         return status;
     }
 
-    boolean accountabilityEnabled() {
+    public boolean accountabilityEnabled() {
         return accountabilityEnabled;
     }
 
-    int gracePeriodSec() {
+    public int gracePeriodSec() {
         return gracePeriodSec;
     }
 
-    int marginMinutes() {
+    public int marginMinutes() {
         return marginMinutes;
     }
 
