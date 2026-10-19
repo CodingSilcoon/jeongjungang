@@ -200,6 +200,7 @@ Authorization: Bearer {participantToken}
 }]
 ```
 
+- 서버는 `deploy/caddy/site/`의 파일로 둘 다 준다. 안내 페이지는 아래 `GET /meetings/by-code/{inviteCode}`로 약속을 미리 보여 주고 링크 복사 버튼을 둔다. 지문 추가 방법은 `docs/DEPLOY.md`
 - 앱은 링크가 안 열리는 경우를 대비해 **링크나 코드를 붙여 넣어 참가**하는 입력도 지원한다(소문자, 공백, 하이픈 허용)
 
 ### `GET /meetings/by-code/{inviteCode}` — 공개

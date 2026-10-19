@@ -1,4 +1,4 @@
-# 서버(backend/, deploy/) 테스트, 운영 이미지 빌드, main이면 GHCR에 이미지 업로드. 해당 폴더가 바뀐 경우에만 돈다
+# 서버(backend/, deploy/) 테스트, 운영 이미지 빌드, main이면 GHCR에 이미지 업로드 후 서버에 배포. 해당 폴더가 바뀐 경우에만 돈다
 name: backend-ci
 
 on:
@@ -120,3 +120,31 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
+
+  # publish가 끝나면 서버에서 deploy/deploy.sh를 돌려 새 이미지·설정으로 다시 띄운다
+  # 이 SSH 키는 서버 authorized_keys에서 deploy.sh만 실행하도록 묶여 있다(command=, restrict). 키 교체 방법은 docs/DEPLOY.md
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://jeongjungang.duckdns.org/api/v1/health
+    # 배포는 겹치지 않게 하나씩. 진행 중인 배포는 취소하지 않는다
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Deploy
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes ubuntu@15.165.29.46
+
+      - name: Check health
+        run: curl -fsS --retry 5 --retry-delay 3 --retry-all-errors https://jeongjungang.duckdns.org/api/v1/health

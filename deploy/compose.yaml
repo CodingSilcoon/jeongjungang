@@ -22,7 +22,8 @@ services:
     environment:
       DOMAIN: ${DOMAIN:?deploy/.env에 DOMAIN이 필요합니다}
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Caddyfile과 초대 안내 페이지·assetlinks.json. 폴더째 마운트해야 git pull 뒤 caddy reload로 바로 반영된다
+      - ./caddy:/etc/caddy:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
