@@ -3,9 +3,13 @@ package com.jeongjungang.meeting;
 import com.jeongjungang.auth.Caller;
 import com.jeongjungang.common.ApiException;
 import com.jeongjungang.common.ErrorCode;
+import com.jeongjungang.meeting.MeetingEvents.AlarmInputsChanged;
+import com.jeongjungang.meeting.MeetingEvents.MeetingCancelling;
+import com.jeongjungang.meeting.MeetingEvents.ParticipantLeaving;
 import com.jeongjungang.meeting.api.MeetingRequests.UpdateParticipant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,21 +20,21 @@ public class ParticipantService {
     private final MeetingRepository meetings;
     private final ParticipantRepository participants;
     private final MeetingService meetingService;
+    private final ApplicationEventPublisher events;
 
-    ParticipantService(MeetingRepository meetings, ParticipantRepository participants, MeetingService meetingService) {
+    ParticipantService(MeetingRepository meetings, ParticipantRepository participants, MeetingService meetingService,
+                       ApplicationEventPublisher events) {
         this.meetings = meetings;
         this.participants = participants;
         this.meetingService = meetingService;
+        this.events = events;
     }
 
     /** 본인 정보만 바꿀 수 있다. 보낸 필드만 바뀐다. */
     @Transactional
     public void update(Caller caller, UUID participantId, UpdateParticipant request) {
-        Meeting meeting = lockCallerMeeting(caller);
-        Participant target = findInMeeting(meeting, participantId);
-        if (!target.id().equals(caller.participantId())) {
-            throw new ApiException(ErrorCode.FORBIDDEN);
-        }
+        Meeting meeting = meetingService.lockOwnMeeting(caller, caller.meetingId());
+        Participant target = findOwn(caller, meeting, participantId);
         if (request.nickname() != null) {
             target.changeNickname(request.nickname().strip());
         }
@@ -44,6 +48,9 @@ public class ParticipantService {
             target.changeOptedIn(request.optedIn());
         }
         meeting.touch();
+        if (request.prepMinutes() != null || request.optedIn() != null) {
+            events.publishEvent(new AlarmInputsChanged(meeting.id()));
+        }
     }
 
     /**
@@ -52,7 +59,7 @@ public class ParticipantService {
      */
     @Transactional
     public void remove(Caller caller, UUID participantId) {
-        Meeting meeting = lockCallerMeeting(caller);
+        Meeting meeting = meetingService.lockOwnMeeting(caller, caller.meetingId());
         Participant target = findInMeeting(meeting, participantId);
         boolean leavingSelf = target.id().equals(caller.participantId());
         if (!leavingSelf && !meetingService.isHostNow(caller)) {
@@ -64,20 +71,24 @@ public class ParticipantService {
                     .filter(p -> !p.id().equals(target.id()))
                     .toList();
             if (others.isEmpty()) {
+                events.publishEvent(new MeetingCancelling(meeting.id()));
                 meetings.delete(meeting);
                 return;
             }
             others.get(0).promoteToHost();
         }
+        events.publishEvent(new ParticipantLeaving(meeting.id(), target.id()));
         participants.delete(target);
         meeting.touch();
     }
 
-    private Meeting lockCallerMeeting(Caller caller) {
-        Meeting meeting = meetings.findByIdForUpdate(caller.meetingId())
-                .orElseThrow(() -> new ApiException(ErrorCode.MEETING_NOT_FOUND));
-        meetingService.requireNotExpired(meeting);
-        return meeting;
+    /** 약속 행을 잠근 뒤, 요청자 본인 참가자만 돌려준다. 책임 알람의 이동시간 보고도 이걸 쓴다. */
+    public Participant findOwn(Caller caller, Meeting meeting, UUID participantId) {
+        Participant target = findInMeeting(meeting, participantId);
+        if (!target.id().equals(caller.participantId())) {
+            throw new ApiException(ErrorCode.FORBIDDEN);
+        }
+        return target;
     }
 
     /** 다른 약속의 참가자는 있는지조차 알려 주지 않는다. */
