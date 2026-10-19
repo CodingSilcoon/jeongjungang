@@ -1,5 +1,6 @@
 package com.jeongjungang.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -37,6 +38,13 @@ import java.util.Locale;
 
 /** 초대 확인 → 내 정보 입력 → 서버 참여 성공 후 대기방으로 이동한다. */
 public class JoinMeetingActivity extends AppCompatActivity {
+
+    private static final String EXTRA_INVITE = "invite";
+
+    /** 초대 링크나 코드로 바로 연다. 코드 칸에 채우고 미리보기까지 자동으로 확인한다. */
+    public static Intent createIntent(Context context, String inviteLinkOrCode) {
+        return new Intent(context, JoinMeetingActivity.class).putExtra(EXTRA_INVITE, inviteLinkOrCode);
+    }
 
     private ActivityJoinMeetingBinding binding;
     private MeetingViewModel model;
@@ -102,6 +110,14 @@ public class JoinMeetingActivity extends AppCompatActivity {
         if (!model.isAvailable()) binding.status.setText(R.string.join_unavailable);
         showOrigin();
         updateControls();
+
+        // 링크로 들어왔으면 그대로 확인한다. 잘못된 링크면 preview()가 코드 칸에 오류를 보여 준다
+        String invite = getIntent().getStringExtra(EXTRA_INVITE);
+        if (saved == null && invite != null) {
+            String code = MeetingRules.parseInviteCode(invite);
+            binding.codeInput.setText(code != null ? code : invite);
+            preview();
+        }
     }
 
     /** 키보드와 시스템 바를 피하고 긴 내용은 버튼 위에서 스크롤한다. */

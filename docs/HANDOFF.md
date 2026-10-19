@@ -152,7 +152,7 @@ jeongjungang.apiBaseUrl=https://{도메인}/api/v1
 | 서버 (위 결정 사항 포함) | 서버 담당 |
 | 카카오 키·키 해시 등록 | hefour. 키 해시는 **PC당 처음 한 번만** 콘솔 플랫폼 → Android에 추가 (아래 "지도 키 넣는 법") |
 | 푸시(FCM) 수신 | Firebase 프로젝트와 `google-services.json` 필요. 생기면 `syncAlarm()`, `AlarmRingService.startEscalation()` 호출만 붙이면 됨 |
-| 초대 링크로 앱 바로 열기 | 도메인 확정 후 앱 설정 추가 |
+| 초대 링크로 앱 바로 열기 | 앱 쪽 완료(`MainActivity` App Links → 참가 화면 자동 확인). 시연 APK를 빌드하는 PC의 SHA-256 지문을 `deploy/caddy/site/.well-known/assetlinks.json`에 추가해야 브라우저 대신 앱이 열림 (지문: `gradlew.bat signingReport`) |
 | 실기기 테스트 | 특히 삼성 (알람이 배터리 최적화에 밀리는지) |
 | 남은 미정 | 서버 호스트, RDB, 유예시간 기본값, 약속 변경 시 재동기화, 전화 걸기(전화번호 수집 여부) |
 

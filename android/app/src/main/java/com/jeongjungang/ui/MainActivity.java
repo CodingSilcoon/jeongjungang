@@ -57,6 +57,26 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, MyMeetingsActivity.class)));
         binding.joinMeetingButton.setOnClickListener(view ->
                 startActivity(new Intent(this, JoinMeetingActivity.class)));
+
+        // 초대 링크로 열렸으면 참가 화면으로 넘긴다. 회전 등으로 다시 만들어질 때는 넘기지 않는다
+        if (savedInstanceState == null) {
+            openInviteLink(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        openInviteLink(intent);
+    }
+
+    /** 시작 화면을 아래에 두고 참가 화면을 띄워서, 뒤로 가기를 누르면 시작 화면으로 온다. */
+    private void openInviteLink(Intent intent) {
+        if (!Intent.ACTION_VIEW.equals(intent.getAction()) || intent.getData() == null) {
+            return;
+        }
+        startActivity(JoinMeetingActivity.createIntent(this, intent.getData().toString()));
     }
 
     // 카드 전체를 접근성 버튼으로 읽고, 미구현 메뉴에는 안내를 표시한다.

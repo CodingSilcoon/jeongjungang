@@ -18,6 +18,8 @@ public class MeetingRulesTest {
         assertEquals("7K3QH9MX", MeetingRules.parseInviteCode("https://jjg.duckdns.org/m/7K3QH9MX"));
         assertEquals("7K3QH9MX", MeetingRules.parseInviteCode("https://jjg.duckdns.org/m/7K3QH9MX/?utm=kakao"));
         assertEquals("7K3QH9MX", MeetingRules.parseInviteCode("HTTPS://JJG.DUCKDNS.ORG/m/7k3qh9mx#x"));
+        // 운영 서버 초대 링크 (앱 링크로 들어오는 형태)
+        assertEquals("7K3QH9MX", MeetingRules.parseInviteCode("https://jeongjungang.duckdns.org/m/7K3QH9MX"));
     }
 
     @Test

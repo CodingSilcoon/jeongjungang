@@ -35,6 +35,19 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- 초대 링크 https://jeongjungang.duckdns.org/m/{코드} 를 앱으로 연다 (Android App Links).
+                 서버 assetlinks.json에 빌드한 PC의 서명 지문이 있어야 브라우저 대신 앱이 열린다 -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="jeongjungang.duckdns.org"
+                    android:pathPrefix="/m/" />
+            </intent-filter>
         </activity>
 
         <activity
