@@ -1,5 +1,6 @@
 package com.jeongjungang.alarm;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -150,6 +151,7 @@ public class AlarmRingService extends Service {
         }
         // 포그라운드 시작은 5초 안에 해야 해서 가장 먼저 한다
         startInForeground(buildRingingNotification(spec));
+        showScreenIfAppVisible(AlarmActivity.intent(this, spec.id));
         if (ringingId != null && !ringingId.equals(alarmId) && !isEscalationKey(ringingId)) {
             // 다른 알람이 울리는 중이면 이전 것은 놓친 것으로 정리한다(에스컬레이션은 내 알람이 덮어쓴다)
             scheduler.finished(ringingId);
@@ -170,6 +172,7 @@ public class AlarmRingService extends Service {
             return;
         }
         startInForeground(buildEscalationNotification(key, nickname, meetingId));
+        showScreenIfAppVisible(AlarmActivity.escalationIntent(this, key, nickname, meetingId));
         ringingId = key;
         RINGING.setValue(key);
         playSound();
@@ -225,6 +228,24 @@ public class AlarmRingService extends Service {
         RINGING.setValue(null);
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE);
         stopSelf();
+    }
+
+    /**
+     * 앱 화면을 보고 있는 중이면 알람 화면을 바로 띄운다.
+     * 기기를 쓰는 중에는 시스템이 전체 화면 인텐트를 상단 알림으로만 보여 줘서, 앱 안에서는 알람이 작은 알림으로 묻힌다.
+     * 앱이 화면에 보일 때는 백그라운드 액티비티 시작 제한에 걸리지 않는다. 그 밖에는 지금처럼 알림에 맡긴다.
+     */
+    private void showScreenIfAppVisible(Intent screen) {
+        ActivityManager.RunningAppProcessInfo me = new ActivityManager.RunningAppProcessInfo();
+        ActivityManager.getMyMemoryState(me);
+        if (me.importance > ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+            return;
+        }
+        try {
+            startActivity(screen);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "알람 화면을 바로 띄우지 못해 알림으로 대신합니다", e);
+        }
     }
 
     private void startInForeground(Notification notification) {
