@@ -31,7 +31,11 @@ import com.jeongjungang.data.remote.meeting.MeetingModels.Place;
 import com.jeongjungang.data.remote.meeting.MeetingModels.Purpose;
 import com.jeongjungang.databinding.ActivityNearbyPlacesBinding;
 import com.jeongjungang.domain.model.LatLng;
+import com.jeongjungang.ui.map.MapPanel;
 import com.jeongjungang.ui.meeting.PlacesViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** 확정한 역 주변 500m의 실제 가게를 목적별로 검색한다. */
 public class NearbyPlacesActivity extends AppCompatActivity {
@@ -44,6 +48,7 @@ public class NearbyPlacesActivity extends AppCompatActivity {
     private String selectedKey;
     private NearbyPlace selectedPlace;
     private boolean compact;
+    private MapPanel mapPanel;
 
     /** 약속 확정 화면에서 서버의 실제 장소와 목적만 전달한다. */
     public static Intent createIntent(Context context, Place place, Purpose purpose) {
@@ -68,6 +73,7 @@ public class NearbyPlacesActivity extends AppCompatActivity {
         }
 
         center = new LatLng(getIntent().getDoubleExtra("lat", 0), getIntent().getDoubleExtra("lng", 0));
+        mapPanel = MapPanel.attach(this, binding.mapArea, binding.mapLabel);
         category = saved == null ? getIntent().getStringExtra("category") : saved.getString("category");
         selectedKey = saved == null ? null : saved.getString("selectedKey");
         model = new ViewModelProvider(this).get(PlacesViewModel.class);
@@ -199,6 +205,21 @@ public class NearbyPlacesActivity extends AppCompatActivity {
         binding.placeList.addView(button, params);
     }
 
+    /** 역과 불러온 가게를 지도에 찍는다. 가게 이름은 고른 가게만 보여서 지도가 글씨로 덮이지 않게 한다. */
+    private void showOnMap() {
+        List<MapPanel.Pin> pins = new ArrayList<>();
+        pins.add(new MapPanel.Pin(stationName, center, MapPanel.Kind.SELECTED));
+        PlacesViewModel.State state = model.getState().getValue();
+        if (state != null) {
+            for (NearbyPlace place : state.items) {
+                boolean chosen = key(place).equals(selectedKey);
+                pins.add(new MapPanel.Pin(chosen ? place.name : null, place.location,
+                        chosen ? MapPanel.Kind.SELECTED : MapPanel.Kind.CANDIDATE));
+            }
+        }
+        mapPanel.show(pins);
+    }
+
     /** 상세 카드와 목록의 선택 상태를 함께 갱신한다. */
     private void renderSelection() {
         for (int i = 0; i < binding.placeList.getChildCount(); i++) {
@@ -211,6 +232,7 @@ public class NearbyPlacesActivity extends AppCompatActivity {
         }
         binding.detailPanel.setVisibility(selectedPlace == null ? View.GONE : View.VISIBLE);
         binding.mapLabel.setText(stationName + "\n\n" + getString(R.string.recommend_map_pending));
+        showOnMap();
         binding.linkStatus.setVisibility(View.GONE);
         if (selectedPlace == null) return;
 

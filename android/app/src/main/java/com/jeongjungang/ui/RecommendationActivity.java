@@ -31,6 +31,7 @@ import com.jeongjungang.domain.recommend.Criterion;
 import com.jeongjungang.domain.recommend.Participant;
 import com.jeongjungang.domain.recommend.PersonTrip;
 import com.jeongjungang.domain.recommend.Recommendation;
+import com.jeongjungang.ui.map.MapPanel;
 import com.jeongjungang.ui.recommend.RecommendState;
 import com.jeongjungang.ui.recommend.RecommendViewModel;
 import com.jeongjungang.util.ExternalApps;
@@ -52,6 +53,7 @@ public class RecommendationActivity extends AppCompatActivity {
     private boolean detail;
     private int listScroll;
     private int detailScroll;
+    private MapPanel mapPanel;
 
     /** 화면 간에는 표시 이름과 좌표만 전달하고 결과는 ViewModel에서 계산한다. */
     public static Intent createIntent(Context context, List<GeoPlace> origins, boolean fair) {
@@ -78,6 +80,7 @@ public class RecommendationActivity extends AppCompatActivity {
 
         readInput(savedInstanceState);
         configureInsets();
+        mapPanel = MapPanel.attach(this, binding.mapArea, binding.mapPlaceholder);
         model = new ViewModelProvider(this).get(RecommendViewModel.class);
         binding.backButton.setOnClickListener(view -> goBack());
         binding.criterionButton.setOnClickListener(view -> chooseCriterion());
@@ -141,9 +144,9 @@ public class RecommendationActivity extends AppCompatActivity {
 
         binding.content.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             int height = Math.min(dp(300), Math.max(dp(72), (b - t) * 38 / 100));
-            if (binding.mapPlaceholder.getLayoutParams().height != height) {
-                binding.mapPlaceholder.getLayoutParams().height = height;
-                binding.mapPlaceholder.requestLayout();
+            if (binding.mapArea.getLayoutParams().height != height) {
+                binding.mapArea.getLayoutParams().height = height;
+                binding.mapArea.requestLayout();
             }
         });
     }
@@ -172,7 +175,7 @@ public class RecommendationActivity extends AppCompatActivity {
         binding.criterionButton.setText("추천 기준 · " + getString(criterion == Criterion.TOTAL_TIME
                 ? R.string.recommend_total : R.string.recommend_fair));
         boolean success = state.status == RecommendState.Status.SUCCESS;
-        binding.mapPlaceholder.setVisibility(success && !detail ? View.VISIBLE : View.GONE);
+        binding.mapArea.setVisibility(success && !detail ? View.VISIBLE : View.GONE);
         binding.criterionButton.setVisibility(success && !detail ? View.VISIBLE : View.GONE);
         binding.footerNotice.setVisibility(success ? View.VISIBLE : View.GONE);
         binding.stateSecondary.setVisibility(View.GONE);
@@ -188,8 +191,27 @@ public class RecommendationActivity extends AppCompatActivity {
         if (selected() == null) selectedStation = state.recommendations.get(0).station;
         if (detail) renderDetail(selected());
         else renderCandidates();
+        showOnMap(state);
         int scroll = detail ? detailScroll : listScroll;
         binding.resultScroll.post(() -> binding.resultScroll.scrollTo(0, scroll));
+    }
+
+    /** 출발지와 후보 3곳을 지도에 찍는다. 선택한 후보는 크게 표시한다. */
+    private void showOnMap(RecommendState state) {
+        List<MapPanel.Pin> pins = new ArrayList<>();
+        for (Participant person : state.participants) {
+            pins.add(new MapPanel.Pin(person.name, person.location, MapPanel.Kind.ORIGIN));
+        }
+        for (int i = 0; i < state.recommendations.size(); i++) {
+            Recommendation item = state.recommendations.get(i);
+            LatLng at = state.stationCoordinates.get(item.station);
+            if (at == null) continue;
+            boolean chosen = item.station.equals(selectedStation);
+            // 후보끼리 가까워서 이름을 다 쓰면 겹친다. 고른 후보만 이름, 나머지는 순위만
+            pins.add(new MapPanel.Pin(chosen ? (i + 1) + " " + item.station + "역" : String.valueOf(i + 1),
+                    at, chosen ? MapPanel.Kind.SELECTED : MapPanel.Kind.CANDIDATE));
+        }
+        mapPanel.show(pins);
     }
 
     /** 기존 추천 상태를 그대로 표시하며 실패를 빈 결과나 통신 오류로 바꾸지 않는다. */

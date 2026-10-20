@@ -39,18 +39,25 @@
                 android:textColor="@color/start_ink" />
         </LinearLayout>
 
-        <!-- 지도 SDK 연결 전에도 추천 목록과 길찾기는 사용할 수 있다. -->
-        <TextView
-            android:id="@+id/mapPlaceholder"
+        <!-- 지도 칸. 지도를 쓸 수 없으면(키 없음 등) 안내 문구만 보이고 추천 목록과 길찾기는 그대로 쓴다.
+             지도는 MapPanel이 이 칸 맨 아래에 깔고, 지도가 뜨면 안내 문구를 숨긴다. -->
+        <FrameLayout
+            android:id="@+id/mapArea"
             android:layout_width="match_parent"
             android:layout_height="300dp"
             android:layout_marginVertical="12dp"
-            android:padding="16dp"
-            android:gravity="center"
-            android:background="@drawable/recommend_map_background"
-            android:text="@string/recommend_map_pending"
-            android:textColor="@color/start_muted"
-            android:textSize="14sp" />
+            android:background="@drawable/recommend_map_background">
+
+            <TextView
+                android:id="@+id/mapPlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp"
+                android:gravity="center"
+                android:text="@string/recommend_map_pending"
+                android:textColor="@color/start_muted"
+                android:textSize="14sp" />
+        </FrameLayout>
 
         <Button
             android:id="@+id/criterionButton"
