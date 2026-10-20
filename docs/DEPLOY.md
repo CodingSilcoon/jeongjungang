@@ -1,6 +1,6 @@
 # 서버 배포
 
-> **한 줄 요약:** CI가 main에서 앱 이미지를 GHCR에 올리고, EC2 한 대가 그 이미지를 받아 `deploy/compose.yaml`로 Caddy(HTTPS) + 앱 + Postgres + Redis를 띄운다.
+> **한 줄 요약:** main에 merge되면 CI가 앱 이미지를 GHCR에 올리고 EC2에 SSH로 들어가 `deploy/deploy.sh`를 실행한다. 서버는 `deploy/compose.yaml`로 Caddy(HTTPS) + 앱 + Postgres + Redis를 띄운다.
 
 ```
 인터넷 ──80/443──> Caddy ──/api/*──> app:8080 ──> postgres:5432, redis:6379
@@ -11,10 +11,12 @@
 |:---|:---|
 | `backend/Dockerfile` | 운영 이미지 (JDK로 빌드, JRE로 실행, 루트 아닌 사용자) |
 | `deploy/compose.yaml` | 운영 구성. 앱은 `ghcr.io/codingsilcoon/jeongjungang-backend` 이미지를 받는다. 데이터는 볼륨(`postgres-data`, `redis-data`, `caddy-data`)에 남는다 |
-| `deploy/Caddyfile` | `/api/*`만 앱으로 넘김. 인증서 자동 발급 |
+| `deploy/caddy/Caddyfile` | `/api/*`는 앱으로, `/m/{코드}`는 초대 안내 페이지, `/.well-known/assetlinks.json`은 앱 링크 확인 파일. 나머지는 404. 인증서 자동 발급 |
+| `deploy/caddy/site/` | 초대 안내 페이지(`invite.html`, `invite.js`)와 `assetlinks.json`. 폴더째 Caddy에 마운트한다 |
+| `deploy/deploy.sh` | 서버에서 main 최신 설정·이미지로 다시 띄우고 health 확인. CI가 실행하고, 손으로 실행해도 된다 |
 | `deploy/compose.local.yaml` | 로컬에서 이미지를 직접 빌드할 때 덧붙이는 파일 |
 | `deploy/.env.example` | 서버에 채울 값: `DOMAIN`, `DB_PASSWORD`, `KAKAO_REST_API_KEY`, `APP_TAG`(선택) |
-| `.github/workflows/backend-ci.yml` | main에 merge되면 테스트 통과 후 이미지를 GHCR에 올림 (`latest`, `sha-xxxxxxx`) |
+| `.github/workflows/backend-ci.yml` | main에 merge되면 테스트 → 이미지를 GHCR에 올림(`latest`, `sha-xxxxxxx`) → 서버 배포(`deploy` job) |
 
 ## 현재 서버
 
@@ -67,12 +69,35 @@ docker compose down       # 데이터는 남는다. 지우려면 down -v
 
 ## 업데이트
 
+`backend/`나 `deploy/`가 바뀐 PR이 main에 merge되면 자동으로 배포된다: `test`·`docker` → `publish` → `deploy`. Actions의 `deploy` job이 실패하면 그 로그에 서버 출력이 그대로 나온다.
+
+손으로 배포할 때(예: `.env`를 바꾼 뒤):
+
 ```bash
-cd jeongjungang && git pull && cd deploy && docker compose pull && docker compose up -d
+~/jeongjungang/deploy/deploy.sh
 ```
 
-- main에 merge된 뒤 Actions의 `publish`가 끝나야 새 `latest` 이미지가 있다
-- 되돌리기: `.env`의 `APP_TAG`를 이전 태그(`sha-xxxxxxx`)로 바꾸고 `docker compose up -d`. 태그 목록은 저장소 오른쪽 Packages
+- 스크립트는 `git reset --hard origin/main`으로 서버의 추적 파일을 main과 똑같이 맞춘다. 서버에서 저장소 파일을 직접 고치지 않는다(`.env`는 git이 관리하지 않아 남는다)
+- 되돌리기: `.env`의 `APP_TAG`를 이전 태그(`sha-xxxxxxx`)로 바꾸고 `deploy.sh`. 태그 목록은 저장소 오른쪽 Packages. `APP_TAG`를 고정해 두면 자동 배포도 그 태그를 쓰니, 고친 뒤 비운다
+
+### 자동 배포용 SSH 키
+
+CI는 전용 키로 접속하고, 서버의 `~/.ssh/authorized_keys`에서 그 키는 `deploy.sh`만 실행하도록 묶여 있다. 키가 새어도 셸을 얻을 수 없다.
+
+```
+command="/home/ubuntu/jeongjungang/deploy/deploy.sh",restrict ssh-ed25519 AAAA… github-actions-deploy
+```
+
+| 저장소 Secret (environment `production`) | 값 |
+|:---|:---|
+| `DEPLOY_SSH_KEY` | 위 키의 개인 키 |
+| `DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519 15.165.29.46` 결과 (서버를 새로 만들면 다시 넣는다) |
+
+키를 바꿀 때: 새 키를 만들어 `authorized_keys`의 그 줄을 교체하고 `DEPLOY_SSH_KEY`를 갱신한다.
+
+### 앱 링크 지문 추가
+
+초대 링크가 앱으로 바로 열리려면 그 기기에 설치한 빌드의 서명 지문이 `deploy/caddy/site/.well-known/assetlinks.json`에 있어야 한다. 디버그 키는 PC마다 달라서 시연용 빌드를 만드는 PC의 지문을 모두 넣는다(`cd android && gradlew.bat signingReport`의 `SHA-256`). 지금은 hefour PC의 디버그 키만 들어 있다. PR로 합치면 자동 배포로 반영된다.
 
 DB 스키마 변경은 앱이 시작할 때 Flyway가 적용한다. 바뀐 컨테이너만 다시 만들어지고, 데이터 볼륨은 그대로다.
 
@@ -90,6 +115,6 @@ DB 스키마 변경은 앱이 시작할 때 Flyway가 적용한다. 바뀐 컨�
 
 ## 아직 안 한 것
 
-- 자동 배포(CD): `publish` 뒤에 서버에서 위 "업데이트"를 실행하는 단계. 지금은 손으로 실행
-- 초대 링크 `https://{도메인}/m/{코드}` 안내 페이지와 앱 링크용 `/.well-known/assetlinks.json` (지금은 Caddy가 404)
+- 앱의 App Links 설정(`MainActivity`에 `autoVerify` intent-filter). 서버 쪽 `assetlinks.json`은 준비됨
+- DB 자동 백업. 지금은 위 `pg_dump`를 손으로 실행
 - `DB_PASSWORD`는 Postgres를 **처음 띄울 때** 저장된다. 나중에 `.env`만 바꾸면 앱이 접속하지 못한다
