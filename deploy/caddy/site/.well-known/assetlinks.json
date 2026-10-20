@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.jeongjungang",
       "sha256_cert_fingerprints": [
-        "90:D0:62:71:7D:4B:BF:4C:88:99:56:95:00:EA:3C:9F:82:01:99:D5:2E:8F:EA:F7:63:84:95:FA:A2:CB:32:11"
+        "90:D0:62:71:7D:4B:BF:4C:88:99:56:95:00:EA:3C:9F:82:01:99:D5:2E:8F:EA:F7:63:84:95:FA:A2:CB:32:11",
+        "B5:44:B2:BA:BB:8C:4F:23:7A:B0:52:FD:D9:EB:E8:27:CE:DE:A4:46:F1:6B:09:BA:1D:92:DF:AC:4D:C6:A7:44"
       ]
     }
   }
