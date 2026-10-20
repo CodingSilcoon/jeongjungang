@@ -86,14 +86,12 @@
 
 **알람 화면 id**: `alarmTitle`, `alarmSubtitle`, `alarmMessage`, `dismissButton` (친구 알람 화면도 같은 레이아웃 사용)
 
-**지도 (카카오맵 SDK v2)**: 초기화는 앱 시작 시 끝나 있습니다. 화면에서는 이렇게만 쓰면 됩니다.
-- `KakaoMaps.isAvailable()`이 `false`면(키 없음 등) `MapView`를 만들지 말고 지도 없는 화면을 보여 주세요
-- 레이아웃에 `<com.kakao.vectormap.MapView android:id="@+id/map_view" .../>`
-- `mapView.start(new MapLifeCycleCallback(){…}, new KakaoMapReadyCallback(){ onMapReady(KakaoMap map) {…} })`
-- **Activity의 `onResume`/`onPause`에서 `mapView.resume()`/`mapView.pause()` 필수** (안 하면 알 수 없는 크래시, 공식 문서)
-- 앱 좌표 → 지도 좌표: `KakaoMaps.toKakao(latLng)` (`LatLng` 이름이 겹침)
-- 처음 위치는 `KakaoMapReadyCallback`의 `getPosition()`을 오버라이드
-- 예시 코드: `androidTest/.../KakaoMapSmokeTest.java`
+**지도 (카카오맵 SDK v2)**: 추천 결과·약속 확정·주변 장소 화면의 지도 칸에 이미 붙어 있습니다(`ui/map/MapPanel`).
+- 새 화면에 지도를 넣으려면 레이아웃에 `FrameLayout` 칸을 두고 `MapPanel.attach(this, 칸, 안내문구뷰)` → `show(핀 목록)`
+- 핀 종류: `ORIGIN`(출발지, 청록), `CANDIDATE`(후보·가게, 흰색), `SELECTED`(선택, 노란색 크게)
+- 지도를 못 쓰면(키 없음, 인증 실패) 칸에 있던 안내 문구가 그대로 보이고 나머지 화면은 정상
+- `resume`/`pause`/`finish`는 `MapPanel`이 Activity 생명주기에 맞춰 부릅니다. 같은 핀이면 다시 그리지 않아서 폴링 중에도 사용자가 옮긴 지도가 튀지 않습니다
+- 칸 디자인(높이·모서리·위에 얹는 글씨)은 레이아웃에서 그대로 바꾸면 됩니다
 
 ---
 

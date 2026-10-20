@@ -26,6 +26,7 @@ import com.jeongjungang.R;
 import com.jeongjungang.data.remote.meeting.MeetingModels.*;
 import com.jeongjungang.data.remote.meeting.MeetingRules;
 import com.jeongjungang.databinding.ActivityRecommendationBinding;
+import com.jeongjungang.ui.map.MapPanel;
 import com.jeongjungang.domain.model.LatLng;
 import com.jeongjungang.domain.recommend.PersonTrip;
 import com.jeongjungang.domain.recommend.Recommendation;
@@ -40,6 +41,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /** 추천 후보를 실제 약속으로 확정하고, 확정 후에는 서버의 장소·시간을 표시한다. */
@@ -56,6 +58,7 @@ public class ConfirmMeetingActivity extends AppCompatActivity {
     private boolean busy;
     private boolean awaitingConfirmation;
     private String actionMessage = "";
+    private MapPanel mapPanel;
 
     /** 코어에서 계산한 후보의 실제 좌표와 비교값을 넘긴다. 예시 값은 넣지 않는다. */
     public static Intent createIntent(Context context, String id, long version, Recommendation item, LatLng location) {
@@ -94,6 +97,7 @@ public class ConfirmMeetingActivity extends AppCompatActivity {
         }
 
         binding.criterionButton.setVisibility(View.GONE);
+        mapPanel = MapPanel.attach(this, binding.mapArea, binding.mapPlaceholder);
         binding.backButton.setOnClickListener(v -> goBack());
         binding.primaryButton.setOnClickListener(v -> primaryAction());
         WindowCompat.getInsetsController(getWindow(), binding.getRoot()).setAppearanceLightStatusBars(true);
@@ -105,9 +109,9 @@ public class ConfirmMeetingActivity extends AppCompatActivity {
         });
         binding.content.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             int height = Math.min(dp(278), Math.max(dp(72), (b - t) * 35 / 100));
-            if (binding.mapPlaceholder.getLayoutParams().height != height) {
-                binding.mapPlaceholder.getLayoutParams().height = height;
-                binding.mapPlaceholder.requestLayout();
+            if (binding.mapArea.getLayoutParams().height != height) {
+                binding.mapArea.getLayoutParams().height = height;
+                binding.mapArea.requestLayout();
             }
         });
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -149,6 +153,18 @@ public class ConfirmMeetingActivity extends AppCompatActivity {
                 && state.snapshot.meeting.status == Status.OPEN && meetAt != null;
     }
 
+    /** 확정(또는 선택한) 장소와 출발지를 입력한 참가자들을 지도에 찍는다. */
+    private void showOnMap(Snapshot snap, Place place) {
+        List<MapPanel.Pin> pins = new ArrayList<>();
+        for (Member member : snap.members) {
+            if (member.origin != null) {
+                pins.add(new MapPanel.Pin(member.nickname, member.origin.location, MapPanel.Kind.ORIGIN));
+            }
+        }
+        pins.add(new MapPanel.Pin(place.name, place.location, MapPanel.Kind.SELECTED));
+        mapPanel.show(pins);
+    }
+
     /** 수정 성공만으로 확정 화면을 꾸미지 않고, 다시 조회한 서버 상태를 기준으로 한다. */
     private void render() {
         int scroll = binding.resultScroll.getScrollY();
@@ -175,6 +191,7 @@ public class ConfirmMeetingActivity extends AppCompatActivity {
         }
         binding.mapPlaceholder.setText((confirmed ? "약속 확정\n" : "선택한 후보\n") + place.name
                 + "\n\n" + getString(R.string.recommend_map_pending));
+        showOnMap(snap, place);
         TextView title = addText(place.name, 26, true);
         title.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_point_pin, 0, 0, 0);
         title.setCompoundDrawablePadding(dp(8));
