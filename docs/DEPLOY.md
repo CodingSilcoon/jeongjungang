@@ -15,7 +15,7 @@
 | `deploy/caddy/site/` | 초대 안내 페이지(`invite.html`, `invite.js`)와 `assetlinks.json`. 폴더째 Caddy에 마운트한다 |
 | `deploy/deploy.sh` | 서버에서 main 최신 설정·이미지로 다시 띄우고 health 확인. CI가 실행하고, 손으로 실행해도 된다 |
 | `deploy/compose.local.yaml` | 로컬에서 이미지를 직접 빌드할 때 덧붙이는 파일 |
-| `deploy/.env.example` | 서버에 채울 값: `DOMAIN`, `DB_PASSWORD`, `KAKAO_REST_API_KEY`, `APP_TAG`(선택) |
+| `deploy/.env.example` | 서버에 채울 값: `DOMAIN`, `DB_PASSWORD`, `KAKAO_REST_API_KEY`, `FCM_CREDENTIALS_BASE64`, `APP_TAG`(선택) |
 | `.github/workflows/backend-ci.yml` | main에 merge되면 테스트 → 이미지를 GHCR에 올림(`latest`, `sha-xxxxxxx`) → 서버 배포(`deploy` job) |
 
 ## 현재 서버
@@ -100,6 +100,19 @@ command="/home/ubuntu/jeongjungang/deploy/deploy.sh",restrict ssh-ed25519 AAAA�
 초대 링크가 앱으로 바로 열리려면 그 기기에 설치한 빌드의 서명 지문이 `deploy/caddy/site/.well-known/assetlinks.json`에 있어야 한다. 디버그 키는 PC마다 달라서 시연용 빌드를 만드는 PC의 지문을 모두 넣는다(`cd android && gradlew.bat signingReport`의 `SHA-256`). 지금은 hefour PC의 디버그 키만 들어 있다. PR로 합치면 자동 배포로 반영된다.
 
 DB 스키마 변경은 앱이 시작할 때 Flyway가 적용한다. 바뀐 컨테이너만 다시 만들어지고, 데이터 볼륨은 그대로다.
+
+### FCM 키 넣기
+
+Firebase 콘솔 → 프로젝트 설정 → 서비스 계정 → 새 비공개 키 생성으로 받은 JSON을 base64 한 줄로 바꿔 `.env`의 `FCM_CREDENTIALS_BASE64`에 넣는다. 키는 git·채팅에 올리지 않는다.
+
+```bash
+# PC(Git Bash)에서: 키를 서버로 보내고 서버에서 .env에 넣은 뒤 원본을 지운다
+scp -i ~/.ssh/jeongjungang-server.pem fcm-service-account.json ubuntu@15.165.29.46:~/
+ssh -i ~/.ssh/jeongjungang-server.pem ubuntu@15.165.29.46 \
+  'cd ~/jeongjungang/deploy && sed -i "/^FCM_CREDENTIALS_BASE64=/d" .env && echo "FCM_CREDENTIALS_BASE64=$(base64 -w0 ~/fcm-service-account.json)" >> .env && rm ~/fcm-service-account.json && ./deploy.sh'
+```
+
+키가 잘못됐으면 앱이 뜨지 않는다(`docker compose logs app`). 푸시가 나가면 로그에 `FCM 푸시 N건 보냄`이 남는다.
 
 ## 운영
 

@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.jeongjungang.IntegrationTestSupport;
+import com.jeongjungang.push.DeviceService;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -44,6 +45,9 @@ class AccountabilityApiIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private EscalationQueue queue;
+
+    @Autowired
+    private DeviceService devices;
 
     @Autowired
     private EscalationService escalation;
@@ -398,6 +402,22 @@ class AccountabilityApiIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isBadRequest());
         send(post(BASE + "/devices"), "{\"fcmToken\":\"x\",\"platform\":\"ANDROID\"}")
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void removeByFcmToken_removesEveryParticipantOnThatPhone() throws Exception {
+        Member host = createMeeting("민수");
+        Member member = join(host, "지현");
+        Member other = createMeeting("서연");
+        registerDevice(host, "same-phone");
+        registerDevice(other, "same-phone");
+        registerDevice(member, "member-phone");
+
+        devices.removeByFcmToken("same-phone");
+
+        assertThat(jdbc.queryForList("select fcm_token from devices where participant_id in (?::uuid, ?::uuid, ?::uuid)",
+                String.class, host.participantId(), other.participantId(), member.participantId()))
+                .containsExactly("member-phone");
     }
 
     // ---- 도우미 ----
