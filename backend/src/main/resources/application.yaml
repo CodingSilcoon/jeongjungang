@@ -48,6 +48,12 @@ jeongjungang:
     base-url: https://dapi.kakao.com
     connect-timeout: 2s
     read-timeout: 3s
+  fcm:
+    # 서비스 계정 키 JSON을 base64로 바꿔 환경변수로만 넣는다. 비우면 푸시를 보내지 않고 로그만 남긴다
+    credentials-base64: ${FCM_CREDENTIALS_BASE64:}
+    base-url: https://fcm.googleapis.com
+    connect-timeout: 2s
+    read-timeout: 5s
 
 # 운영 점검용 actuator는 health만 열고, 세부 정보는 숨긴다
 management:

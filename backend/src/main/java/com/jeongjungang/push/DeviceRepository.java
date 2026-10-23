@@ -13,6 +13,10 @@ interface DeviceRepository extends JpaRepository<Device, UUID> {
 
     List<Device> findByParticipantIdIn(Collection<UUID> participantIds);
 
+    @Modifying
+    @Query("delete from Device d where d.fcmToken = :fcmToken")
+    int deleteByFcmToken(@Param("fcmToken") String fcmToken);
+
     /** 없으면 만들고 있으면 갱신. 같은 참가자의 등록이 동시에 와도 기본키 충돌로 500이 나지 않는다. */
     @Modifying
     @Query(value = """

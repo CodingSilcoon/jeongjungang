@@ -449,7 +449,7 @@ SCHEDULED ──(기기 울림 보고)──> RINGING ──(끔 보고)──> 
 
 `ESCALATION` 메시지는 TTL을 120초로 둔다. 오래 지난 뒤 도착하면 무의미하기 때문이다.
 
-**현재 상태 (2026-10-17)**: FCM은 아직 연동하지 않았다(Firebase 프로젝트·서비스 계정 없음). 서버는 위 푸시를 만들지만 보내지 않고 로그만 남긴다(`LoggingPushSender`). 그동안 앱은 약속 폴링과 `GET /meetings/{id}/alarms`로 알람을 맞춘다. 서비스 계정이 생기면 `PushSender` 구현 하나만 추가하면 된다.
+**현재 상태 (2026-10-23)**: 서버는 FCM HTTP v1으로 보낸다(Firebase 프로젝트 `jeongjungang-5d17f`, `FcmPushSender`). 서비스 계정 키는 환경변수 `FCM_CREDENTIALS_BASE64`로만 넣고, 비어 있으면(로컬·테스트) 보내지 않고 로그만 남긴다(`LoggingPushSender`). FCM이 `404 UNREGISTERED`를 준 토큰의 기기는 지운다. 앱 수신부(`FirebaseMessagingService`, 기기 등록)는 아직 없어서, 그 전까지 앱은 약속 폴링과 `GET /meetings/{id}/alarms`로 알람을 맞추고 에스컬레이션은 받지 못한다.
 
 ---
 

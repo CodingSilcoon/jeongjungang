@@ -43,6 +43,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:?deploy/.env에 DB_PASSWORD가 필요합니다}
       REDIS_HOST: redis
       KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY:-}
+      FCM_CREDENTIALS_BASE64: ${FCM_CREDENTIALS_BASE64:-}
       PUBLIC_BASE_URL: https://${DOMAIN}
     depends_on:
       postgres:
