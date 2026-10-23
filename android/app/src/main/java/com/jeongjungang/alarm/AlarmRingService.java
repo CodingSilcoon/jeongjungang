@@ -118,7 +118,14 @@ public class AlarmRingService extends Service {
                 .putExtra(AlarmFireReceiver.EXTRA_ALARM_ID, alarmId)
                 .putExtra(EXTRA_MEETING_ID, meetingId)
                 .putExtra(EXTRA_NICKNAME, sleeperNickname);
-        androidx.core.content.ContextCompat.startForegroundService(context, intent);
+        try {
+            androidx.core.content.ContextCompat.startForegroundService(context, intent);
+        } catch (IllegalStateException e) {
+            // 일반 우선순위로 온 푸시 등 백그라운드에서 포그라운드 서비스를 못 띄우는 경우(Android 12+). 알림만 남긴다
+            Log.w(TAG, "에스컬레이션 울림을 시작하지 못해 알림만 남김", e);
+            notifyEscalationOnly(context, sleeperNickname);
+            return false;
+        }
         return true;
     }
 
