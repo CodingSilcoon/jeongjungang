@@ -118,6 +118,15 @@
             android:exported="false"
             android:foregroundServiceType="systemExempted" />
 
+        <!-- 책임 알람 푸시 수신 (docs/API.md 8절) -->
+        <service
+            android:name=".push.PushMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".alarm.AlarmFireReceiver"
             android:exported="false" />

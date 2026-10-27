@@ -18,6 +18,7 @@ import com.jeongjungang.data.remote.meeting.MeetingUpdate;
 import com.jeongjungang.data.remote.meeting.ParticipantUpdate;
 import com.jeongjungang.data.repository.AccountabilityRepository;
 import com.jeongjungang.data.repository.MeetingRepository;
+import com.jeongjungang.push.DeviceRegisterWorker;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -224,6 +225,7 @@ public class MeetingViewModel extends AndroidViewModel {
             @Override
             public ActionResult call() throws ApiException {
                 Membership m = repository.create(hostNickname, title, purpose, meetAtMillis, origin);
+                DeviceRegisterWorker.enqueue(getApplication());
                 return ActionResult.joined(ActionResult.Kind.CREATE, m);
             }
         });
@@ -244,8 +246,10 @@ public class MeetingViewModel extends AndroidViewModel {
         run(ActionResult.Kind.JOIN, new Task() {
             @Override
             public ActionResult call() throws ApiException {
-                return ActionResult.joined(ActionResult.Kind.JOIN,
-                        repository.join(inviteLinkOrCode, nickname, origin));
+                Membership m = repository.join(inviteLinkOrCode, nickname, origin);
+                // 새 약속에도 푸시를 받을 수 있게 이 기기를 등록한다(책임 알람 동기화·에스컬레이션)
+                DeviceRegisterWorker.enqueue(getApplication());
+                return ActionResult.joined(ActionResult.Kind.JOIN, m);
             }
         });
     }

@@ -224,7 +224,7 @@ public final class AccountabilityRepository {
     }
 
     /** 네트워크·요청 제한·서버 오류는 다시 시도. 4xx(알람·약속 없음, 권한 없음)는 다시 보내도 같다. */
-    static boolean isRetryable(ApiException e) {
+    public static boolean isRetryable(ApiException e) {
         return e.isNetwork() || ApiException.RATE_LIMITED.equals(e.code)
                 || e.httpStatus >= 500 || ApiException.BAD_RESPONSE.equals(e.code);
     }
