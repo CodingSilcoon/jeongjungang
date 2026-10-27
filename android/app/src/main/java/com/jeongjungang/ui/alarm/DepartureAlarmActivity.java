@@ -42,6 +42,8 @@ import java.util.TimeZone;
 /** 준비시간과 동의는 본인, 책임 알람 켜기·끄기는 방장만 변경한다. */
 public class DepartureAlarmActivity extends AppCompatActivity {
 
+    private static final TimeZone SEOUL = TimeZone.getTimeZone("Asia/Seoul");
+
     private ActivityDepartureAlarmBinding binding;
     private MeetingViewModel meetings;
     private AccountabilityViewModel alarms;
@@ -411,7 +413,7 @@ public class DepartureAlarmActivity extends AppCompatActivity {
                 : enabled() ? "서버·기기 예약 확인 중입니다. 아직 예약 완료가 아니에요." : "예상 시각이에요. 아직 예약 전입니다.";
         if (!AlarmPermissions.isReady(this)) hint += "\n알람 권한을 확인해 주세요.";
         if (fireAt != null && fireAt <= System.currentTimeMillis()) hint += "\n알람 예정 시각이 이미 지났어요.";
-        if (fireAt != null && AlarmTimeCalculator.isLateNight(fireAt, TimeZone.getDefault())) hint += "\n심야 시간대에 알람이 울려요.";
+        if (fireAt != null && AlarmTimeCalculator.isLateNight(fireAt, SEOUL)) hint += "\n심야 시간대에 알람이 울려요.";
         binding.timeHint.setText(hint);
         binding.breakdown.setText("이동 " + (calculable ? "약 " + (int)Math.ceil(travel) + "분" : "계산 전")
                 + " · 준비 " + (prep() == null ? "0~240분 입력" : prep() + "분") + " · 여유 " + margin + "분");
@@ -451,8 +453,11 @@ public class DepartureAlarmActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    /** 다른 약속 화면처럼 한국 시간으로 보여 준다(기기 시간대가 달라도 약속 시각과 맞게). */
     private String format(long millis) {
-        return new SimpleDateFormat("M월 d일 a h:mm", Locale.KOREAN).format(new Date(millis));
+        SimpleDateFormat f = new SimpleDateFormat("M월 d일 a h:mm", Locale.KOREAN);
+        f.setTimeZone(SEOUL);
+        return f.format(new Date(millis));
     }
 
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
