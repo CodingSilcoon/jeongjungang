@@ -73,6 +73,11 @@ public class MeetingViewModel extends AndroidViewModel {
         return repository.isAvailable();
     }
 
+    /** 이 기기로 이미 들어가 있는 약속의 초대 코드면 그 약속 id. 네트워크를 쓰지 않아서 메인에서 불러도 된다. */
+    public String myMeetingForInvite(String inviteCode) {
+        return repository.myMeetingForInvite(inviteCode);
+    }
+
     public LiveData<MeetingState> getState() {
         return state;
     }

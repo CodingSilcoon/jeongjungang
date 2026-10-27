@@ -305,7 +305,7 @@ public class RecommendationActivity extends AppCompatActivity {
             }
             card.addView(text(item.reason, 14, true));
             card.addView(text(criterion == Criterion.TOTAL_TIME
-                    ? "이동시간 합계 " + Math.round(item.totalMinutes) + "분"
+                    ? "이동시간 합계 " + shownTotal(item) + "분"
                     : "최대 이동시간 " + Math.round(item.maxMinutes) + "분", 12, false));
             addTrips(card, item, false);
             card.setSelected(chosen);
@@ -322,6 +322,16 @@ public class RecommendationActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 화면에 보이는 사람별 분(반올림)의 합. 전체 합을 따로 반올림하면 "0분 · 0분, 합계 1분"처럼 어긋난다.
+     * 순위는 코어(Recommender)의 값 그대로 두고 표시만 맞춘다.
+     */
+    private static long shownTotal(Recommendation item) {
+        long sum = 0;
+        for (PersonTrip trip : item.trips) sum += Math.round(trip.minutes);
+        return sum;
+    }
+
     /** 구간별 경로는 만들지 않고 코어가 제공하는 총시간·환승만 표시한다. */
     private void renderDetail(Recommendation item) {
         binding.resultList.addView(text(ShareText.stationLabel(item), 26, true));
@@ -329,7 +339,7 @@ public class RecommendationActivity extends AppCompatActivity {
         summary.setPadding(dp(16), dp(16), dp(16), dp(16));
         summary.setBackgroundResource(R.drawable.start_action_primary);
         summary.addView(text(item.reason, 16, true));
-        summary.addView(text("이동시간 합계 " + Math.round(item.totalMinutes) + "분"
+        summary.addView(text("이동시간 합계 " + shownTotal(item) + "분"
                 + "  ·  최대 " + Math.round(item.maxMinutes) + "분", 16, true));
         binding.resultList.addView(summary);
         binding.resultList.addView(text("각자 걸리는 시간", 18, true));

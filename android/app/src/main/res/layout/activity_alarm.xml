@@ -43,21 +43,21 @@
             android:orientation="vertical"
             android:paddingBottom="8dp">
 
-            <TextClock
+            <!-- 날짜·시각은 AlarmActivity가 한국어로 채운다. TextClock은 기기 언어를 따라가서
+                 영어 기기에서 "10월 27일 Tuesday", "PM 3:04"처럼 섞여 나왔다. -->
+            <TextView
+                android:id="@+id/alarmDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:format12Hour="M월 d일 EEEE"
-                android:format24Hour="M월 d일 EEEE"
                 android:textColor="@color/start_muted"
                 android:textSize="14sp" />
 
-            <TextClock
+            <TextView
+                android:id="@+id/alarmClock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:format12Hour="a h:mm"
-                android:format24Hour="HH:mm"
                 android:textColor="@color/start_ink"
                 android:textSize="48sp"
                 android:textStyle="bold" />

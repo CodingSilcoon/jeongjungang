@@ -1,5 +1,7 @@
 <resources>
     <string name="meeting_create_title">약속 만들기</string>
+    <!-- 약속 방 제목: 방장이 아닌 참가자에게 보인다 -->
+    <string name="meeting_room_member_title">함께하는 약속</string>
     <string name="meeting_name_label">내 이름 · 필수</string>
     <string name="meeting_name_hint">친구들이 알아볼 이름</string>
     <string name="meeting_name_help">약속 안에서 사용할 이름 · 최대 20자</string>

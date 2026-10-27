@@ -190,6 +190,8 @@ public class MeetingRoomActivity extends AppCompatActivity {
         binding.footerHint.setText("");
         if (snapshot == null) return;
 
+        // 초대받아 들어온 사람에게 "약속 만들기"는 맞지 않아서 역할에 따라 제목을 바꾼다
+        binding.heading.setText(snapshot.amHost() ? R.string.meeting_create_title : R.string.meeting_room_member_title);
         getSharedPreferences("meeting_rooms", MODE_PRIVATE).edit()
                 .putString(meetingId + ".title", title(snapshot)).apply();
         binding.meetingTitle.setText(title(snapshot));
