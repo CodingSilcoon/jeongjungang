@@ -12,6 +12,9 @@ local.properties
 *.pem
 *.jks
 *.keystore
+# Firebase 서버 서비스 계정 키(비밀). 앱의 google-services.json은 공개 설정이라 올린다
+*firebase-adminsdk*.json
+*service-account*.json
 
 # OS
 .DS_Store
