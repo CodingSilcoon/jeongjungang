@@ -6,7 +6,10 @@ import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.SpannableString;
+import android.text.format.DateFormat;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
@@ -43,6 +46,8 @@ public class AlarmActivity extends AppCompatActivity {
     private String alarmId;
     private AlarmMeetingViewModel model;
     private ObjectAnimator bellMotion;
+    private final Handler clock = new Handler(Looper.getMainLooper());
+    private final Runnable clockTick = this::showClock;
 
     public static Intent intent(Context context, String alarmId) {
         return new Intent(context, AlarmActivity.class)
@@ -177,8 +182,27 @@ public class AlarmActivity extends AppCompatActivity {
         if (binding != null) binding.alarmBell.setRotation(0);
     }
 
+    /** 시계는 기기 언어와 상관없이 한국어로 보여 준다. 24시간제 설정은 따른다. */
+    private void showClock() {
+        Date now = new Date();
+        binding.alarmDate.setText(new SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN).format(now));
+        binding.alarmClock.setText(new SimpleDateFormat(
+                DateFormat.is24HourFormat(this) ? "HH:mm" : "a h:mm", Locale.KOREAN).format(now));
+        // 다음 분이 바뀌는 순간에 다시 그린다
+        long untilNextMinute = 60_000 - System.currentTimeMillis() % 60_000;
+        clock.removeCallbacks(clockTick);
+        clock.postDelayed(clockTick, untilNextMinute);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        showClock();
+    }
+
     @Override
     protected void onStop() {
+        clock.removeCallbacks(clockTick);
         stopBellMotion();
         super.onStop();
     }

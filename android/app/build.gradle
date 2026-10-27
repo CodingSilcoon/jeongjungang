@@ -36,6 +36,13 @@ android {
 
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
         buildConfigField "String", "KAKAO_NATIVE_APP_KEY", "\"${kakaoNativeAppKey}\""
+
+        // 카카오맵 엔진은 ARM 라이브러리만 있다. 다른 라이브러리(Firebase 등)가 x86용을 같이 넣으면
+        // x86_64 에뮬레이터가 앱을 x86으로 설치해서 지도 엔진을 못 찾는다(지도만 꺼짐).
+        // ARM만 넣으면 에뮬레이터는 ARM 번역으로 전부 돌리고, 실기기(ARM)는 그대로다. APK도 작아진다.
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
     }
 
     buildTypes {

@@ -30,10 +30,12 @@ public final class MeetingRepository {
 
     private final MeetingApi api;
     private final ParticipantTokenStore tokens;
+    private final InviteCodes invites;
 
-    MeetingRepository(MeetingApi api, ParticipantTokenStore tokens) {
+    MeetingRepository(MeetingApi api, ParticipantTokenStore tokens, InviteCodes invites) {
         this.api = api;
         this.tokens = tokens;
+        this.invites = invites;
     }
 
     public static MeetingRepository getInstance(Context context) {
@@ -42,7 +44,8 @@ public final class MeetingRepository {
                 if (instance == null) {
                     MeetingApi api = BuildConfig.API_BASE_URL.isEmpty()
                             ? null : new HttpMeetingApi(BuildConfig.API_BASE_URL);
-                    instance = new MeetingRepository(api, new ParticipantTokenStore(context));
+                    instance = new MeetingRepository(api, new ParticipantTokenStore(context),
+                            new InviteCodes(context));
                 }
             }
         }
@@ -58,6 +61,9 @@ public final class MeetingRepository {
             throws ApiException {
         Membership m = api().create(hostNickname, title, purpose, meetAtMillis, origin);
         tokens.save(m.meetingId, m.participantId, m.token);
+        if (m.meeting != null) {
+            invites.put(m.meeting.inviteCode, m.meetingId);
+        }
         return m;
     }
 
@@ -68,7 +74,17 @@ public final class MeetingRepository {
     public Membership join(String inviteCode, String nickname, Origin origin) throws ApiException {
         Membership m = api().join(inviteCode, nickname, origin);
         tokens.save(m.meetingId, m.participantId, m.token);
+        invites.put(inviteCode, m.meetingId);
         return m;
+    }
+
+    /**
+     * 이 기기로 이미 들어가 있는 약속의 초대 코드면 그 약속 id, 아니면 null.
+     * 나갔거나 내보내져서 토큰이 지워졌으면 null이라 평소처럼 참가 화면으로 간다. 네트워크를 쓰지 않는다.
+     */
+    public String myMeetingForInvite(String inviteCode) {
+        String meetingId = invites.meetingFor(inviteCode);
+        return meetingId != null && isMember(meetingId) ? meetingId : null;
     }
 
     /**
@@ -79,7 +95,12 @@ public final class MeetingRepository {
     public Snapshot snapshot(String meetingId, String etag) throws ApiException {
         ParticipantTokenStore.Entry me = member(meetingId);
         try {
-            return api().get(meetingId, me.token, etag);
+            Snapshot s = api().get(meetingId, me.token, etag);
+            if (s != null) {
+                // 이 기능 전에 들어간 약속도 한 번 열면 초대 코드를 기억한다
+                invites.put(s.meeting.inviteCode, meetingId);
+            }
+            return s;
         } catch (ApiException e) {
             if (isGone(e)) {
                 tokens.remove(meetingId);

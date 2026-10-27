@@ -143,6 +143,13 @@ public class JoinMeetingActivity extends AppCompatActivity {
             binding.codeInput.requestFocus();
             return;
         }
+        // 이미 들어가 있는 약속이면 참가 절차 없이 그 약속으로 간다(초대 링크를 다시 누른 경우 등)
+        String mine = model.myMeetingForInvite(code);
+        if (mine != null) {
+            startActivity(MeetingRoomActivity.createIntent(this, mine, code, null));
+            finish();
+            return;
+        }
         verifiedCode = code;
         joinable = false;
         binding.codeInput.setError(null);
